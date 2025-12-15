@@ -20,7 +20,7 @@ config = load_config("general")
 
 class BFS(BaseEngine):
     """
-    Methods for handling DFS exploratory searches. The `BaseEngine` initialises
+    Methods for handling BFS exploratory searches. The `BaseEngine` initialises
     the provider and with that the playwright action and output agents.
 
     This is another entry point engine and can be directly imported by the user.
@@ -60,7 +60,7 @@ class BFS(BaseEngine):
         trace_save_directory: str = None,
         database: Database = None,
     ):
-        self.mode = "DFS"
+        self.mode = "BFS"
         # Passing the common setup to the BaseEngine
         super().__init__(
             headless=headless,
@@ -112,13 +112,6 @@ class BFS(BaseEngine):
                 self.page = await self.context.new_page()
                 cleaned_dom = await initial_page_setup(self.page)
 
-                # For each individual task it behaves like a DFS right!
-                # I can just reuse the code
-            for steps in range(0, self.max_breadth):
-                # The breadth specifies the number of different plans we can execute
-                plan = self.planner_agent.generate(task=task, old_plan=self.old_plan)
-                self.log.info(f"This is the plan for a DFS: {plan}")
-
                 for _ in range(0, self.max_depth):
                     # The depth is the number of actions for each plan
                     # First check for login
@@ -131,13 +124,13 @@ class BFS(BaseEngine):
                     history = self.fetch_history()
                     action = self.fetch_action(
                         cleaned_dom=cleaned_dom.to_dict(),
-                        user_prompt=plan,
+                        user_prompt=task,
                         history=history,
                         extraction_format=extraction_format,
                     )
                     # Check if the automation has finished and if so, get the output
                     output = await self.generate_output(
-                        action=action, cleaned_dom=cleaned_dom, prompt=plan
+                        action=action, cleaned_dom=cleaned_dom, prompt=task
                     )
                     if output:
                         await self.save_trace()
@@ -158,7 +151,7 @@ class BFS(BaseEngine):
                         cleaned_dom = await self.extract_dom()
                         output = await self.retry_perform_action(
                             cleaned_dom=cleaned_dom.to_dict(),
-                            prompt=plan,
+                            prompt=task,
                             history=history,
                             fail_reason=fail_reason,
                         )
@@ -169,10 +162,9 @@ class BFS(BaseEngine):
                     # Picking the clean DOM now
                     cleaned_dom = await self.extract_dom()
 
-                self.log.warning(
-                    "The maximum depth for the current plan has been reached, generating a new plan"
-                )
-                self.old_plan = plan
+                    self.log.warning(
+                        "The maximum depth for the current task has been reached, generating a new plan to achieve this task"
+                    )
         finally:
             await self.save_trace()
             await self.shut_down()
@@ -209,11 +201,13 @@ class BFS(BaseEngine):
                     raise UnknownSiteChosen(LoginEngine.available_engines())
 
         plan_list = self.planner_agent.generate(task=prompt)
+
+        print(plan_list)
         assert isinstance(
             plan_list, list
         ), f"Expected the plan to be a list, got {type(plan_list)} instead."
 
-        self.log.info(f"This is the plan for a DFS: {plan_list}")
+        self.log.info(f"This is the plan for a BFS: {plan_list}")
 
         # Keeping this purely async is better for playwright
         tasks = [asyncio.create_task(self._run(task, extraction_format)) for task in plan_list]
