@@ -9,8 +9,10 @@ from pydantic import BaseModel
 from pyba.core.agent import PlannerAgent
 from pyba.core.lib.action import perform_action
 from pyba.core.lib.mode.base import BaseEngine
+from pyba.core.scripts import LoginEngine
 from pyba.database import Database
 from pyba.utils.common import initial_page_setup
+from pyba.utils.exceptions import UnknownSiteChosen
 from pyba.utils.load_yaml import load_config
 
 config = load_config("general")
@@ -103,6 +105,18 @@ class DFS(BaseEngine):
         The task is fed into the planner to get a plan which is then passed to the action models
         to fetch an actionable element.
         """
+        if automated_login_sites is not None:
+            assert isinstance(
+                automated_login_sites, list
+            ), "Make sure the automated_login_sites is a list!"
+
+            for engine in automated_login_sites:
+                # Each engine is going to be a name like "instagram"
+                if hasattr(LoginEngine, engine):
+                    engine_class = getattr(LoginEngine, engine)
+                    self.automated_login_engine_classes.append(engine_class)
+                else:
+                    raise UnknownSiteChosen(LoginEngine.available_engines())
         try:
             async with Stealth().use_async(async_playwright()) as p:
                 self.browser = await p.chromium.launch(headless=self.headless_mode)
