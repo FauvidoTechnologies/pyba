@@ -18,6 +18,9 @@ class PlannerAgent(BaseAgent):
             `engine`: Engine to hold all arguments provided by the user
 
     Initialises the `max_breadth` for the maximum number of plans to generate for BFS mode
+
+    NOTE:
+        `context_id` is not relevant here because this is a higer level class
     """
 
     def __init__(self, engine) -> None:

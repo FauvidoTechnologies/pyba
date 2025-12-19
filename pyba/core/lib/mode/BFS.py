@@ -96,13 +96,19 @@ class BFS(BaseEngine):
     #       # The breadth specifies the number of different plans we can execute
     #       plan = self.planner_agent.generate(task=task, old_plan=self.old_plan)
 
-    async def _run(self, task: str, extraction_format: BaseModel = None) -> Union[str, None]:
+    async def _run(
+        self, task: str, extraction_format: BaseModel = None, context_id: str = None
+    ) -> Union[str, None]:
         """
         helper run function for BFS
 
         Args:
             `task`: A singular task which needs to be performed
-            `extraction_format`: BaseModel = None,
+            `extraction_format`: The extraction format for the required goal
+            `context_id`: A dynamically generated context-id for each browser window
+
+        Since BFS is going to generated multiple windows at runtime, we assign each one its own ID. This helps manage their
+        individual exponential retires and logging.
         """
         try:
             async with Stealth().use_async(async_playwright()) as p:
@@ -127,6 +133,7 @@ class BFS(BaseEngine):
                         user_prompt=task,
                         history=history,
                         extraction_format=extraction_format,
+                        context_id=context_id,
                     )
                     # Check if the automation has finished and if so, get the output
                     output = await self.generate_output(
@@ -210,7 +217,10 @@ class BFS(BaseEngine):
         self.log.info(f"This is the plan for a BFS: {plan_list}")
 
         # Keeping this purely async is better for playwright
-        tasks = [asyncio.create_task(self._run(task, extraction_format)) for task in plan_list]
+        tasks = []
+        for task in plan_list:
+            context_id = uuid.uuid4().hex  # This should do it.
+            tasks.append(asyncio.create_task(self._run(task, extraction_format, context_id)))
         results = await asyncio.gather(*tasks, return_exceptions=False)
 
         return results

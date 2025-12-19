@@ -337,6 +337,7 @@ class BaseEngine:
         user_prompt: str,
         history: str,
         extraction_format: BaseModel = None,
+        context_id: str = None,
     ):
         """
         Helper function to fetch an actionable PlaywrightResponse element
@@ -346,6 +347,7 @@ class BaseEngine:
             `user_prompt`: The actual task given by the user
             `history`: The last action performed by the model
             `extraction_format`: The extraction format requested by the user.
+            `context_id`: A unique identifier for this browser window (useful when multiple windows)
 
         For an explanation of the `extraction_format` read the main file documentation.
 
@@ -359,6 +361,7 @@ class BaseEngine:
                 user_prompt=user_prompt,
                 history=history,
                 extraction_format=extraction_format,
+                context_id=context_id,
             )
         except Exception as e:
             self.log.error(f"something went wrong in obtaining the response: {e}")

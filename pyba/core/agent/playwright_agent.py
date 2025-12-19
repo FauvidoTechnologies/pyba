@@ -64,7 +64,12 @@ class PlaywrightAgent(BaseAgent):
         return prompt
 
     def _call_model(
-        self, agent: Any, prompt: str, agent_type: str, cleaned_dom: Dict = None
+        self,
+        agent: Any,
+        prompt: str,
+        agent_type: str,
+        cleaned_dom: Dict = None,
+        context_id: str = None,
     ) -> Any:
         """
         Generic method to call the correct LLM provider and parse the response.
@@ -74,6 +79,7 @@ class PlaywrightAgent(BaseAgent):
             `prompt`: The fully formatted prompt string
             `agent_type`: "action" or "output", to determine parsing logic
             `cleaned_dom`: A dictionary that holds the `actual_text` from which the data is to be extracted
+            `context_id`: A unique identifier for this browser window (useful when multiple windows)
 
         Returns:
             The parsed response (SimpleNamespace for action, str for output)
@@ -85,8 +91,7 @@ class PlaywrightAgent(BaseAgent):
 
         if self.engine.provider == "openai":
             response = self.handle_openai_execution(
-                agent=agent,
-                prompt=prompt,
+                agent=agent, prompt=prompt, context_id=context_id
             )
             parsed_json = json.loads(response.choices[0].message.content)
 
@@ -103,7 +108,9 @@ class PlaywrightAgent(BaseAgent):
                 return str(parsed_json.get("output"))
 
         elif self.engine.provider == "vertexai":  # VertexAI logic
-            response = self.handle_vertexai_execution(agent=agent, prompt=prompt)
+            response = self.handle_vertexai_execution(
+                agent=agent, prompt=prompt, context_id=context_id
+            )
             try:
                 parsed_object = getattr(
                     response, "output_parsed", getattr(response, "parsed", None)
@@ -135,7 +142,9 @@ class PlaywrightAgent(BaseAgent):
                 # If we have a response which cannot be parsed, it MUST be a None value
 
         else:  # Using gemini
-            response = self.handle_gemini_execution(agent=agent, prompt=prompt)
+            response = self.handle_gemini_execution(
+                agent=agent, prompt=prompt, context_id=context_id
+            )
             parsed_object = agent["response_format"].model_validate_json(response.text)
             actions = parsed_object.actions[0]
             extract_info_flag = parsed_object.extract_info
@@ -152,6 +161,7 @@ class PlaywrightAgent(BaseAgent):
         history: List[str] = None,
         fail_reason: str = None,
         extraction_format: BaseModel = None,
+        context_id: str = None,
     ) -> PlaywrightResponse:
         """
         Method to process the DOM and provide an actionable playwright response
@@ -166,6 +176,7 @@ class PlaywrightAgent(BaseAgent):
             `history`: An episodic memory of all the successfully executed tasks
             `fail_reason`: Holds the fail-reason should the previous task fail
             `extraction_format`: The extraction format for the task
+            `context_id`: A unique identifier for this browser window (useful when multiple windows)
 
             We're assuming this to be well explained. In later versions we'll
             add one more layer on top for plan generation and better commands
@@ -185,10 +196,16 @@ class PlaywrightAgent(BaseAgent):
         self.extractor = ExtractionAgent(engine=self.engine, extraction_format=extraction_format)
 
         return self._call_model(
-            agent=self.action_agent, prompt=prompt, agent_type="action", cleaned_dom=cleaned_dom
+            agent=self.action_agent,
+            prompt=prompt,
+            agent_type="action",
+            cleaned_dom=cleaned_dom,
+            context_id=context_id,
         )
 
-    def get_output(self, cleaned_dom: Dict[str, Union[List, str]], user_prompt: str) -> str:
+    def get_output(
+        self, cleaned_dom: Dict[str, Union[List, str]], user_prompt: str, context_id: str = None
+    ) -> str:
         """
         Method to get the final output from the model if the user requested for one
         """
@@ -197,4 +214,6 @@ class PlaywrightAgent(BaseAgent):
             cleaned_dom=cleaned_dom, user_prompt=user_prompt, main_instruction=output_prompt
         )
 
-        return self._call_model(agent=self.output_agent, prompt=prompt, agent_type="output")
+        return self._call_model(
+            agent=self.output_agent, prompt=prompt, agent_type="output", context_id=context_id
+        )

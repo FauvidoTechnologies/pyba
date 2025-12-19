@@ -27,12 +27,12 @@ class BaseAgent:
         self.base = 2
         self.base_timeout = 1
         self.max_backoff_time = 60
-        self.attempt_number = 1
 
         self.engine = engine
         self.llm_factory = LLMFactory(engine=self.engine)
         self.log = get_logger()
         self.mode: Literal["Normal", "DFS", "BFS"] = self.engine.mode
+        self.shared_depth_dictionary = {}
 
     def _initialise_prompt(self):
         """
@@ -67,13 +67,19 @@ class BaseAgent:
 
         return kwargs
 
-    def handle_openai_execution(self, agent: Any, prompt: str):
+    def handle_openai_execution(self, agent: Any, prompt: str, context_id: str = None):
         """
         Helper method to handle OpenAI execution
 
         Args:
             `agent`: The agent to use (action_agent or output_agent)
             `prompt`: The fully formatted prompt string
+            `context_id`: A unique identifier for the current browser window
+
+        The `context_id` is to help in differentiating between different browser windows during parallel execution
+        for BFS mode.
+
+        `context_id`=None => There is only one browser session.
 
         Returns:
             `response`: The raw response from the model. The exact required values
@@ -90,24 +96,35 @@ class BaseAgent:
                 response = agent["client"].chat.completions.parse(
                     **arguments, response_format=agent["response_format"]
                 )
-                self.attempt_number = 1
+                # self.attempt_number = 1
+                self.initialise_depth_ladder(unique_context_id=context_id)
                 break
             except Exception:
                 # If we hit a rate limit, calculate the time to wait and retry
-                wait_time = self.calculate_next_time(self.attempt_number)
+                wait_time = self.calculate_next_time(
+                    self.shared_depth_dictionary.get(context_id, 1)
+                )
                 self.log.warning(f"Hit the rate limit for OpenAI, retrying in {wait_time} seconds")
                 time.sleep(wait_time)  # wait_time is in seconds
-                self.attempt_number += 1
+                # self.attempt_number += 1
+                self.update_depth_ladder(unique_context_id=context_id)
 
         return response
 
-    def handle_vertexai_execution(self, agent: Any, prompt: str):
+    def handle_vertexai_execution(self, agent: Any, prompt: str, context_id: str = None):
         """
         Helper method to handle VertexAI execution
 
         Args:
             `agent`: The agent to use (action_agent or output_agent)
             `prompt`: The fully formatted prompt string
+            `context_id`: A unique identifier for the current browser window
+
+        The `context_id` is to help in differentiating between different browser windows during parallel execution
+        for BFS mode.
+
+        `context_id`=None => There is only one browser session.
+
 
         Returns:
             `response`: The raw response from the model. The exact required values
@@ -116,25 +133,32 @@ class BaseAgent:
         while True:
             try:
                 response = agent.send_message(prompt)
-                self.attempt_number = 1
+                self.initialise_depth_ladder(unique_context_id=context_id)
                 break
             except Exception:
-                wait_time = self.calculate_next_time(self.attempt_number)
+                wait_time = self.calculate_next_time(
+                    self.shared_depth_dictionary.get(context_id, 1)
+                )
                 self.log.warning(
                     f"Hit the rate limit for VertexAI, retrying in {wait_time} seconds"
                 )
                 time.sleep(wait_time)
-                self.attempt_number += 1
-
+                self.update_depth_ladder(unique_context_id=context_id)
         return response
 
-    def handle_gemini_execution(self, agent: Any, prompt: str):
+    def handle_gemini_execution(self, agent: Any, prompt: str, context_id: str = None):
         """
         Helper method to handle gemini's execution
 
         Args:
             `agent`: The agent to use (action_agent or output_agent)
             `prompt`: The fully formatted prompt string
+            `context_id`: A unique identifier for the current browser window
+
+        The `context_id` is to help in differentiating between different browser windows during parallel execution
+        for BFS mode.
+
+        `context_id`=None => There is only one browser session.
 
         Returns:
             `response`: The raw response from the model. The exact required values
@@ -153,13 +177,15 @@ class BaseAgent:
                     contents=prompt,
                     config=gemini_config,
                 )
-                self.attempt_number = 1
+                self.initialise_depth_ladder(unique_context_id=context_id)
                 break
             except Exception:
-                wait_time = self.calculate_next_time(self.attempt_number)
+                wait_time = self.calculate_next_time(
+                    self.shared_depth_dictionary.get(context_id, 1)
+                )
                 self.log.warning(f"Hit the rate limit for Gemini, retrying in {wait_time} seconds")
                 time.sleep(wait_time)
-                self.attempt_number += 1
+                self.update_depth_ladder(unique_context_id=context_id)
 
         return response
 
@@ -175,3 +201,21 @@ class BaseAgent:
         delay = min(delay, self.max_backoff_time)
         jitter = random.uniform(0, delay / 2)
         return delay + jitter
+
+    def initialise_depth_ladder(self, unique_context_id: str):
+        """
+        Initialises and helps manage the depth-ladder for different browser sessions
+
+        Args:
+            `unique_context_id`: The context ID for the current browser session
+        """
+        self.shared_depth_dictionary[unique_context_id] = 1
+
+    def update_depth_ladder(self, unique_context_id: str):
+        """
+        This function helps increments the depth-value for each browser
+
+        Args:
+            `unique_context_id`: The context ID for the browser
+        """
+        self.shared_depth_dictionary[unique_context_id] += 1
