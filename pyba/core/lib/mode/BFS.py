@@ -112,22 +112,22 @@ class BFS(BaseEngine):
         """
         try:
             async with Stealth().use_async(async_playwright()) as p:
-                self.browser = await p.chromium.launch(headless=self.headless_mode)
+                browser = await p.chromium.launch(headless=self.headless_mode)
 
-                self.context = await self.get_trace_context()
-                self.page = await self.context.new_page()
-                cleaned_dom = await initial_page_setup(self.page)
+                context = await self.get_trace_context(browser_instance=browser)
+                page = await context.new_page()
+                cleaned_dom = await initial_page_setup(page)
 
                 for _ in range(0, self.max_depth):
                     # The depth is the number of actions for each plan
                     # First check for login
-                    login_attempted_successfully = await self.attempt_login()
+                    login_attempted_successfully = await self.attempt_login(page)
                     # We'll count logging in as another step in the process
                     if login_attempted_successfully:
                         cleaned_dom = await self.successful_login_clean_and_get_dom()
                         continue
                     # Get an actionable element from the playwright agent
-                    history = self.fetch_history()
+                    history = self.fetch_history()  # We need to fix history implementation for multiple agents in parallel as well!
                     action = self.fetch_action(
                         cleaned_dom=cleaned_dom.to_dict(),
                         user_prompt=task,
@@ -149,32 +149,33 @@ class BFS(BaseEngine):
                         self.db_funcs.push_to_episodic_memory(
                             session_id=self.session_id,
                             action=str(action),
-                            page_url=str(self.page.url),
+                            page_url=str(page.url),
                         )
-                    value, fail_reason = await perform_action(self.page, action)
+                    value, fail_reason = await perform_action(page, action)
                     if value is None:
                         # This means the action failed due to whatever reason. The best bet is to
                         # pass in the latest cleaned_dom and get the output again
-                        cleaned_dom = await self.extract_dom()
+                        cleaned_dom = await self.extract_dom(page)
                         output = await self.retry_perform_action(
                             cleaned_dom=cleaned_dom.to_dict(),
                             prompt=task,
                             history=history,
                             fail_reason=fail_reason,
+                            page=page,
                         )
                         if output:
-                            await self.save_trace()
-                            await self.shut_down()
+                            await self.save_trace(context)
+                            await self.shut_down(context, browser)
                             return output
                     # Picking the clean DOM now
-                    cleaned_dom = await self.extract_dom()
+                    cleaned_dom = await self.extract_dom(page)
 
                     self.log.warning(
                         "The maximum depth for the current task has been reached, generating a new plan to achieve this task"
                     )
         finally:
-            await self.save_trace()
-            await self.shut_down()
+            await self.save_trace(context)
+            await self.shut_down(context, browser)
 
     async def run(
         self,

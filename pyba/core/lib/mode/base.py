@@ -93,17 +93,22 @@ class BaseEngine:
         """
         pass
 
-    async def extract_dom(self):
+    async def extract_dom(self, page=None):
         """
         Extracts the relevant fields from the DOM of the current page and returns
-        the DOM dataclass.
+        the DOM dataclass. This is backwards compatible with Engine and DFS while
+        it supports BFS by pinning the page down.
+
+        Args:
+            `page`: Optional argument to pin the page for removing self dependency
         """
-        self.mouse = MouseMovements(page=self.page)
-        self.scroll_manager = ScrollMovements(page=self.page)
+        page_obj = page if page is not None else self.page
+        self.mouse = MouseMovements(page=page_obj)
+        self.scroll_manager = ScrollMovements(page=page_obj)
 
         try:
-            await self.wait_till_loaded()
-            page_html = await self.page.content()
+            await self.wait_till_loaded(page_obj)
+            page_html = await page_obj.content()
         except Exception:
             # We might get a "Unable to retrieve content because the page is navigating and changing the content" exception
             # This might happen because page.content() will start and issue an evaluate, while the page is reloading and making network calls
@@ -112,17 +117,17 @@ class BaseEngine:
 
             # We might choose to wait for networkidle -> https://github.com/microsoft/playwright/issues/22897
             try:
-                await self.wait_till_loaded()
+                await self.wait_till_loaded(page_obj)
             except Exception:
                 # If networkidle never happens, then we'll try a direct wait
                 await asyncio.sleep(3)
 
-            page_html = await self.page.content()
+            page_html = await page_obj.content()
 
         try:
-            body_text = await self.page.inner_text("body")
-            elements = await self.page.query_selector_all(self.combined_selector)
-            base_url = self.page.url
+            body_text = await page_obj.inner_text("body")
+            elements = await page_obj.query_selector_all(self.combined_selector)
+            base_url = page_obj.url
         except TimeoutError:
             self.log.error("The page has not loaded within the defined timeout, going back")
             return None
@@ -135,7 +140,7 @@ class BaseEngine:
             body_text=body_text,
             elements=elements,
             base_url=base_url,
-            page=self.page,
+            page=page_obj,
         )
 
         # Perform an all out extraction
@@ -172,27 +177,41 @@ class BaseEngine:
         else:
             return None
 
-    async def save_trace(self):
+    async def save_trace(self, context=None):
         """
-        Endpoint to save the trace if required
+        Endpoint to save the trace if required. This is backwards compatible for Engine
+        and DFS while is supports BFS by removing the self dependency
+
+        Args:
+            `context`: Optional argument to pin the browser context down
         """
+        context_obj = context if context is not None else self.context
         if self.tracing:
             trace_path = self.trace_dir / f"{self.session_id}_trace.zip"
             try:
-                await self.context.tracing.stop(path=str(trace_path))
+                await context_obj.tracing.stop(path=str(trace_path))
                 self.log.info(f"This is the tracepath: {trace_path}")
             except Exception:
                 # Abrupt browser closure
                 pass
 
-    async def shut_down(self):
+    async def shut_down(self, context=None, browser=None):
         """
         Function to cleanly close the existing browsers and contexts. This also saves
         the traces in the provided trace_dir by the user or the default.
+
+        This is backwards compatible for Engine and DFS while is supports BFS by
+        removing the self dependency
+
+        Args:
+            `context`: Optional argument to pin the specific brower context down
+            `browser`: Optional argument to pin the browser instance down
         """
+        context_obj = context if context is not None else self.context
+        browser_obj = browser if browser is not None else self.browser
         try:
-            await self.context.close()
-            await self.browser.close()
+            await context_obj.close()
+            await browser_obj.close()
         except Exception:
             # Context/browser have already been closed
             pass
@@ -214,16 +233,20 @@ class BaseEngine:
         self.log.info(f"Created the script at: {output_path}")
         return True
 
-    async def get_trace_context(self):
+    async def get_trace_context(self, browser_instance=None):
         """
-        Helper function to intialise the context using the Tracing class
+        Helper function to intialise the context using the Tracing class. This is backwards compatible
+        for Engine and DFS while is supports BFS by removing the self dependency
+
+        Args:
+            `browser_instance`: Optional argument to pin the browser session down
 
         Return:
             `context`: The playwright to be used for automation
         """
 
         tracing = Tracing(
-            browser_instance=self.browser,
+            browser_instance=browser_instance if browser_instance is not None else self.browser,
             session_id=self.session_id,
             enable_tracing=self.tracing,
             trace_save_directory=self.trace_save_directory,
@@ -234,9 +257,13 @@ class BaseEngine:
 
         return context
 
-    async def attempt_login(self) -> bool:
+    async def attempt_login(self, page=None) -> bool:
         """
-        Helper function to attempt and perform a login to chosen sites
+        Helper function to attempt and perform a login to chosen sites. This is backwards compatible
+        with Engine and DFS while it supports BFS by pinning the page down.
+
+        Args:
+            `page`: Optional argument to pin the page for removing self dependency
 
         Returns:
             `flag`: A boolean to indicate the success or failure for the attempt
@@ -250,16 +277,16 @@ class BaseEngine:
         """
 
         flag = False
-
+        page_obj = page if page is not None else self.page
         if self.automated_login_engine_classes:
             for engine in self.automated_login_engine_classes:
-                engine_instance = engine(self.page)
+                engine_instance = engine(page_obj)
                 self.log.info(f"Testing for {engine_instance.engine_name} login engine")
                 # Instead of just running it and checking inside, we can have a simple lookup list
                 out_flag = await engine_instance.run()
                 if out_flag:
                     # This means it was True and we successfully logged in
-                    self.log.success(f"Logged in successfully through the {self.page.url} link")
+                    self.log.success(f"Logged in successfully through the {page_obj.url} link")
                     flag = True
                     break
                 elif out_flag is None:
@@ -267,13 +294,17 @@ class BaseEngine:
                     pass
                 else:
                     # This means it failed
-                    self.log.warning(f"Login attempted at {self.page.url} but failed!")
+                    self.log.warning(f"Login attempted at {page_obj.url} but failed!")
 
         return flag
 
-    async def successful_login_clean_and_get_dom(self):
+    async def successful_login_clean_and_get_dom(self, page=None):
         """
-        Helper function to obtain the cleaned_dom after a successful login
+        Helper function to obtain the cleaned_dom after a successful login. This is backwards compatible
+        with Engine and DFS while it supports BFS by pinning the page down.
+
+        Args:
+            `page`: Optional argument to pin the page for removing self dependency
 
         Functionality:
 
@@ -281,27 +312,28 @@ class BaseEngine:
         for each run)
         - Gets the latest page contents and parses the DOM using the extraction engine
         """
+        page_obj = page if page is not None else self.page
 
         self.automated_login_engine_classes = None
-        self.mouse = MouseMovements(page=self.page)
-        self.scroll_manager = ScrollMovements(page=self.page)
+        self.mouse = MouseMovements(page=page_obj)
+        self.scroll_manager = ScrollMovements(page=page_obj)
         # Update the DOM after a login
         try:
             await self.wait_till_loaded()
         except Exception:
             await asyncio.sleep(2)
 
-        page_html = await self.page.content()
-        body_text = await self.page.inner_text("body")
-        elements = await self.page.query_selector_all(self.combined_selector)
-        base_url = self.page.url
+        page_html = await page_obj.content()
+        body_text = await page_obj.inner_text("body")
+        elements = await page_obj.query_selector_all(self.combined_selector)
+        base_url = page_obj.url
 
         extraction_engine = ExtractionEngines(
             html=page_html,
             body_text=body_text,
             elements=elements,
             base_url=base_url,
-            page=self.page,
+            page=page_obj,
         )
         cleaned_dom = await extraction_engine.extract_all()
         cleaned_dom.current_url = base_url
@@ -376,9 +408,12 @@ class BaseEngine:
         history: str,
         fail_reason: str,
         extraction_format: BaseModel = None,
+        page=None,
     ) -> Optional[str]:
         """
-        helper function to retry the action after a failure
+        helper function to retry the action after a failure. This is backwards compatible with Engine
+        and DFS while it supports BFS by pinning the page down.
+
 
         Args:
             `cleaned_dom`: The new cleaned DOM for the current page
@@ -386,6 +421,7 @@ class BaseEngine:
             `history`: The past action that failed
             `fail_reason`: Reason for the failure for the action
             `extraction_format`: In case the current page needs extraction as well
+            `page`: Optional argument to pin the page down to remove self dependency
 
         This function will retry the action based on the current DOM and the past action. This should
         most likely fix the issue of a stale element or a hallucinated component or something.
@@ -394,6 +430,7 @@ class BaseEngine:
             `output`: If the action was successful and automation is completed
             `None`: The usual case where an action is performed
         """
+        page_obj = page if page is not None else self.page
 
         self.log.warning("The previous action failed, checking the latest page")
         action = self.playwright_agent.process_action(
@@ -415,21 +452,26 @@ class BaseEngine:
             self.db_funcs.push_to_episodic_memory(
                 session_id=self.session_id,
                 action=str(action),
-                page_url=str(self.page.url),
+                page_url=str(page_obj.url),
             )
 
-        await perform_action(self.page, action)
+        await perform_action(page_obj, action)
 
-    async def wait_till_loaded(self):
+    async def wait_till_loaded(self, page=None):
         """
-        Helper function to wait till load state while applying
-        random jitters (if specified by the user)
+        Helper function to wait till load state while applying random jitters
+        (if specified by the user). This is backwards compatible with Engine
+        and DFS while it supports BFS by pinning the page down.
+
+        Args:
+            `page`: Optional argument to pin the page for removing self dependency
         """
+        page_obj = page if page is not None else self.page
         if self.use_random_flag:
             await asyncio.gather(
-                self.page.wait_for_load_state("networkidle", timeout=1000),
+                page_obj.wait_for_load_state("networkidle", timeout=1000),
                 self.mouse.random_movement(),
                 self.scroll_manager.apply_scroll_jitters(),
             )  # Wait for a second for network calls to stablize
         else:
-            (await self.page.wait_for_load_state("networkidle", timeout=1000),)
+            (await page_obj.wait_for_load_state("networkidle", timeout=1000),)
