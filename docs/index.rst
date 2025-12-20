@@ -30,7 +30,7 @@ Features
 * CLI support for running in ``Terminal`` without a script
 * ``Exponential backoff`` and retry for API errors to make the automation more robust
 
-The current software version is ``0.2.9`` which is NOT fully ready and under heavy developement. The first release is scheduled for ``Dec 2025``!
+The current software version is ``0.3.0`` which is NOT fully ready and under heavy developement. The first release is scheduled for ``Dec 2025``!
 
 .. toctree::
    :maxdepth: 2
