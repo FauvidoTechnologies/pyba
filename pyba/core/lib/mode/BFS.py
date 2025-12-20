@@ -114,7 +114,7 @@ class BFS(BaseEngine):
             async with Stealth().use_async(async_playwright()) as p:
                 browser = await p.chromium.launch(headless=self.headless_mode)
 
-                context = await self.get_trace_context(browser_instance = browser)
+                context = await self.get_trace_context(browser_instance=browser)
                 page = await context.new_page()
                 cleaned_dom = await initial_page_setup(page)
 
@@ -127,7 +127,7 @@ class BFS(BaseEngine):
                         cleaned_dom = await self.successful_login_clean_and_get_dom()
                         continue
                     # Get an actionable element from the playwright agent
-                    history = self.fetch_history()      # We need to fix history implementation for multiple agents in parallel as well!
+                    history = self.fetch_history()  # We need to fix history implementation for multiple agents in parallel as well!
                     action = self.fetch_action(
                         cleaned_dom=cleaned_dom.to_dict(),
                         user_prompt=task,
@@ -161,7 +161,7 @@ class BFS(BaseEngine):
                             prompt=task,
                             history=history,
                             fail_reason=fail_reason,
-                            page=page
+                            page=page,
                         )
                         if output:
                             await self.save_trace(context)
@@ -169,7 +169,7 @@ class BFS(BaseEngine):
                             return output
                     # Picking the clean DOM now
                     cleaned_dom = await self.extract_dom(page)
-                    
+
                 self.log.warning(
                     "The maximum depth for the current task has been reached, generating a new plan to achieve this task"
                 )
