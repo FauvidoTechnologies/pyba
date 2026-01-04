@@ -1,9 +1,9 @@
 import json
 import time
-from typing import Optional
+from typing import Optional, List
 
 from pyba.database.database import Database
-from pyba.database.models import EpisodicMemory, SemanticMemory
+from pyba.database.models import EpisodicMemory, SemanticMemory, BFSEpisodicMemory
 
 
 class DatabaseFunctions:
@@ -59,9 +59,9 @@ class DatabaseFunctions:
         and updates/inserts the record.
 
         Args:
-            session_id: The unique session ID.
-            action: The action string to be pushed.
-            page_url: The page URL string to be pushed.
+            `session_id`: The unique session ID.
+            `action`: The action string to be pushed.
+            `page_url`: The page URL string to be pushed.
 
         Returns:
             True if the operation was successful, otherwise False.
@@ -121,6 +121,123 @@ class DatabaseFunctions:
         try:
             memory = self.session.get(EpisodicMemory, session_id)
             return memory
+        except Exception:
+            return None
+
+    def push_to_bfs_episodic_memory(
+        self, session_id: str, context_id: str, action: str, page_url: str
+    ) -> bool:
+        """
+        Pushes a new action and page_url for a specific BFS context.
+        Creates a new record if the (session_id, context_id) pair doesn't exist,
+        otherwise appends to the existing record.
+
+        Note: This function uses a composite primary key of (session_id, context_id) to allow multiple
+        browser windows per session.
+
+        Args:
+            `session_id`: The parent session ID for the BFS run
+            `context_id`: The unique context ID for this browser window
+            `action`: The action string to be pushed
+            `page_url`: The page URL string to be pushed
+
+        Returns:
+            True if the operation was successful, otherwise False.
+        """
+        if not hasattr(self, "session"):
+            return False
+
+        try:
+            memory_record = (
+                self.session.query(BFSEpisodicMemory)
+                .filter(
+                    BFSEpisodicMemory.session_id == session_id,
+                    BFSEpisodicMemory.context_id == context_id,
+                )
+                .one_or_none()
+            )
+
+            if memory_record:
+                try:
+                    actions_list = json.loads(memory_record.actions)
+                    page_url_list = json.loads(memory_record.page_url)
+                except json.JSONDecodeError:
+                    actions_list = []
+                    page_url_list = []
+
+                actions_list.append(action)
+                page_url_list.append(page_url)
+
+                memory_record.actions = json.dumps(actions_list)
+                memory_record.page_url = json.dumps(page_url_list)
+
+            else:
+                new_memory = BFSEpisodicMemory(
+                    session_id=session_id,
+                    context_id=context_id,
+                    actions=json.dumps([action]),
+                    page_url=json.dumps([page_url]),
+                )
+                self.session.add(new_memory)
+
+            return self.submit_query_with_retry()
+
+        except Exception:
+            self.session.rollback()
+            return False
+        finally:
+            self.session.close()
+
+    def get_bfs_episodic_memory_by_context(
+        self, session_id: str, context_id: str
+    ) -> Optional[BFSEpisodicMemory]:
+        """
+        Retrieves a specific BFS context's episodic memory. Needs both the session_id and the context_id to retrieve the correct record.
+
+        Args:
+            `session_id`: The parent session ID
+            `context_id`: The specific context ID to retrieve
+
+        Returns:
+            A BFSEpisodicMemory object if found, else None
+        """
+        if not hasattr(self, "session"):
+            return None
+        try:
+            memory = (
+                self.session.query(BFSEpisodicMemory)
+                .filter(
+                    BFSEpisodicMemory.session_id == session_id,
+                    BFSEpisodicMemory.context_id == context_id,
+                )
+                .one_or_none()
+            )
+            return memory
+        except Exception:
+            return None
+
+    def get_all_bfs_contexts_by_session(
+        self, session_id: str
+    ) -> Optional[List[BFSEpisodicMemory]]:
+        """
+        Retrieves all BFS context records for a given session.
+
+        Args:
+            `session_id`: The parent session ID to query for
+
+        Returns:
+            A list of BFSEpisodicMemory objects for all contexts in the session,
+            or None if no records found or error occurred.
+        """
+        if not hasattr(self, "session"):
+            return None
+        try:
+            memories = (
+                self.session.query(BFSEpisodicMemory)
+                .filter(BFSEpisodicMemory.session_id == session_id)
+                .all()
+            )
+            return memories if memories else None
         except Exception:
             return None
 

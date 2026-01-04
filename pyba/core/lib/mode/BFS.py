@@ -145,11 +145,12 @@ class BFS(BaseEngine):
                         return output
                     # If not, store the action and perform the action
                     self.log.action(action)
-                    if self.db_funcs:
-                        self.db_funcs.push_to_episodic_memory(
+                    if self.db_funcs:  # We need to log seperately for differnet context IDs
+                        self.db_funcs.push_to_bfs_episodic_memory(
                             session_id=self.session_id,
                             action=str(action),
                             page_url=str(page.url),
+                            context_id=context_id,
                         )
                     value, fail_reason = await perform_action(page, action)
                     if value is None:
