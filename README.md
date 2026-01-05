@@ -1,8 +1,11 @@
-<h1 align="center">PyBA — Python Browser Automation</h1>
+<h1 align="center">PyBA</h1>
 
 <p align="center">
-  <strong>No-code, LLM-powered, reproducible browser automation in Python.</strong><br>
-  Visit any website, navigate autonomously, fill forms, extract data, perform OSINT, automate testing, and run multi-step workflows — all from one natural-language prompt.
+  <strong>Tell the AI what to do once. Get a Python script you can run forever.</strong>
+</p>
+
+<p align="center">
+  PyBA uses LLMs to autonomously navigate any website, then exports the session as a standalone Playwright script - no API costs on repeat runs.
 </p>
 
 <p align="center">
@@ -17,146 +20,208 @@
 
 <p align="center">
   <a href="https://pypi.org/project/py-browser-automation/"><b>PyPI</b></a> •
-  <a href="https://openhub.net/p/pyba"><b>CodeHub</b></a> •
-  <a href="https://pyba.readthedocs.io/"><b>Documentation</b></a>
+  <a href="https://pyba.readthedocs.io/"><b>Documentation</b></a> •
+  <a href="https://openhub.net/p/pyba"><b>OpenHub</b></a>
 </p>
 
->[!NOTE]
->pyba is currently at version 0.2.9. This is not stable and I will be updating this a lot. The first major release is scheduled for 18th December 2025.
-
 ---
 
-## Core Modes
+## The Problem with AI Browser Agents
 
-PyBA provides three execution modes, each optimized for a different style of reasoning:
+Every AI browser agent has the same issue: **you pay for every single run.**
 
-- `Normal Mode`
-  Deterministic navigation using exact instructions.  
-  Example:  
-  `"Open Instagram, go to my DMs, and tell XYZ I'll be late for the party."`
+- Run it 100 times? Pay for 100 LLM calls.
+- Same task every day? Pay every day.
+- The AI figures out the same clicks over and over.
 
-- `BFS Mode`
-  Breadth-first reasoning for tasks with multiple possible success paths.  
-  Example:  
-  `"Map all possible online identities associated with the username 'vect0rshade'."`
+**PyBA is different.** Let the AI figure it out once, then export a deterministic script you own forever.
 
-- `DFS Mode`
-  Deep, recursive exploration for investigative or research-type tasks.  
-  Example:  
-  `"Analyze this user’s GitHub activity and infer their technical background."`
+```python
+from pyba import Engine
 
----
+engine = Engine(openai_api_key="sk-...")
 
-## Key Features
+# Step 1: AI navigates autonomously
+engine.sync_run(
+    prompt="Go to Hacker News, click the top story, extract all comments"
+)
 
-### Extraction
+# Step 2: Export as a standalone Playwright script
+engine.generate_code(output_path="hacker_news_scraper.py")
+```
 
-Extracts the relevant data **during** automation in a separate thread and logs it.
-The format can be specified using pydantic models.
-
->The extracted data is stored in a separate table as memory
-
-### Trace zip generation
-
-Automatic creation of Playwright trace files for full reproducibility in traceviewer.
-
-### Built-in logging & dependency management
-
-Every step is logged and optionally stored in a local/server database.
-
-### Automatic script generation
-
-Successful runs can be exported as standalone Python Playwright scripts.
-
-### Local or remote databases
-
-Persist every action, observation, and browser state for auditing or replaying runs.
-
-### Stealth mode & anti-fingerprinting presets
-
-Configurable behavior for bypassing common bot-detection heuristics.
-
-### Quick login to platforms
-
-Fast social-media authentication using environment-variable credentials, without ever exposing them to the LLM.
-
-### Thread-safe
-
-Suitable for parallel multi-task workflows.
-
-#### Specialized extractors for certain platforms
-
-(e.g., YouTube metadata, structured outputs, etc.)
-
-**For detailed examples of each feature, refer to the `automation_eval/` directory.**
-
----
-
-## Philosophy
-
-PyBA originated from building a fully automated intelligence/OSINT platform designed to replicate everything a human analyst can do in a browser - but with reproducibility and speed.
-
-Goals include:
-
-- Integrating LLM cognition directly into browser operations  
-- Navigating complex websites like a human  
-- Avoiding bot-detection halts  
-- Providing standardized logs and replayability  
-- Scaling from simple automations to deep investigative workflows
+Now run `python hacker_news_scraper.py` forever. No AI. No API costs. Just Playwright.
 
 ---
 
 ## Installation
 
-Install via PyPI:
-
 ```sh
 pip install py-browser-automation
 ```
 
-Or install from source:
+---
 
-```sh
+## What Can You Do?
 
-git clone https://github.com/FauvidoTechnologies/PyBrowserAutomation
-cd PyBrowserAutomation
-pip install .
+### Automate Repetitive Browser Tasks
+```python
+engine.sync_run(
+    prompt="Login to my bank, download this month's statement as PDF",
+    automated_login_sites=["swissbank"]
+)
+engine.generate_code("download_statement.py")
 ```
 
-## Quickstart
-
-(See full documentation at: https://pyba.readthedocs.io/)
-
-### 1. Initialize Engine
-
-You can use OpenAI, VertexAI, or Gemini as the reasoning backend.
-
-Example (OpenAI):
-
+### OSINT & Reconnaissance
 ```python
-from pyba import Engine
+from pyba import DFS
 
-engine = Engine(openai_api_key="")
-output = engine.sync_run(
-    prompt="open my instagram and tell me who posted what",
+dfs = DFS(openai_api_key="sk-...")
+dfs.sync_run(
+    prompt="Find all social media accounts linked to username 'targetuser123'"
+)
+```
+
+### Structured Data Extraction
+```python
+from pydantic import BaseModel
+
+class Product(BaseModel):
+    name: str
+    price: float
+    rating: float
+
+engine.sync_run(
+    prompt="Scrape all products from the first 3 pages",
+    extraction_format=Product
+)
+# Data is extracted DURING navigation, stored in your database
+```
+
+### Authenticated Workflows
+```python
+engine.sync_run(
+    prompt="Go to my Instagram DMs and message john Paula 'Running 10 mins late'",
     automated_login_sites=["instagram"]
 )
-print(output)
+# Credentials come from env vars - never exposed to the LLM
 ```
-
-Or generate automation code:
-
-```py
-output = engine.sync_run(
-    prompt="visit the Wikipedia page for quantum mechanics, click the first hyperlink repeatedly until you reach Philosophy, and count the steps"
-)
-
-engine.generate_code(output_path="/tmp/script.py")
-print(output)
-```
-
-Explore more examples in `automation_eval/`.
 
 ---
 
-If the project has helped you, consider giving it a star 🌟!
+## Three Exploration Modes
+
+| Mode | Use Case | Example |
+|------|----------|---------|
+| **Normal** | Direct task execution | "Fill out this form and submit" |
+| **DFS** | Deep investigation | "Analyze this GitHub user's contribution patterns" |
+| **BFS** | Wide discovery | "Map all pages linked from this homepage" |
+
+```python
+from pyba import Engine, DFS, BFS
+
+# Normal mode (default)
+engine = Engine(openai_api_key="...")
+
+# Deep-first exploration
+dfs = DFS(openai_api_key="...")
+
+# Breadth-first discovery
+bfs = BFS(openai_api_key="...")
+```
+
+---
+
+## Key Features
+
+### Code Generation
+Export any successful run as a standalone Python script. Run it forever without AI.
+
+### Trace Files
+Every run generates a Playwright trace.zip — replay exactly what happened in [Trace Viewer](https://trace.playwright.dev/).
+
+### Stealth Mode
+Anti-fingerprinting, random mouse movements, human-like delays. Bypass common bot detection.
+
+### Multi-Provider
+Works with OpenAI, Google VertexAI, or Gemini.
+
+### Database Logging
+Store every action in SQLite, PostgreSQL, or MySQL. Audit trails and replay capability.
+
+### Platform Logins
+Built-in login handlers for Instagram, Gmail, Facebook. Credentials stay in env vars.
+
+---
+
+## Quick Examples
+
+### Extract YouTube Video Metadata
+```python
+engine.sync_run(
+    prompt="Go to this YouTube video and extract: title, view count, like count, channel name, upload date"
+)
+```
+
+### Fill a Multi-Page Form
+```python
+engine.sync_run(
+    prompt="Fill out the job application: Name='John Doe', Email='john@email.com', upload resume from ~/resume.pdf, submit"
+)
+engine.generate_code("job_application.py")  # Replay anytime
+```
+
+### Research a Company
+```python
+dfs = DFS(openai_api_key="...")
+dfs.sync_run(
+    prompt="Find the leadership team, recent news, and funding history for Acme Corp"
+)
+```
+
+---
+
+
+---
+
+## Configuration
+
+```python
+from pyba import Engine, Database
+
+# With database logging
+db = Database(engine="sqlite", name="runs.db")
+
+engine = Engine(
+    openai_api_key="sk-...",
+    headless=False,           # Watch it work
+    enable_tracing=True,      # Generate trace.zip
+    max_depth=20,             # Max actions per run
+    database=db               # Log everything
+)
+```
+
+See [full configuration options](https://pyba.readthedocs.io/) in the docs.
+
+---
+
+## Origin
+
+PyBA was built for automated intelligence and OSINT — replicating everything a human analyst can do in a browser, but with reproducibility and speed.
+
+If you're doing security research, competitive intelligence, or just automating tedious browser tasks, this is for you.
+
+---
+
+## Status
+
+> **v0.3.0** - Active development. First stable release: December 18, 2025.
+
+Breaking changes may occur. Pin your version in production.
+
+---
+
+<p align="center">
+  <b>If PyBA saved you time, consider giving it a ⭐</b>
+</p>
