@@ -1,402 +1,319 @@
-PyBA — CLI Usage Guide
-######################
+Command Line Interface
+======================
 
-This document is a complete, step-by-step usage file for the ``pyba`` command line interface. It explains all flags, modes, environment variables and gives worked examples that split the large monolithic command into sane, composable steps.
+PyBA includes a CLI for running automations directly from your terminal.
 
----
-
-.. contents:: Table of contents
-   :depth: 2
+.. contents::
    :local:
+   :depth: 2
 
----
+Installation
+------------
 
-1. Quickstart
-=============
-
-A minimal example to run a single automation task **without** logging to a database (use ``normal`` mode):
-
-.. code-block:: bash
-
-    # (optional) install the package first
-    pip install .
-
-    # Run in normal mode with a simple task
-    pyba normal -t "go to example.com and find the contact page" --openai-api-key "your-key"
-
-If you want to **store logs and interactions** in a database (to later generate scripts, analyze runs, or reuse recordings) use ``database`` mode instead — see examples below.
-
----
-
-2. Installation
-===============
-
-You can install the project locally (editable) for development, or install the package to use the CLI directly.
+The CLI is installed automatically with PyBA:
 
 .. code-block:: bash
 
-    # editable install (dev)
-    git clone https://github.com/fauvidoTechnologies/PyBrowserAutomation.git && cd PyBrowserAutomation
-    pip install -e .
+   pip install py-browser-automation
 
-    # or normal install
-    pip install pyba  # if published
+   # Verify installation
+   pyba --version
 
-    # or install with pipx for an isolated CLI install
-    pipx install .
+Quick Start
+-----------
 
-After installation, the ``pyba`` entrypoint will be available on your PATH on Unix-like systems and macOS.
+Run a simple task:
 
-.. admonition:: Note
-   :class: note
+.. code-block:: bash
 
-   Tests were performed on Linux and macOS; Windows behavior may differ slightly.
+   pyba normal -t "go to example.com and find the contact page" --openai-api-key "sk-..."
 
----
+Modes
+-----
 
-3. Modes
-========
-
-``pyba`` has two main modes of operation. They choose how the CLI behaves regarding logging and clarifications.
+The CLI has two main modes:
 
 normal
-------
+^^^^^^
 
-* ``pyba normal`` — Runs automations but **does not store logs** in a database.
-* Use this mode for quick ad-hoc runs or scraping where you don't need persistence.
-
-Example:
+Quick ad-hoc runs without database logging:
 
 .. code-block:: bash
 
-    pyba normal -t "search for cheap headphones on amazon.in" --openai-api-key ""
-
-.. note::
-   You can use the ``normal`` subparser with two modes using the ``--mode`` command for exploratory analysis. Will be explained later.
+   pyba normal -t "search for cheap headphones on amazon.in" --openai-api-key "sk-..."
 
 database
+^^^^^^^^
+
+Stores logs in a database for auditing and code generation:
+
+.. code-block:: bash
+
+   pyba database \
+     -e sqlite \
+     -n /tmp/pyba.db \
+     -t "search amazon for birthday gifts" \
+     --openai-api-key "sk-..."
+
+Global Flags
+------------
+
+These flags work with both modes:
+
+LLM Provider
+^^^^^^^^^^^^
+
+.. code-block:: bash
+
+   # OpenAI
+   --openai-api-key "sk-..."
+
+   # Google Gemini
+   --gemini-api-key "your-key"
+
+   # VertexAI
+   --vertexai-project-id "project-id" --vertexai-server-location "us-central1"
+
+Task
+^^^^
+
+.. code-block:: bash
+
+   -t, --task "Your natural language task"
+
+Browser Options
+^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+   --headless          # Run without visible browser
+   --handle-deps       # Auto-install Playwright dependencies
+
+Logging & Tracing
+^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+   -v                  # Verbose logging
+   --enable-tracing    # Generate trace.zip files
+   --trace-save-dir    # Directory for trace files
+
+Stealth
+^^^^^^^
+
+.. code-block:: bash
+
+   -r                  # Enable random mouse/scroll movements
+
+Automated Login
+^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+   -L instagram -L facebook    # Login to specified sites
+
+Exploration Modes
+^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+   --op-mode BFS       # Breadth-first search
+   --op-mode DFS       # Depth-first search
+   --op-mode Normal    # Default mode
+
+   --max-depth 10      # Actions per plan (DFS/BFS)
+   --max-breadth 5     # Number of plans (BFS) or retries (DFS)
+
+Database Mode Flags
+-------------------
+
+These flags are specific to ``pyba database``:
+
+Engine Selection
+^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+   -e, --engine sqlite|mysql|postgres
+
+Database Connection
+^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+   -n, --name /path/to/db.db    # SQLite: file path, Others: database name
+   -u, --username user          # MySQL/PostgreSQL
+   -p, --password pass          # MySQL/PostgreSQL
+   -H, --host-name localhost    # MySQL/PostgreSQL
+   -P, --port 5432              # MySQL/PostgreSQL
+   --ssl-mode disabled|required # PostgreSQL only
+
+Code Generation
+^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+   --generate-code                    # Enable script generation
+   --code-output-path /tmp/script.py  # Where to save the script
+
+Examples
 --------
 
-* ``pyba database`` — Stores logs and runtime traces to the configured database engine; useful for building scripts from run-history and for auditability.
-* When using ``database`` mode you **must** specify the database engine and name/path using ``-e`` and ``-n`` respectively.
-
-Example (SQLite):
+Simple Search (Normal Mode)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
-    pyba database -e sqlite -n /tmp/pyba.db -t "search gifts on amazon" --openai-api-key ""
+   pyba normal \
+     -t "find the CSE contact page for IIT Madras" \
+     --openai-api-key "sk-..." \
+     -v
 
----
-
-4. Global / base flags (explanations)
-=====================================
-
-Below are flags defined on the ``base_parser`` (available to both ``normal`` and ``database`` modes unless otherwise noted):
-
-* ``-V``, ``--version``
-
-  * Prints the software version and exits.
-
-* ``--openai-api-key <KEY>``
-
-  * Use this to run automations with OpenAI models.
-  * If provided, the tool will attempt to use OpenAI for LLM-driven decisions.
-
-* ``--vertexai-project-id <PROJECT_ID>``
-
-  * Use Vertex AI's Gemini models. Must be a valid GCP project id.
-  * Requires properly configured VertexAI credentials on the machine.
-
-* ``--vertexai-server-location <LOCATION>``
-
-  * The region for VertexAI model serving (for example: ``us-central1``).
-
-* ``--gemini-api-key``
-  
-  * Use this to run automations with Gemini-2.5-pro without VertexAI.
-  * If provided, the tool will use Gemini for LLM-driven decisions.
-
-* ``--headless``
-
-  * Run playwright in headless mode (no GUI). Common for servers/containers.
-
-* ``--handle-deps``
-
-  * Automatically install or manage Playwright/browser dependencies as required.
-  * Useful to ensure required browser binaries are present before starting automation.
-
-* ``-v``
-
-  * **Verbose logger**; prints live updates of what the automation is doing.
-  * Very useful while debugging or when you want a play-by-play in the terminal.
-
-* ``-r``
-
-  * **Mouse and scroll randomisation**; enabled random mouse and scroll movements during wait times
-  * Can be used for additional stealth
-
-* ``--enable-tracing``
-
-  * Enables Playwright tracing (records actions/network) and produces a ``.zip`` trace file compatible with Playwright's Trace Viewer.
-
-* ``--trace-save-dir <DIR>``
-
-  * Directory to save generated trace ``.zip`` files when ``--enable-tracing`` is used.
-
-* ``-t``, ``--task "<TASK STRING>"``
-
-  * The natural-language automation task to execute, e.g. ``-t "search amazon for gifts"``.
-
-* ``-L``, ``--login-sites <SITE>``
-
-  * Add this flag *repeatedly* to enable automated login to pre-configured sites (the tool prints which sites are enabled).
-  * Example: ``-L instagram -L amazon``.
-  * **NOTE:** automated login requires the corresponding credentials to be set in environment variables — see section 6.
-
-* ``--op-mode``, ``--op-mode (BFS|DFS|Normal)``
-  
-  * Add this flag to define an exploratory case under the ``normal`` or ``database`` modes.
-  * These will run pyba more like a ``planner->executor->analyst`` and it will do majority of the heavy lifting for your OSINT work.
-  * To choose between the two modes, read the documentation for the ``modes``
-
-* ``--max-depth``, ``--max-depth 5``
-  
-  * This flag specifies the maximum number of action to take under each plan in the exploratory cases
-  * Defaults at 5
-
-* ``--max-breadth``, ``--max-breadth 10``
-  
-  * This flag specifies the maximum number of plans to consider executing
-  * Defaults at 5
-
----
-
-5. Database-mode-only flags
-===========================
-
-When you run ``pyba database``, additional flags are required/available for database configuration:
-
-* ``-e``, ``--engine <engine>`` (required)
-
-  * The database engine to use. Allowed values: ``sqlite``, ``mysql``, ``postgres``.
-
-* ``-n``, ``--name <name_or_path>`` (required)
-
-  * For SQLite: the **path** to the ``.db`` file (e.g. ``/tmp/pyba.db``).
-  * For MySQL/Postgres: the database **name** on the server.
-
-* ``-u``, ``--username <username>``
-
-  * Username for MySQL/Postgres servers.
-
-* ``-p``, ``--password <password>``
-
-  * Password for MySQL/Postgres servers (consider using env vars or a secrets manager instead of passing on the CLI).
-
-* ``-H``, ``--host-name <hostname_or_ip>``
-
-  * Hostname or IP of the DB server for MySQL/Postgres.
-
-* ``-P``, ``--port <port>``
-
-  * Port number of the DB server for MySQL/Postgres.
-
-* ``--ssl-mode <mode>``
-
-  * ``postgres`` SSL mode: ``disabled`` (default) or ``required``.
-
-* ``--generate-code``
-
-  * The ``script generation`` flag: If enabled, it generates a playwright script that correctly performs the same task as the model without using any more of your tokens (if you need to perform tasks repeatedly)
-
-* ``--code-output-path``
-
-  * The ``output path`` for the generated code. If not specified, this defaults to ``/tmp/pyba_script.py``
-
-.. tip::
-
-   The parser validates the engine value — if you pass an unsupported engine the CLI will exit with an error message.
-
----
-
-6. Environment variables & automated login
-==========================================
-
-Automated login is powered by a login engine that expects credentials to be available in the environment. The CLI prints a small confirmation for each login site enabled.
-
-Typical environment variables (example if you need to visit instagram and facebook):
+Database Mode with SQLite
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
-    export instagram_username=your_username
-    export instagram_password=supersecurepassword
+   pyba database \
+     -e sqlite \
+     -n /tmp/pyba.db \
+     -t "search amazon.in for birthday gifts under 5000 INR" \
+     --openai-api-key "sk-..." \
+     -v \
+     --enable-tracing \
+     --trace-save-dir /tmp/traces
 
-    export facebook_username=youandyouonly
-    export facebook_password=anotherpass
-
-Use your shell's secure mechanism to store API keys & passwords. Avoid placing secrets in shell history or in plain text files.
-
-If you run in CI, use the CI provider's secrets facility.
-
----
-
-7. Step-by-step examples
-===================================================
-
-Below is the monolithic command you provided, split into clear steps and explained.
-
-1) Install dependencies and ensure environment is ready
------------------------------------------------------
+Full Featured Run
+^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
-    # ensure playwright dependencies if you need the browsers
-    pyba normal --handle-deps
+   pyba database \
+     -e sqlite \
+     -n /tmp/pyba.db \
+     -t "go to Amazon India, find gifts under 5k, then message the list on Instagram" \
+     --vertexai-project-id "my-project" \
+     --vertexai-server-location "us-central1" \
+     --handle-deps \
+     --enable-tracing \
+     --trace-save-dir /tmp/traces \
+     -v \
+     -r \
+     -L instagram \
+     -L amazon \
+     --generate-code \
+     --code-output-path /tmp/automation.py
 
-2) Run the database mode (broken down and explained)
----------------------------------------------------
-
-.. code-block:: bash
-
-    # Step A: create or point to the sqlite DB file path
-    # (this will create the file if it doesn't exist and store run logs there)
-    export PYBA_DB_PATH=/tmp/pyba.db
-
-    # Step B: run the automation with clear flags
-    pyba database \
-      -e sqlite \
-      -n "$PYBA_DB_PATH" \
-      -t "go to Amazon India and look for gifts for my mom under 5k and text that to her on Instagram" \
-      --vertexai-project-id "test-id" \
-      --vertexai-server-location "test-location" \
-      --handle-deps \
-      --enable-tracing \
-      --trace-save-dir "/tmp/pyba_traces" \
-      -v \
-      -r \
-      -L instagram \
-      -L amazon \
-      --generate-code \
-      --code-output-path "/tmp/script.py"
-
-**What each flag does in this command:**
-
-* ``-e sqlite`` and ``-n /tmp/pyba.db`` — Use an SQLite file to log runs.
-* ``-t "..."`` — The automation instruction in plain English.
-* ``--vertexai-*`` — Use VertexAI (if you prefer OpenAI, set ``--openai-api-key`` instead).
-* ``--handle-deps`` — Ensure Playwright browsers/deps are installed before running.
-* ``--enable-tracing`` + ``--trace-save-dir`` — Record a trace zipped to ``/tmp/pyba_traces`` for replaying in Playwright Trace Viewer. It can be used to create a script using the SDK (support for CLI coming soon!)
-* ``-v`` — Print verbose logs to the console.
-* ``-r`` — Adds random mouse and scroll movements for stealth
-* ``-L instagram -L amazon`` — Instruct the login engine to attempt automated login for these sites (credentials must be set in env).
-* ``--generate-coode`` — Generate the automation script in sync playwright
-* ``--code-output-path`` — Save the automation script in the specified location at ``/tmp/script.py``
-
----
-
-8. Common tasks & troubleshooting
-=================================
-
-Check version
--------------
+PostgreSQL Database
+^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
-    pyba --version
-    # or
-    pyba -V
+   pyba database \
+     -e postgres \
+     -n pyba_db \
+     -u dbuser \
+     -p "dbpassword" \
+     -H 192.168.1.10 \
+     -P 5432 \
+     -t "your task here" \
+     --openai-api-key "sk-..."
 
-See help for top-level CLI
--------------------------
-
-.. code-block:: bash
-
-    pyba --help
-
-See help for a specific mode
----------------------------
-
-.. code-block:: bash
-
-    pyba normal --help
-    pyba database --help
-
-Database engine validation error
---------------------------------
-
-If you run ``pyba database`` with an engine not in ``[sqlite, mysql, postgres]``, the CLI will exit with:
-
-.. code-block::
-
-    Wrong database engine chosen. Please choose from sqlite, mysql or postgres
-
-Make sure you pass one of the allowed values.
-
-Trace files not appearing
--------------------------
-
-* If you used ``--enable-tracing`` but did not set ``--trace-save-dir``, the tool will use a default location which is the current directory (check logs printed when running with ``-v``).
-* Ensure Playwright tracing is supported by your installed playwright version.
-
-Headless runs failing on servers
---------------------------------
-
-* Use ``--handle-deps`` to ensure that required browser binaries are installed.
-* On Linux servers, you might need additional OS packages (fonts, libnss, etc.) for headless chrome/chromium.
-
-Credentials not being read
---------------------------
-
-* Confirm your environment variables are exported in the same shell/process that calls ``pyba``.
-
----
-
-9. Quick reference: common examples
-===================================
-
-**Normal mode — ad-hoc search (no DB):**
+Using Gemini
+^^^^^^^^^^^^
 
 .. code-block:: bash
 
-    pyba normal -t "find the CSE contact page for IIT Madras" --openai-api-key ""
+   export GEMINI_API_KEY="your-key"
 
-**Database mode — SQLite, tracing and verbose:**
+   pyba database \
+     -e sqlite \
+     -n /tmp/pyba.db \
+     -t "search for Python tutorials" \
+     --gemini-api-key "$GEMINI_API_KEY"
 
-.. code-block:: bash
-
-    pyba database -e sqlite -n /tmp/pyba.db \
-      -t "search amazon.in for birthday gifts under 5000 INR" \
-      -v -r --enable-tracing --trace-save-dir /tmp/pyba_traces --handle-deps \
-      --openai-api-key ""
-
-Or using gemini's API key:
-
-.. code-block:: bash
-  
-    pyba database -e sqlite -n /tmp/pyba.db \
-      -t "search amazon.in for birthday gifts for my mom" \
-      -v --enable-tracing --trace-save-dir /tmp/pyba_traces --handle-deps \
-      --gemini-api-key ""
-
-**Database mode — Postgres example (remote DB):**
+BFS Exploration Mode
+^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
-    pyba database -e postgres -n pyba_db -u dbuser -p "dbpass" -H 192.168.1.10 -P 5432 -t "task here" --openai-api-key ""
+   pyba database \
+     -e sqlite \
+     -n /tmp/pyba.db \
+     -t "find social media accounts for username 'johndoe123'" \
+     --openai-api-key "sk-..." \
+     --op-mode BFS \
+     --max-breadth 5 \
+     --max-depth 10
 
-**Use Gemini instead of OpenAI:**
+Environment Variables
+---------------------
+
+For security, use environment variables instead of command-line arguments:
 
 .. code-block:: bash
-    
-    export GEMINI_API_KEY=""
-    pyba database -e sqlite -n /tmp/pyba.db -t "task here" --gemini-api-key "$GEMINI_API_KEY"
 
----
+   # API Keys
+   export OPENAI_API_KEY="sk-..."
+   export GEMINI_API_KEY="..."
 
-Final notes and suggestions
-===========================
+   # Login credentials
+   export instagram_username="your_user"
+   export instagram_password="your_pass"
+   export facebook_username="your_email"
+   export facebook_password="your_pass"
 
-* Prefer **environment variables** for secrets — it's safer than passing credentials on the command line, as shown in the last example.
-* When debugging, always re-run with **-v (verbose)** and, if necessary, **--enable-tracing** so you can inspect the Playwright trace with Playwright Trace Viewer.
-* Keep **--handle-deps** handy for fresh environments or containers where browsers are not installed.
-* For additional stealth use the **-r** flag.
+Then reference them:
+
+.. code-block:: bash
+
+   pyba normal -t "your task" --openai-api-key "$OPENAI_API_KEY"
+
+Getting Help
+------------
+
+.. code-block:: bash
+
+   # General help
+   pyba --help
+
+   # Mode-specific help
+   pyba normal --help
+   pyba database --help
+
+   # Version
+   pyba --version
+   pyba -V
+
+Troubleshooting
+---------------
+
+Database Engine Error
+^^^^^^^^^^^^^^^^^^^^^
+
+If you see:
+
+.. code-block:: text
+
+   Wrong database engine chosen. Please choose from sqlite, mysql or postgres
+
+Make sure ``-e`` is one of: ``sqlite``, ``mysql``, ``postgres``
+
+Trace Files Not Appearing
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Check that ``--enable-tracing`` is set
+- Verify ``--trace-save-dir`` exists and is writable
+- Use ``-v`` to see where traces are saved
+
+Credentials Not Working
+^^^^^^^^^^^^^^^^^^^^^^^
+
+- Ensure environment variables are exported in the **same shell** running ``pyba``
+- Variable names must match exactly: ``instagram_username``, ``instagram_password``, etc.
+
+Headless Failing on Servers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Use ``--handle-deps`` to install required system libraries
+- On Linux, you may need: ``sudo apt install libnss3 libatk-bridge2.0-0 libcups2``

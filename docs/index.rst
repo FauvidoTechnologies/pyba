@@ -1,45 +1,75 @@
-.. pyba documentation master file, created by
-   sphinx-quickstart on Sat Oct 25 10:40:19 2025.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-pyba documentation
+pyba Documentation
 ==================
 
-PyBA is short for "Python-Browser-Automation". It allows you to enter tasks in natural language and have them be executed on the browser. It is built on top of ``playwright`` and it supports traceviewing optionally.
+**Tell the AI what to do once. Get a script you can run forever. Works for OSINT and webscraping**
+
+PyBA (Python Browser Automation) uses LLMs to autonomously navigate any website, then exports the session as a standalone Playwright script—no API costs on repeat runs.
 
 .. note::
-   pyba was specifically built for OSINT purposes.
 
-The main differentiating factors between pyba and others are as follows:
+   PyBA was specifically built for **OSINT** and automated intelligence workflows.
 
-- Performs a depth-first-search and supports retracing of steps
-- Generates multiple ``plans`` optionally to achieve a particular task and performs them in parallel
-- Perfect for use cases when the task is **not** extremely clear and more exploratory in nature
+Why PyBA?
+---------
 
-Features
---------
+Every AI browser agent has the same problem: **you pay for every single run**.
 
-* ``Trace zip`` file creation to recreate the automation for playwright traceviewer
-* ``Logger`` and ``dependency management`` automatically
-* Creation of the ``automation script`` in file once successful
-* Local and server based ``database creation`` for holding all the actions performed
-* ``Stealth mode and config`` heavy files for custom bypass laws
-* Quick ``login to social media sites`` without passing credentials to the LLM
-* The automation script generatation based on tracked logs for repeatable use and accurate sources
-* CLI support for running in ``Terminal`` without a script
-* ``Exponential backoff`` and retry for API errors to make the automation more robust
+- Run it 100 times? Pay for 100 LLM calls.
+- Same task every day? Pay every day.
+- The AI figures out the same clicks over and over.
 
-The current software version is ``0.3.1``. While this version is reliable and works very well, the project is still under heavy developement and you can expect newer releases soon!
+**PyBA is different.** Let the AI figure it out once, then export a deterministic script you own forever.
+
+.. code-block:: python
+
+   from pyba import Engine
+
+   engine = Engine(openai_api_key="sk-...")
+
+   # Step 1: AI navigates autonomously
+   engine.sync_run(prompt="Go to Hacker News, click the top story, extract all comments")
+
+   # Step 2: Export as a standalone Playwright script
+   engine.generate_code(output_path="hacker_news_scraper.py")
+
+Now run ``python hacker_news_scraper.py`` forever. No AI. No API costs. Just Playwright.
+
+Besides, if you already have free API keys, you're golden.
+
+Key Features
+------------
+
+- **Three Exploration Modes**: Normal, DFS (depth-first), and BFS (breadth-first) for different use cases
+- **Code Generation**: Export any successful run as a standalone Python script
+- **Trace Files**: Every run generates a Playwright ``trace.zip`` for debugging
+- **Stealth Mode**: Anti-fingerprinting, random mouse movements, human-like delays
+- **Multi-Provider**: Works with OpenAI, Google VertexAI, or Gemini
+- **Database Logging**: Store every action in SQLite, PostgreSQL, or MySQL
+- **Platform Logins**: Built-in login handlers for Instagram, Gmail, Facebook
+
+Current Version: **0.3.1**
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Getting Started
 
-   modules
-   pyba.core
-   pyba.database
-   pyba.utils
-   usage
+   installation
+   quickstart
+
+.. toctree::
+   :maxdepth: 2
+   :caption: User Guide
+
+   guide
+   modes
+   extraction
+   database
+   code-generation
    cli
-   pyba.core.lib.mode
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Developer Reference
+
+   architecture
+   api
