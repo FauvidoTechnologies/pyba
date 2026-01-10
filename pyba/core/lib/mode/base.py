@@ -342,10 +342,13 @@ class BaseEngine:
 
     def fetch_history(self) -> str:
         """
-        Helper function to obtain the history of actions
+        Helper function to obtain the history of actions.
+
+        TODO: This functions should fetch the last k history elements and use them as `history` and
+        NOT previous_action. The previous_action and its status must be stored regardless.
 
         Returns:
-            `history`: The last successful action element or ""
+            `history`: The last logged action
         """
 
         try:
@@ -367,9 +370,11 @@ class BaseEngine:
         self,
         cleaned_dom: Dict,
         user_prompt: str,
-        history: str,
+        previous_action: str,
         extraction_format: BaseModel = None,
         context_id: str = None,
+        fail_reason: str = None,
+        action_status: bool = None,
     ):
         """
         Helper function to fetch an actionable PlaywrightResponse element
@@ -377,9 +382,11 @@ class BaseEngine:
         Args:
             `cleaned_dom`: The DOM for the current page
             `user_prompt`: The actual task given by the user
-            `history`: The last action performed by the model
+            `previous_action`: The last action performed by the model
             `extraction_format`: The extraction format requested by the user.
             `context_id`: A unique identifier for this browser window (useful when multiple windows)
+            `fail_reason`: The reason for the failure of the previous action
+            `action_status`: A boolean to indicate if the previous action was successful or not
 
         For an explanation of the `extraction_format` read the main file documentation.
 
@@ -388,12 +395,15 @@ class BaseEngine:
         """
 
         try:
+            # Each process-action call is to be passed the status of the previous call
             action = self.playwright_agent.process_action(
                 cleaned_dom=cleaned_dom,
                 user_prompt=user_prompt,
-                history=history,
+                previous_action=previous_action,
                 extraction_format=extraction_format,
                 context_id=context_id,
+                fail_reason=fail_reason,
+                action_status=action_status,
             )
         except Exception as e:
             self.log.error(f"something went wrong in obtaining the response: {e}")
@@ -405,7 +415,8 @@ class BaseEngine:
         self,
         cleaned_dom: Dict,
         prompt: str,
-        history: str,
+        previous_action: str,
+        action_status: bool,
         fail_reason: str,
         extraction_format: BaseModel = None,
         page=None,
@@ -418,7 +429,8 @@ class BaseEngine:
         Args:
             `cleaned_dom`: The new cleaned DOM for the current page
             `prompt`: The original prompt given by the user
-            `history`: The past action that failed
+            `previous_action`: The past action that failed
+            `action_status`: A boolean to indicate the failure of the action (I know, not needed but let's keep it for now!)
             `fail_reason`: Reason for the failure for the action
             `extraction_format`: In case the current page needs extraction as well
             `page`: Optional argument to pin the page down to remove self dependency
@@ -436,9 +448,10 @@ class BaseEngine:
         action = self.playwright_agent.process_action(
             cleaned_dom=cleaned_dom,
             user_prompt=prompt,
-            history=history,
+            previous_action=previous_action,
             fail_reason=fail_reason,
             extraction_format=extraction_format,
+            action_status=action_status,
         )
 
         output = await self.generate_output(action=action, cleaned_dom=cleaned_dom, prompt=prompt)
@@ -448,12 +461,13 @@ class BaseEngine:
 
         self.log.action(action)
 
-        if self.db_funcs:
-            self.db_funcs.push_to_episodic_memory(
-                session_id=self.session_id,
-                action=str(action),
-                page_url=str(page_obj.url),
-            )
+        # Deprecated. We now log data before calling retry action
+        # if self.db_funcs:
+        #     self.db_funcs.push_to_episodic_memory(
+        #         session_id=self.session_id,
+        #         action=str(action),
+        #         page_url=str(page_obj.url),
+        #     )
 
         await perform_action(page_obj, action)
 

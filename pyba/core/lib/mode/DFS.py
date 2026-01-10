@@ -139,12 +139,22 @@ class DFS(BaseEngine):
                             cleaned_dom = await self.successful_login_clean_and_get_dom()
                             continue
                         # Get an actionable element from the playwright agent
-                        history = self.fetch_history()
+
+                        # NOTE: This function needs to actually fetch history, but right now its fetching the previous_action only
+                        # We need to ensure that we store the previous action REGARDLESS of whether a database has been provided by
+                        # the user or not
+
+                        # history = self.fetch_history()
+                        previous_action = self.fetch_history()  # This part needs to change...
+
+                        # TODO: This needs to be fixed with the right history implementation
                         action = self.fetch_action(
                             cleaned_dom=cleaned_dom.to_dict(),
                             user_prompt=plan,
-                            history=history,
+                            previous_action=previous_action,
                             extraction_format=extraction_format,
+                            action_status=True,  # How do I get the result of the previous action without querying it from the DB?
+                            fail_reason=None,
                         )
                         # Check if the automation has finished and if so, get the output
                         output = await self.generate_output(
@@ -156,21 +166,25 @@ class DFS(BaseEngine):
                             return output
                         # If not, store the action and perform the action
                         self.log.action(action)
-                        if self.db_funcs:
-                            self.db_funcs.push_to_episodic_memory(
-                                session_id=self.session_id,
-                                action=str(action),
-                                page_url=str(self.page.url),
-                            )
+
                         value, fail_reason = await perform_action(self.page, action)
                         if value is None:
                             # This means the action failed due to whatever reason. The best bet is to
                             # pass in the latest cleaned_dom and get the output again
+                            if self.db_funcs:
+                                self.db_funcs.push_to_episodic_memory(
+                                    session_id=self.session_id,
+                                    action=str(action),
+                                    page_url=str(self.page.url),
+                                    action_status=False,
+                                    fail_reason=fail_reason,
+                                )
                             cleaned_dom = await self.extract_dom()
                             output = await self.retry_perform_action(
                                 cleaned_dom=cleaned_dom.to_dict(),
                                 prompt=plan,
-                                history=history,
+                                previous_action=previous_action,
+                                action_status=False,  # This is pretty much unncessary because passing a fail_reason DOES mean that action failed, but it makes it a little more coherent
                                 fail_reason=fail_reason,
                             )
                             if output:
@@ -178,6 +192,14 @@ class DFS(BaseEngine):
                                 await self.shut_down()
                                 return output
                         # Picking the clean DOM now
+                        if self.db_funcs:
+                            self.db_funcs.push_to_episodic_memory(
+                                session_id=self.session_id,
+                                action=str(action),
+                                page_url=str(self.page.url),
+                                action_status=True,
+                                fail_reason=None,
+                            )
                         cleaned_dom = await self.extract_dom()
 
                     self.log.warning(

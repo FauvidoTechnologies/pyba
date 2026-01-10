@@ -154,12 +154,22 @@ class Engine(BaseEngine):
                         continue
 
                     # Get an actionable PlaywrightResponse from the models, along with `extracted results` if any
-                    history = self.fetch_history()
+
+                    # NOTE: This function needs to actually fetch history, but right now its fetching the previous_action only
+                    # We need to ensure that we store the previous action REGARDLESS of whether a database has been provided by
+                    # the user or not
+
+                    # history = self.fetch_history()
+                    previous_action = (
+                        self.fetch_history()
+                    )  # This needs to change... Do not forget to change this in DFS mode as well.
                     action = self.fetch_action(
                         cleaned_dom=cleaned_dom.to_dict(),
                         user_prompt=prompt,
-                        history=history,
+                        previous_action=previous_action,
                         extraction_format=extraction_format,
+                        fail_reason=None,
+                        action_status=True,
                     )
                     output = await self.generate_output(
                         action=action, cleaned_dom=cleaned_dom, prompt=prompt
@@ -172,23 +182,32 @@ class Engine(BaseEngine):
 
                     self.log.action(action)
 
-                    if self.db_funcs:
-                        self.db_funcs.push_to_episodic_memory(
-                            session_id=self.session_id,
-                            action=str(action),
-                            page_url=str(self.page.url),
-                        )
                     # If its not None, then perform it
                     value, fail_reason = await perform_action(self.page, action)
 
                     if value is None:
                         # This means the action failed due to whatever reason. The best bet is to
                         # pass in the latest cleaned_dom and get the output again
+                        if self.db_funcs:
+                            self.db_funcs.push_to_episodic_memory(
+                                session_id=self.session_id,
+                                action=str(action),
+                                page_url=str(self.page.url),
+                                action_status=False,
+                                fail_reason=fail_reason,
+                            )
                         cleaned_dom = await self.extract_dom()
+
+                        # ==============================================================================================
+                        # TODO: Change the system prompt where I have written that IF the action is mentioned this means
+                        # It had failed. Now we will always mention the action, AND IT WILL NOT NECESSARILY mean that it
+                        # has failed..
+                        # ==============================================================================================
                         output = await self.retry_perform_action(
                             cleaned_dom=cleaned_dom.to_dict(),
                             prompt=prompt,
-                            history=history,
+                            previous_action=previous_action,
+                            action_status=False,  # This is pretty much unncessary because passing a fail_reason DOES mean that action failed, but it makes it a little more coherent
                             fail_reason=fail_reason,
                         )
 
@@ -198,6 +217,14 @@ class Engine(BaseEngine):
                             return output
 
                     # Else, get the new DOM and restart loop
+                    if self.db_funcs:
+                        self.db_funcs.push_to_episodic_memory(
+                            session_id=self.session_id,
+                            action=str(action),
+                            page_url=str(self.page.url),
+                            action_status=True,  # Defaults to true anyway so I don't HAVE to do this
+                            fail_reason=None,
+                        )
                     cleaned_dom = await self.extract_dom()
         finally:
             await self.save_trace()

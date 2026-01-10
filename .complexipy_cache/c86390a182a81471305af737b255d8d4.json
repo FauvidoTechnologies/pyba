@@ -1,0 +1,1213 @@
+{
+  "functions": [
+    {
+      "complexity": 0,
+      "file_name": "script.py",
+      "function_name": "make_engine",
+      "path": "./automation_eval/threaded/script.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "script.py",
+      "function_name": "run_task",
+      "path": "./automation_eval/threaded/script.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "main.py",
+      "function_name": "main",
+      "path": "./benchmarking/bench-browser-use/main.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "arg_parser.py",
+      "function_name": "ArgParser::__init__",
+      "path": "./pyba/cli/cli_core/arg_parser.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "arg_parser.py",
+      "function_name": "ArgParser::add_arguments",
+      "path": "./pyba/cli/cli_core/arg_parser.py"
+    },
+    {
+      "complexity": 12,
+      "file_name": "arg_parser.py",
+      "function_name": "ArgParser::initialise_arguments",
+      "path": "./pyba/cli/cli_core/arg_parser.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "cli_main.py",
+      "function_name": "CLIMain::__init__",
+      "path": "./pyba/cli/cli_core/cli_main.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "cli_main.py",
+      "function_name": "CLIMain::cli_async_run",
+      "path": "./pyba/cli/cli_core/cli_main.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "cli_main.py",
+      "function_name": "CLIMain::cli_sync_run",
+      "path": "./pyba/cli/cli_core/cli_main.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "cli_main.py",
+      "function_name": "CLIMain::initialise_engine",
+      "path": "./pyba/cli/cli_core/cli_main.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "cli_main.py",
+      "function_name": "CLIMain::initialise_database",
+      "path": "./pyba/cli/cli_core/cli_main.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "cli_entry.py",
+      "function_name": "main",
+      "path": "./pyba/cli/cli_entry.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "base_agent.py",
+      "function_name": "BaseAgent::__init__",
+      "path": "./pyba/core/agent/base_agent.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "base_agent.py",
+      "function_name": "BaseAgent::_initialise_openai_arguments",
+      "path": "./pyba/core/agent/base_agent.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "base_agent.py",
+      "function_name": "BaseAgent::_initialise_prompt",
+      "path": "./pyba/core/agent/base_agent.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "base_agent.py",
+      "function_name": "BaseAgent::calculate_next_time",
+      "path": "./pyba/core/agent/base_agent.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "base_agent.py",
+      "function_name": "BaseAgent::initialise_depth_ladder",
+      "path": "./pyba/core/agent/base_agent.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "base_agent.py",
+      "function_name": "BaseAgent::update_depth_ladder",
+      "path": "./pyba/core/agent/base_agent.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "base_agent.py",
+      "function_name": "BaseAgent::handle_gemini_execution",
+      "path": "./pyba/core/agent/base_agent.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "base_agent.py",
+      "function_name": "BaseAgent::handle_openai_execution",
+      "path": "./pyba/core/agent/base_agent.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "base_agent.py",
+      "function_name": "BaseAgent::handle_vertexai_execution",
+      "path": "./pyba/core/agent/base_agent.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "extraction_agent.py",
+      "function_name": "ExtractionAgent::__init__",
+      "path": "./pyba/core/agent/extraction_agent.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "extraction_agent.py",
+      "function_name": "ExtractionAgent::_initialise_prompt",
+      "path": "./pyba/core/agent/extraction_agent.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "extraction_agent.py",
+      "function_name": "ExtractionAgent::run_threaded_info_extraction",
+      "path": "./pyba/core/agent/extraction_agent.py"
+    },
+    {
+      "complexity": 19,
+      "file_name": "extraction_agent.py",
+      "function_name": "ExtractionAgent::info_extraction",
+      "path": "./pyba/core/agent/extraction_agent.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "llm_factory.py",
+      "function_name": "LLMFactory::_initialize_gemini_agent",
+      "path": "./pyba/core/agent/llm_factory.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "llm_factory.py",
+      "function_name": "LLMFactory::_initialize_gemini_client",
+      "path": "./pyba/core/agent/llm_factory.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "llm_factory.py",
+      "function_name": "LLMFactory::_initialize_openai_agent",
+      "path": "./pyba/core/agent/llm_factory.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "llm_factory.py",
+      "function_name": "LLMFactory::_initialize_openai_client",
+      "path": "./pyba/core/agent/llm_factory.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "llm_factory.py",
+      "function_name": "LLMFactory::_initialize_vertexai_client",
+      "path": "./pyba/core/agent/llm_factory.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "llm_factory.py",
+      "function_name": "LLMFactory::create_agentic_pair",
+      "path": "./pyba/core/agent/llm_factory.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "llm_factory.py",
+      "function_name": "LLMFactory::_initialize_vertexai_agent",
+      "path": "./pyba/core/agent/llm_factory.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "llm_factory.py",
+      "function_name": "LLMFactory::create_extraction_agent",
+      "path": "./pyba/core/agent/llm_factory.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "llm_factory.py",
+      "function_name": "LLMFactory::create_planner_agent",
+      "path": "./pyba/core/agent/llm_factory.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "llm_factory.py",
+      "function_name": "LLMFactory::__init__",
+      "path": "./pyba/core/agent/llm_factory.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "llm_factory.py",
+      "function_name": "LLMFactory::get_agent",
+      "path": "./pyba/core/agent/llm_factory.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "llm_factory.py",
+      "function_name": "LLMFactory::get_extraction_agent",
+      "path": "./pyba/core/agent/llm_factory.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "llm_factory.py",
+      "function_name": "LLMFactory::get_planner_agent",
+      "path": "./pyba/core/agent/llm_factory.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "planner_agent.py",
+      "function_name": "PlannerAgent::__init__",
+      "path": "./pyba/core/agent/planner_agent.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "planner_agent.py",
+      "function_name": "PlannerAgent::generate",
+      "path": "./pyba/core/agent/planner_agent.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "planner_agent.py",
+      "function_name": "PlannerAgent::_initialise_prompt",
+      "path": "./pyba/core/agent/planner_agent.py"
+    },
+    {
+      "complexity": 21,
+      "file_name": "planner_agent.py",
+      "function_name": "PlannerAgent::_call_model",
+      "path": "./pyba/core/agent/planner_agent.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "playwright_agent.py",
+      "function_name": "PlaywrightAgent::__init__",
+      "path": "./pyba/core/agent/playwright_agent.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "playwright_agent.py",
+      "function_name": "PlaywrightAgent::_initialise_prompt",
+      "path": "./pyba/core/agent/playwright_agent.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "playwright_agent.py",
+      "function_name": "PlaywrightAgent::get_output",
+      "path": "./pyba/core/agent/playwright_agent.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "playwright_agent.py",
+      "function_name": "PlaywrightAgent::process_action",
+      "path": "./pyba/core/agent/playwright_agent.py"
+    },
+    {
+      "complexity": 37,
+      "file_name": "playwright_agent.py",
+      "function_name": "PlaywrightAgent::_call_model",
+      "path": "./pyba/core/agent/playwright_agent.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "jitters.py",
+      "function_name": "MouseMovements::__init__",
+      "path": "./pyba/core/helpers/jitters.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "jitters.py",
+      "function_name": "MouseMovements::bezier_movements",
+      "path": "./pyba/core/helpers/jitters.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "jitters.py",
+      "function_name": "MouseMovements::gaussian_movements",
+      "path": "./pyba/core/helpers/jitters.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "jitters.py",
+      "function_name": "MouseMovements::perlin_movements",
+      "path": "./pyba/core/helpers/jitters.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "jitters.py",
+      "function_name": "MouseMovements::random_movement",
+      "path": "./pyba/core/helpers/jitters.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "jitters.py",
+      "function_name": "ScrollMovements::__init__",
+      "path": "./pyba/core/helpers/jitters.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "jitters.py",
+      "function_name": "MouseMovements::_run",
+      "path": "./pyba/core/helpers/jitters.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "jitters.py",
+      "function_name": "ScrollMovements::apply_scroll_jitters",
+      "path": "./pyba/core/helpers/jitters.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "jitters.py",
+      "function_name": "ScrollMovements::generate_scroll_values",
+      "path": "./pyba/core/helpers/jitters.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::__init__",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_close_page",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_double_click",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_download",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_dropdown_click",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_file_upload",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_hover",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_input",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_keyboard_press",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_keyboard_type",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_mouse_click",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_mouse_move",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_navigation",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_new_page",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_right_click",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_screenshot",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_select",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_typing",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_evaluate_js",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "action.py",
+      "function_name": "perform_action",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_back",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_checkboxes",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_forward",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_reload",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_scrolling",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_switch_page",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::wait_till_loaded",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_press",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 8,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_wait",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 16,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::handle_click",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 33,
+      "file_name": "action.py",
+      "function_name": "PlaywrightActionPerformer::perform",
+      "path": "./pyba/core/lib/action.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "code_generation.py",
+      "function_name": "CodeGeneration::__init__",
+      "path": "./pyba/core/lib/code_generation.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "code_generation.py",
+      "function_name": "CodeGeneration::_get_run_actions",
+      "path": "./pyba/core/lib/code_generation.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "code_generation.py",
+      "function_name": "CodeGeneration::generate_script",
+      "path": "./pyba/core/lib/code_generation.py"
+    },
+    {
+      "complexity": 69,
+      "file_name": "code_generation.py",
+      "function_name": "CodeGeneration::_parse_action_to_code",
+      "path": "./pyba/core/lib/code_generation.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "handle_dependencies.py",
+      "function_name": "PlaywrightDependencies::install_playwright_browsers",
+      "path": "./pyba/core/lib/handle_dependencies.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "handle_dependencies.py",
+      "function_name": "PlaywrightDependencies::check_playwright_browsers_installed",
+      "path": "./pyba/core/lib/handle_dependencies.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "handle_dependencies.py",
+      "function_name": "PlaywrightDependencies::_get_expected_browser_dirs",
+      "path": "./pyba/core/lib/handle_dependencies.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "handle_dependencies.py",
+      "function_name": "PlaywrightDependencies::_get_playwright_browsers_path",
+      "path": "./pyba/core/lib/handle_dependencies.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "handle_dependencies.py",
+      "function_name": "PlaywrightDependencies::check_missing_dependencies",
+      "path": "./pyba/core/lib/handle_dependencies.py"
+    },
+    {
+      "complexity": 6,
+      "file_name": "handle_dependencies.py",
+      "function_name": "PlaywrightDependencies::handle_dependencies",
+      "path": "./pyba/core/lib/handle_dependencies.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "BFS.py",
+      "function_name": "BFS::__init__",
+      "path": "./pyba/core/lib/mode/BFS.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "BFS.py",
+      "function_name": "BFS::sync_run",
+      "path": "./pyba/core/lib/mode/BFS.py"
+    },
+    {
+      "complexity": 8,
+      "file_name": "BFS.py",
+      "function_name": "BFS::run",
+      "path": "./pyba/core/lib/mode/BFS.py"
+    },
+    {
+      "complexity": 24,
+      "file_name": "BFS.py",
+      "function_name": "BFS::_run",
+      "path": "./pyba/core/lib/mode/BFS.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "DFS.py",
+      "function_name": "DFS::__init__",
+      "path": "./pyba/core/lib/mode/DFS.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "DFS.py",
+      "function_name": "DFS::sync_run",
+      "path": "./pyba/core/lib/mode/DFS.py"
+    },
+    {
+      "complexity": 46,
+      "file_name": "DFS.py",
+      "function_name": "DFS::run",
+      "path": "./pyba/core/lib/mode/DFS.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "base.py",
+      "function_name": "BaseEngine::get_trace_context",
+      "path": "./pyba/core/lib/mode/base.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "base.py",
+      "function_name": "BaseEngine::run",
+      "path": "./pyba/core/lib/mode/base.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "base.py",
+      "function_name": "BaseEngine::fetch_action",
+      "path": "./pyba/core/lib/mode/base.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "base.py",
+      "function_name": "BaseEngine::generate_code",
+      "path": "./pyba/core/lib/mode/base.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "base.py",
+      "function_name": "BaseEngine::retry_perform_action",
+      "path": "./pyba/core/lib/mode/base.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "base.py",
+      "function_name": "BaseEngine::successful_login_clean_and_get_dom",
+      "path": "./pyba/core/lib/mode/base.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "base.py",
+      "function_name": "BaseEngine::__init__",
+      "path": "./pyba/core/lib/mode/base.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "base.py",
+      "function_name": "BaseEngine::save_trace",
+      "path": "./pyba/core/lib/mode/base.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "base.py",
+      "function_name": "BaseEngine::shut_down",
+      "path": "./pyba/core/lib/mode/base.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "base.py",
+      "function_name": "BaseEngine::wait_till_loaded",
+      "path": "./pyba/core/lib/mode/base.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "base.py",
+      "function_name": "BaseEngine::extract_dom",
+      "path": "./pyba/core/lib/mode/base.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "base.py",
+      "function_name": "BaseEngine::generate_output",
+      "path": "./pyba/core/lib/mode/base.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "base.py",
+      "function_name": "BaseEngine::fetch_history",
+      "path": "./pyba/core/lib/mode/base.py"
+    },
+    {
+      "complexity": 9,
+      "file_name": "base.py",
+      "function_name": "BaseEngine::attempt_login",
+      "path": "./pyba/core/lib/mode/base.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "main.py",
+      "function_name": "Engine::__init__",
+      "path": "./pyba/core/main.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "main.py",
+      "function_name": "Engine::sync_run",
+      "path": "./pyba/core/main.py"
+    },
+    {
+      "complexity": 37,
+      "file_name": "main.py",
+      "function_name": "Engine::run",
+      "path": "./pyba/core/main.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "provider.py",
+      "function_name": "Provider::__init__",
+      "path": "./pyba/core/provider.py"
+    },
+    {
+      "complexity": 12,
+      "file_name": "provider.py",
+      "function_name": "Provider::handle_keys",
+      "path": "./pyba/core/provider.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "__init__.py",
+      "function_name": "LoginEngine::available_engines",
+      "path": "./pyba/core/scripts/__init__.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "__init__.py",
+      "function_name": "ExtractionEngines::__init__",
+      "path": "./pyba/core/scripts/extractions/__init__.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "__init__.py",
+      "function_name": "ExtractionEngines::available_engines",
+      "path": "./pyba/core/scripts/extractions/__init__.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "__init__.py",
+      "function_name": "ExtractionEngines::extract_all",
+      "path": "./pyba/core/scripts/extractions/__init__.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "general.py",
+      "function_name": "GeneralDOMExtraction::__init__",
+      "path": "./pyba/core/scripts/extractions/general.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "general.py",
+      "function_name": "GeneralDOMExtraction::_extract_all_text",
+      "path": "./pyba/core/scripts/extractions/general.py"
+    },
+    {
+      "complexity": 7,
+      "file_name": "general.py",
+      "function_name": "GeneralDOMExtraction::extract",
+      "path": "./pyba/core/scripts/extractions/general.py"
+    },
+    {
+      "complexity": 8,
+      "file_name": "general.py",
+      "function_name": "GeneralDOMExtraction::_extract_href",
+      "path": "./pyba/core/scripts/extractions/general.py"
+    },
+    {
+      "complexity": 22,
+      "file_name": "general.py",
+      "function_name": "GeneralDOMExtraction::_extract_clickables",
+      "path": "./pyba/core/scripts/extractions/general.py"
+    },
+    {
+      "complexity": 35,
+      "file_name": "general.py",
+      "function_name": "GeneralDOMExtraction::_extract_input_fields",
+      "path": "./pyba/core/scripts/extractions/general.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "youtube_.py",
+      "function_name": "YouTubeDOMExtraction::__init__",
+      "path": "./pyba/core/scripts/extractions/youtube_.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "youtube_.py",
+      "function_name": "YouTubeDOMExtraction::extract",
+      "path": "./pyba/core/scripts/extractions/youtube_.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "youtube_.py",
+      "function_name": "YouTubeDOMExtraction::extract_links_and_titles",
+      "path": "./pyba/core/scripts/extractions/youtube_.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "base.py",
+      "function_name": "BaseLogin::_perform_login",
+      "path": "./pyba/core/scripts/login/base.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "base.py",
+      "function_name": "BaseLogin::__init__",
+      "path": "./pyba/core/scripts/login/base.py"
+    },
+    {
+      "complexity": 7,
+      "file_name": "base.py",
+      "function_name": "BaseLogin::_handle_2fa",
+      "path": "./pyba/core/scripts/login/base.py"
+    },
+    {
+      "complexity": 7,
+      "file_name": "base.py",
+      "function_name": "BaseLogin::run",
+      "path": "./pyba/core/scripts/login/base.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "facebook.py",
+      "function_name": "FacebookLogin::__init__",
+      "path": "./pyba/core/scripts/login/facebook.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "facebook.py",
+      "function_name": "FacebookLogin::_perform_login",
+      "path": "./pyba/core/scripts/login/facebook.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "gmail.py",
+      "function_name": "GmailLogin::__init__",
+      "path": "./pyba/core/scripts/login/gmail.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "gmail.py",
+      "function_name": "GmailLogin::_perform_login",
+      "path": "./pyba/core/scripts/login/gmail.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "instagram.py",
+      "function_name": "InstagramLogin::__init__",
+      "path": "./pyba/core/scripts/login/instagram.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "instagram.py",
+      "function_name": "InstagramLogin::_perform_login",
+      "path": "./pyba/core/scripts/login/instagram.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "tracing.py",
+      "function_name": "Tracing::__init__",
+      "path": "./pyba/core/tracing.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "tracing.py",
+      "function_name": "Tracing::initialize_context",
+      "path": "./pyba/core/tracing.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "database.py",
+      "function_name": "Database::build_connection_string",
+      "path": "./pyba/database/database.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "database.py",
+      "function_name": "Database::initialise_tables_and_database",
+      "path": "./pyba/database/database.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "database.py",
+      "function_name": "Database::create_connection",
+      "path": "./pyba/database/database.py"
+    },
+    {
+      "complexity": 7,
+      "file_name": "database.py",
+      "function_name": "Database::__init__",
+      "path": "./pyba/database/database.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "db_funcs.py",
+      "function_name": "DatabaseFunctions::__init__",
+      "path": "./pyba/database/db_funcs.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "db_funcs.py",
+      "function_name": "DatabaseFunctions::get_bfs_episodic_memory_by_context",
+      "path": "./pyba/database/db_funcs.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "db_funcs.py",
+      "function_name": "DatabaseFunctions::get_episodic_memory_by_session_id",
+      "path": "./pyba/database/db_funcs.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "db_funcs.py",
+      "function_name": "DatabaseFunctions::get_semantic_memory_by_session_id",
+      "path": "./pyba/database/db_funcs.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "db_funcs.py",
+      "function_name": "DatabaseFunctions::get_all_bfs_contexts_by_session",
+      "path": "./pyba/database/db_funcs.py"
+    },
+    {
+      "complexity": 5,
+      "file_name": "db_funcs.py",
+      "function_name": "DatabaseFunctions::submit_query_with_retry",
+      "path": "./pyba/database/db_funcs.py"
+    },
+    {
+      "complexity": 6,
+      "file_name": "db_funcs.py",
+      "function_name": "DatabaseFunctions::push_to_bfs_episodic_memory",
+      "path": "./pyba/database/db_funcs.py"
+    },
+    {
+      "complexity": 6,
+      "file_name": "db_funcs.py",
+      "function_name": "DatabaseFunctions::push_to_episodic_memory",
+      "path": "./pyba/database/db_funcs.py"
+    },
+    {
+      "complexity": 6,
+      "file_name": "db_funcs.py",
+      "function_name": "DatabaseFunctions::push_to_semantic_memory",
+      "path": "./pyba/database/db_funcs.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "models.py",
+      "function_name": "BFSEpisodicMemory::__repr__",
+      "path": "./pyba/database/models.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "models.py",
+      "function_name": "EpisodicMemory::__repr__",
+      "path": "./pyba/database/models.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "models.py",
+      "function_name": "SemanticMemory::__repr__",
+      "path": "./pyba/database/models.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "mysql.py",
+      "function_name": "MySQLHandler::__init__",
+      "path": "./pyba/database/mysql.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "mysql.py",
+      "function_name": "MySQLHandler::mysql_create_tables",
+      "path": "./pyba/database/mysql.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "mysql.py",
+      "function_name": "MySQLHandler::setup",
+      "path": "./pyba/database/mysql.py"
+    },
+    {
+      "complexity": 4,
+      "file_name": "mysql.py",
+      "function_name": "MySQLHandler::mysql_create_database",
+      "path": "./pyba/database/mysql.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "postgres.py",
+      "function_name": "PostgresHandler::__init__",
+      "path": "./pyba/database/postgres.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "postgres.py",
+      "function_name": "PostgresHandler::setup",
+      "path": "./pyba/database/postgres.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "postgres.py",
+      "function_name": "PostgresHandler::create_postgres_database",
+      "path": "./pyba/database/postgres.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "sqlite.py",
+      "function_name": "SQLiteHandler::__init__",
+      "path": "./pyba/database/sqlite.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "sqlite.py",
+      "function_name": "SQLiteHandler::setup",
+      "path": "./pyba/database/sqlite.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "sqlite.py",
+      "function_name": "SQLiteHandler::sqlite_create_tables",
+      "path": "./pyba/database/sqlite.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "pinecone_setup.py",
+      "function_name": "Memory::__init__",
+      "path": "./pyba/database/vectordb/pinecone_setup.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "pinecone_setup.py",
+      "function_name": "Memory::embed",
+      "path": "./pyba/database/vectordb/pinecone_setup.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "pinecone_setup.py",
+      "function_name": "Memory::save",
+      "path": "./pyba/database/vectordb/pinecone_setup.py"
+    },
+    {
+      "complexity": 2,
+      "file_name": "pinecone_setup.py",
+      "function_name": "Memory::create_index",
+      "path": "./pyba/database/vectordb/pinecone_setup.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "pinecone_setup.py",
+      "function_name": "Memory::query",
+      "path": "./pyba/database/vectordb/pinecone_setup.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "logger.py",
+      "function_name": "Logger::action",
+      "path": "./pyba/logger.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "logger.py",
+      "function_name": "Logger::info",
+      "path": "./pyba/logger.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "logger.py",
+      "function_name": "Logger::success",
+      "path": "./pyba/logger.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "logger.py",
+      "function_name": "Logger::warning",
+      "path": "./pyba/logger.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "logger.py",
+      "function_name": "get_logger",
+      "path": "./pyba/logger.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "logger.py",
+      "function_name": "setup_logger",
+      "path": "./pyba/logger.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "logger.py",
+      "function_name": "Logger::__init__",
+      "path": "./pyba/logger.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "logger.py",
+      "function_name": "Logger::_log",
+      "path": "./pyba/logger.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "logger.py",
+      "function_name": "Logger::error",
+      "path": "./pyba/logger.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "common.py",
+      "function_name": "initial_page_setup",
+      "path": "./pyba/utils/common.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "common.py",
+      "function_name": "url_entropy",
+      "path": "./pyba/utils/common.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "common.py",
+      "function_name": "is_absolute_url",
+      "path": "./pyba/utils/common.py"
+    },
+    {
+      "complexity": 3,
+      "file_name": "common.py",
+      "function_name": "verify_login_page",
+      "path": "./pyba/utils/common.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "exceptions.py",
+      "function_name": "CredentialsnotSpecified::__init__",
+      "path": "./pyba/utils/exceptions.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "exceptions.py",
+      "function_name": "DatabaseNotInitialised::__init__",
+      "path": "./pyba/utils/exceptions.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "exceptions.py",
+      "function_name": "IncorrectMode::__init__",
+      "path": "./pyba/utils/exceptions.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "exceptions.py",
+      "function_name": "PromptNotPresent::__init__",
+      "path": "./pyba/utils/exceptions.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "exceptions.py",
+      "function_name": "ServerLocationUndefined::__init__",
+      "path": "./pyba/utils/exceptions.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "exceptions.py",
+      "function_name": "ServiceNotSelected::__init__",
+      "path": "./pyba/utils/exceptions.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "exceptions.py",
+      "function_name": "UnknownSiteChosen::__init__",
+      "path": "./pyba/utils/exceptions.py"
+    },
+    {
+      "complexity": 1,
+      "file_name": "load_yaml.py",
+      "function_name": "load_config",
+      "path": "./pyba/utils/load_yaml.py"
+    },
+    {
+      "complexity": 0,
+      "file_name": "structure.py",
+      "function_name": "CleanedDOM::to_dict",
+      "path": "./pyba/utils/structure.py"
+    }
+  ],
+  "targets": [
+    "/home/purge/Desktop/fauvido/PyBrowserAutomation"
+  ]
+}

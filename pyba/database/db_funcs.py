@@ -52,7 +52,14 @@ class DatabaseFunctions:
         self.session.rollback()
         return False
 
-    def push_to_episodic_memory(self, session_id: str, action: str, page_url: str) -> bool:
+    def push_to_episodic_memory(
+        self,
+        session_id: str,
+        action: str,
+        page_url: str,
+        action_status: bool,
+        fail_reason: str = None,
+    ) -> bool:
         """
         Pushes a new action and page_url onto the stack for a given session_id.
         It retrieves the existing record, appends the new values as JSON strings,
@@ -62,6 +69,8 @@ class DatabaseFunctions:
             `session_id`: The unique session ID.
             `action`: The action string to be pushed.
             `page_url`: The page URL string to be pushed.
+            `action_status`: The success or the failure of the current action (True -> Success, False -> Failure)
+            `fail_reason`: A string to dictate why a particular action failed (defaults to None in an event of success)
 
         Returns:
             True if the operation was successful, otherwise False.
@@ -79,22 +88,32 @@ class DatabaseFunctions:
                 try:
                     actions_list = json.loads(memory_record.actions)
                     page_url_list = json.loads(memory_record.page_url)
+                    action_status_list = json.loads(memory_record.action_status)
+                    fail_reason_list = json.loads(memory_record.fail_reason)
                 except json.JSONDecodeError:
                     # If stored data is not a valid json, refresh it with a new list
                     actions_list = []
                     page_url_list = []
+                    action_status_list = []
+                    fail_reason_list = []
 
                 actions_list.append(action)
                 page_url_list.append(page_url)
+                action_status_list.append(action_status)
+                fail_reason_list.append(fail_reason)
 
                 memory_record.actions = json.dumps(actions_list)
                 memory_record.page_url = json.dumps(page_url_list)
+                memory_record.action_status = json.dumps(action_status_list)
+                memory_record.fail_reason = json.dumps(fail_reason_list)
 
             else:
                 new_memory = EpisodicMemory(
                     session_id=session_id,
                     actions=json.dumps([action]),
                     page_url=json.dumps([page_url]),
+                    action_status=json.dumps([action_status]),
+                    fail_reason=json.dumps([fail_reason]),
                 )
                 self.session.add(new_memory)
 

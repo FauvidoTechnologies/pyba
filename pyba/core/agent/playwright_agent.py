@@ -32,8 +32,9 @@ class PlaywrightAgent(BaseAgent):
         cleaned_dom: Dict[str, Union[List, str]],
         user_prompt: str,
         main_instruction: str,
-        history: List[str] = None,
+        previous_action: str = None,
         fail_reason: str = None,
+        action_status: bool = None,
     ):
         """
         Method to initailise the main instruction for any agent
@@ -42,22 +43,23 @@ class PlaywrightAgent(BaseAgent):
             `cleaned_dom`: A dictionary containing nicely formatted DOM elements
             `user_prompt`: The instructions given by the user
             `main_instruction`: The prompt for the playwright agent
-            `history`: An episodic memory of all the successfully executed tasks
+            `previous_action`: The previous action
             `fail_reason`: The reason for the failure of the previous action
+            `action_status`: Boolean to decide if the previous action was a success or not
 
-        The fail_reason decides if the previous access was a success or not.
+        TODO: Add `history` of ALL/SOME actions to give some context as to where we are headed
+
+        # DEPRECATED - The fail_reason decides if the previous access was a success or not.
+
+        For each run, a prompt containing the previous action, its status (success or failure) and a fail reason (if
+        it failed) is provided. This helps the model reason better
         """
 
         # Adding the user_prompt to the DOM to make it easier to format the prompt
         cleaned_dom["user_prompt"] = user_prompt
-        cleaned_dom["history"] = history
-
-        if fail_reason:
-            cleaned_dom["action_output"] = fail_reason
-            cleaned_dom["history_type"] = "failure"
-        else:
-            cleaned_dom["action_output"] = "Success"
-            cleaned_dom["history_type"] = "success"
+        cleaned_dom["previous_action"] = previous_action
+        cleaned_dom["action_status"] = action_status
+        cleaned_dom["fail_reason"] = fail_reason
 
         prompt = main_instruction.format(**cleaned_dom)
 
@@ -158,10 +160,11 @@ class PlaywrightAgent(BaseAgent):
         self,
         cleaned_dom: Dict[str, Union[List, str]],
         user_prompt: str,
-        history: List[str] = None,
+        previous_action: str = None,
         fail_reason: str = None,
         extraction_format: BaseModel = None,
         context_id: str = None,
+        action_status: bool = None,
     ) -> PlaywrightResponse:
         """
         Method to process the DOM and provide an actionable playwright response
@@ -173,23 +176,24 @@ class PlaywrightAgent(BaseAgent):
                 - `clickable_fields`: List
                 - `actual_text`: string
             `user_prompt`: The instructions given by the user
-            `history`: An episodic memory of all the successfully executed tasks
+            `previous_action`: The previous executed action
             `fail_reason`: Holds the fail-reason should the previous task fail
             `extraction_format`: The extraction format for the task
             `context_id`: A unique identifier for this browser window (useful when multiple windows)
+            `fail_reason`: The reason for failure of the previous action (None if not provided => Action passed)
+            `action_status`: The success or the failure of an action
 
-            We're assuming this to be well explained. In later versions we'll
-            add one more layer on top for plan generation and better commands
-
-            output: A predefined pydantic model
+        output:
+            A predefined pydantic model called `PlaywrightResponse` which defines our DSL
         """
 
         prompt = self._initialise_prompt(
             cleaned_dom=cleaned_dom,
             user_prompt=user_prompt,
             main_instruction=general_prompt,
-            history=history,
+            previous_action=previous_action,
             fail_reason=fail_reason,
+            action_status=action_status,
         )
 
         self.user_prompt = user_prompt

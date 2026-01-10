@@ -10,11 +10,13 @@ class EpisodicMemory(Base):
 
     Arguments:
             - `session_id`: A unique session ID for the run
-            - `actions`: A JSON string of actions given as output by the model
-            - `page_url`: The URL where this action was performed
-            - `context_id`: A unique ID generated for each context in BFS
+            - `actions`: A JSON string array of actions given as output by the model
+            - `page_url`: A JSON string array of URLs where actions were performed
+            - `action_status`: A JSON string array of booleans indicating success/failure for each action
+            - `fail_reason`: A JSON string array of failure reasons (null for successful actions)
 
-    The `context_id` is a nullable field because it only comes in handy for BFS mode
+    All array fields (actions, page_url, action_status, fail_reason) are parallel arrays -
+    the i-th element in each array corresponds to the same action.
     """
 
     __tablename__ = "EpisodicMemory"
@@ -22,10 +24,22 @@ class EpisodicMemory(Base):
     session_id = Column(Text, primary_key=True)
     actions = Column(Text, nullable=False)
     page_url = Column(Text, nullable=False)
+    action_status = Column(
+        Text, nullable=False
+    )  # JSON array of booleans, e.g., '[true, false, true]'
+    fail_reason = Column(
+        Text, nullable=True
+    )  # JSON array of strings/nulls, e.g., '[null, "timeout", null]'
 
     def __repr__(self):
-        return ("EpisodicMemory(session_id: {0}, actions: {1}, page_url: {2})").format(
-            self.session_id, self.actions, self.page_url
+        return (
+            "EpisodicMemory(session_id: {0}, actions: {1}, page_url: {2}, action_statuses: {3}, fail_reason: {4})"
+        ).format(
+            self.session_id,
+            self.actions,
+            self.page_url,
+            self.action_status,
+            self.fail_reason,
         )
 
 
