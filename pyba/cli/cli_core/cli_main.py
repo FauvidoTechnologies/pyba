@@ -66,7 +66,7 @@ class CLIMain(ArgParser):
 
         if self.arguments.operation_mode in {"DFS", "BFS"}:
             engine_configs["max_depth"] = self.arguments.max_depth
-            engine_configs["max_depth"] = self.arguments.max_breadth
+            engine_configs["max_breadth"] = self.arguments.max_breadth
 
         if self.arguments.operation_mode == "BFS":
             self.engine = BFS(**engine_configs)
