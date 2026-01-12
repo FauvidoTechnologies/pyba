@@ -229,6 +229,7 @@ class CodeGeneration:
             "    with sync_playwright() as p:\n"
             "        browser = p.chromium.launch(headless=False)\n"
             "        page = browser.new_page()\n\n"
+            "        page.goto('https://search.brave.com/')\n\n"
         )
 
         script_footer = (
