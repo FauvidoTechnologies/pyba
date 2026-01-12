@@ -39,6 +39,9 @@ oxymouse = "^1.1.0"
 sphinx = "<8.0.0"
 sphinx-rtd-theme = "^3.0.2"
 
+[tool.poetry.group.web.dependencies]
+streamlit = "^1.40.0"
+
 [tool.isort]
 profile = "black"
 line_length = 99

@@ -1,0 +1,67 @@
+.main .block-container {
+    padding-top: 2rem;
+    max-width: 1200px;
+}
+
+.stTextInput > div > div > input,
+.stTextArea > div > div > textarea,
+.stSelectbox > div > div > div {
+    border-radius: 4px !important;
+}
+
+.scan-card {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.scan-id {
+    font-family: monospace;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+    display: inline-block;
+}
+
+.status-running {
+    font-weight: 500;
+}
+
+.status-completed {
+    font-weight: 500;
+}
+
+.status-failed {
+    font-weight: 500;
+}
+
+.status-pending {
+    font-weight: 500;
+}
+
+.stButton > button {
+    border-radius: 4px !important;
+    padding: 0.5rem 2rem !important;
+}
+
+.stExpander {
+    border-radius: 4px !important;
+}
+
+.metric-card {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.metric-value {
+    font-family: monospace;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.metric-label {
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
