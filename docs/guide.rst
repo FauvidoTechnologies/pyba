@@ -69,6 +69,7 @@ The ``Step`` class provides interactive, step-by-step control over a persistent 
 
        # Step-specific
        max_actions_per_step=5,            # Max actions per instruction (default: 5)
+       get_output=False,                  # Ask the model for a summary when a step completes (default: False)
 
        # Stealth
        use_random=False,                  # Random mouse/scroll jitters

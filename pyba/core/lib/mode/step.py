@@ -34,7 +34,7 @@ class Step(BaseEngine):
         `enable_tracing`: Choose if you want to enable tracing. This will create a .zip file which you can use in traceviewer
         `trace_save_directory`: The directory where you want the .zip file to be saved
         `database`: An instance of the Database class which will define all database specific configs
-        `get_output`: In addition to these, the step engine uses another argument to enable or disable outputs after each step
+        `get_output`: When True, asks the model for a summarised output when a step completes. When False (default), step() silently returns None on completion
     """
 
     def __init__(

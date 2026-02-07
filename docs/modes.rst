@@ -113,7 +113,8 @@ Unlike other modes where a single ``run()`` call handles everything, Step mode s
 
    step = Step(
        openai_api_key="sk-...",
-       max_actions_per_step=5   # Max actions per instruction (default: 5)
+       max_actions_per_step=5,  # Max actions per instruction (default: 5)
+       get_output=False         # If True, asks the model for a summary when a step completes (default: False)
    )
 
 DFS Mode (Depth-First Search)
