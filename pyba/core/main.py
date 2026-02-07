@@ -198,11 +198,6 @@ class Engine(BaseEngine):
                             )
                         cleaned_dom = await self.extract_dom()
 
-                        # ==============================================================================================
-                        # TODO: Change the system prompt where I have written that IF the action is mentioned this means
-                        # It had failed. Now we will always mention the action, AND IT WILL NOT NECESSARILY mean that it
-                        # has failed..
-                        # ==============================================================================================
                         output = await self.retry_perform_action(
                             cleaned_dom=cleaned_dom.to_dict(),
                             prompt=prompt,
