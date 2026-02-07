@@ -27,7 +27,7 @@ main_engine_configs:
     model: "gpt-4o"
   gemini:
     provider: "gemini"
-    model: "gemini-3-flash-preview"
+    model: "gemini-2.5-flash"
 
   # Depth and breadth parameters for the exploratory mode
   max_depth: 5

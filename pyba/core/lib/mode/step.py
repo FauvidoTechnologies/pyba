@@ -21,6 +21,20 @@ class Step(BaseEngine):
     """
     Step-by-step browser automation. The user controls the loop externally
     by calling start(), step(), and stop().
+
+    Args:
+        `openai_api_key`: API key for OpenAI models should you want to use that
+        `vertexai_project_id`: Create a VertexAI project to use that instead of OpenAI
+        `vertexai_server_location`: VertexAI server location
+        `gemini_api_key`: API key for Gemini-2.5-pro native support without VertexAI
+        `use_random`: Enables mouse and scroll randomisations to evade bot detection
+        `headless`: Choose if you want to run in the headless mode or not
+        `handle_dependencies`: Choose if you want to automatically install dependencies during runtime
+        `use_logger`: Choose if you want to use the logger (that is enable logging of data)
+        `enable_tracing`: Choose if you want to enable tracing. This will create a .zip file which you can use in traceviewer
+        `trace_save_directory`: The directory where you want the .zip file to be saved
+        `database`: An instance of the Database class which will define all database specific configs
+        `get_output`: In addition to these, the step engine uses another argument to enable or disable outputs after each step
     """
 
     def __init__(
@@ -37,6 +51,7 @@ class Step(BaseEngine):
         trace_save_directory: str = None,
         max_actions_per_step: int = 5,
         database: Database = None,
+        get_output: bool = False,
     ):
         self.mode = "STEP"
         super().__init__(
@@ -62,6 +77,7 @@ class Step(BaseEngine):
         self._cleaned_dom = None
         self._playwright_context_manager = None
         self._pw = None
+        self.get_output = get_output
 
     async def start(self, automated_login_sites: List[str] = None):
         """
@@ -117,11 +133,16 @@ class Step(BaseEngine):
                 action_status=True,
             )
 
-            output = await self.generate_output(
-                action=action, cleaned_dom=self._cleaned_dom, prompt=prompt_step
-            )
-            if output:
-                return output
+            if self.get_output:
+                output = await self.generate_output(
+                    action=action, cleaned_dom=self._cleaned_dom, prompt=prompt_step
+                )
+                if output:
+                    return output
+
+            # Otherwise simply exit if no action
+            if not action:
+                return None
 
             self.log.action(action)
             value, fail_reason = await perform_action(self.page, action)
