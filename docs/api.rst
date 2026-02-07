@@ -13,9 +13,19 @@ Entry Points
 Engine
 ^^^^^^
 
-The main entry point for browser automation.
+The main entry point for autonomous browser automation.
 
 .. autoclass:: pyba.core.main.Engine
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Step (Step-by-Step)
+^^^^^^^^^^^^^^^^^^^
+
+Entry point for interactive step-by-step mode. The user controls the browser one instruction at a time via ``start()``, ``step()``, and ``stop()``.
+
+.. autoclass:: pyba.core.lib.mode.step.Step
    :members:
    :undoc-members:
    :show-inheritance:
@@ -26,16 +36,6 @@ DFS (Depth-First Search)
 Entry point for deep exploration mode.
 
 .. autoclass:: pyba.core.lib.mode.DFS.DFS
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Step (Step-by-Step)
-^^^^^^^^^^^^^^^^^^^
-
-Entry point for interactive step-by-step mode.
-
-.. autoclass:: pyba.core.lib.mode.step.Step
    :members:
    :undoc-members:
    :show-inheritance:

@@ -39,7 +39,7 @@ Besides, if you already have free API keys, you're golden.
 Key Features
 ------------
 
-- **Three Exploration Modes**: Normal, DFS (depth-first), and BFS (breadth-first) for different use cases
+- **Four Exploration Modes**: Normal, Step (interactive step-by-step), DFS (depth-first), and BFS (breadth-first)
 - **Code Generation**: Export any successful run as a standalone Python script
 - **Trace Files**: Every run generates a Playwright ``trace.zip`` for debugging
 - **Stealth Mode**: Anti-fingerprinting, random mouse movements, human-like delays
