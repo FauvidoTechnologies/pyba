@@ -1438,21 +1438,25 @@ voice-helpers = ["numpy (>=2.0.2)", "sounddevice (>=0.5.1)"]
 
 [[package]]
 name = "oxymouse"
-version = "1.1.0"
-description = ""
+version = "1.1.1"
+description = "Oxy®Mouse - algorithms for generating mouse movements!"
 optional = false
-python-versions = "<4.0,>=3.10"
+python-versions = "^3.10"
 groups = ["main"]
-files = [
-    {file = "oxymouse-1.1.0-py3-none-any.whl", hash = "sha256:4ddf5afe4ea28498701206d025e66d5e4474947afa9d5b8c50619a361036341a"},
-    {file = "oxymouse-1.1.0.tar.gz", hash = "sha256:33be267706c2b1174059d082797d11cbe66da276ffb070e189f136997e7bca7c"},
-]
+files = []
+develop = false
 
 [package.dependencies]
-matplotlib = ">=3.9.2,<3.10.0"
-noise = ">=1.2.2,<1.3.0"
-pyhm = ">=0.0.7,<0.1.0"
-typer = ">=0.12.5,<0.13.0"
+matplotlib = "~3.9.2"
+noise = "~1.2.2"
+pyhm = "~0.0.7"
+typer = ">=0.12.5,<0.16"
+
+[package.source]
+type = "git"
+url = "https://github.com/purge12/oxymouse-fork.git"
+reference = "v1.1.0-patched"
+resolved_reference = "f9d10268c73f464c8fc9379f726c817cd0ab568b"
 
 [[package]]
 name = "packaging"
@@ -2915,4 +2919,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "66d5754b0601a5ff668c3f8c87f5d99937d46f1f3af64ccb196132cfe2ef8803"
+content-hash = "fda5311424660a873fee9e85ee79eaeac775d435df6a75f2fed2e5e9d575b5e7"
