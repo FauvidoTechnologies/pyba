@@ -10,6 +10,7 @@ from pyba.utils.prompts.planner_agent_prompt import (
     planner_general_prompt_DFS,
     planner_general_prompt_BFS,
 )
+from pyba.utils.prompts.step_system_prompt import step_system_prompt as step_system_instruction
 from pyba.utils.prompts.extraction_prompts import (
     extraction_system_instruction,
     extraction_general_instruction,

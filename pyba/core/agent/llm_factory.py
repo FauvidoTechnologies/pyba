@@ -12,6 +12,7 @@ from pyba.utils.exceptions import IncorrectMode
 from pyba.utils.load_yaml import load_config
 from pyba.utils.prompts import (
     system_instruction,
+    step_system_instruction,
     output_system_instruction,
     BFS_planner_system_instruction,
     DFS_planner_system_instruction,
@@ -157,8 +158,10 @@ class LLMFactory:
             A tuple containing the action and output agent
         """
 
+        action_system = step_system_instruction if self.mode == "STEP" else system_instruction
+
         action_agent = init_method(
-            system_instruction=system_instruction, response_schema=PlaywrightResponse
+            system_instruction=action_system, response_schema=PlaywrightResponse
         )
         output_agent = init_method(
             system_instruction=output_system_instruction, response_schema=OutputResponseFormat
@@ -234,7 +237,7 @@ class LLMFactory:
         this endpoint is called, the mode must be specified correctly.
 
         Args:
-            `mode`: DFS|BFS. Both these modes have their own system prompts.
+            `mode`: DFS|BFS|STEP. ALl three of these modes have their own system prompts.
 
         The mode must be specified. If mode is None, then planner-agent shouldn't be called.
 
@@ -242,7 +245,7 @@ class LLMFactory:
             A single agent for a particular provider
         """
 
-        if self.mode not in ("BFS", "DFS", "Normal"):
+        if self.mode not in ("BFS", "DFS", "Normal", "STEP"):
             raise IncorrectMode(mode=self.mode)
 
         if self.engine.provider == "openai":
