@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py-browser-automation"
-version = "0.3.21"
+version = "0.3.22"
 description = "Automate online browsing using python and AI"
 authors = ["pUrGe12 <achintya.jai@owasp.org>"]
 keywords = [
