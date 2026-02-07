@@ -30,6 +30,16 @@ Entry point for deep exploration mode.
    :undoc-members:
    :show-inheritance:
 
+Step (Step-by-Step)
+^^^^^^^^^^^^^^^^^^^
+
+Entry point for interactive step-by-step mode.
+
+.. autoclass:: pyba.core.lib.mode.step.Step
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 BFS (Breadth-First Search)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 

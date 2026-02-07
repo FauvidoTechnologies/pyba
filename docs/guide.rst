@@ -42,6 +42,56 @@ The ``Engine`` class is the main entry point for PyBA. Here are all available op
        database=None,                     # Database instance for logging
    )
 
+Step-by-Step Configuration
+--------------------------
+
+The ``Step`` class provides interactive, step-by-step control over a persistent browser:
+
+.. code-block:: python
+
+   from pyba import Step, Database
+
+   step = Step(
+       # LLM Provider (choose one)
+       openai_api_key="sk-...",           # OpenAI API key
+       gemini_api_key="...",              # Google Gemini API key
+       vertexai_project_id="...",         # VertexAI project ID
+       vertexai_server_location="...",    # VertexAI region
+
+       # Browser Settings
+       headless=False,                    # Always visible by default
+       handle_dependencies=False,         # Auto-install Playwright deps
+
+       # Logging & Tracing
+       use_logger=False,                  # Print actions to console
+       enable_tracing=False,              # Generate trace.zip files
+       trace_save_directory=None,         # Where to save traces
+
+       # Step-specific
+       max_actions_per_step=5,            # Max actions per instruction (default: 5)
+
+       # Stealth
+       use_random=False,                  # Random mouse/scroll jitters
+
+       # Database
+       database=None,                     # Database instance for logging
+   )
+
+**The Step lifecycle:**
+
+.. code-block:: python
+
+   # 1. Launch the browser
+   await step.start(automated_login_sites=["instagram"])  # Optional login sites
+
+   # 2. Feed instructions one at a time
+   await step.step("Go to my Instagram profile")
+   await step.step("Click on the first post")
+   output = await step.step("Extract the caption and like count")
+
+   # 3. Shut down
+   await step.stop()
+
 Running Tasks
 -------------
 

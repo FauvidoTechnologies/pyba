@@ -110,25 +110,42 @@ engine.sync_run(
 
 ---
 
-## Three Exploration Modes
+## Four Exploration Modes
 
 | Mode | Use Case | Example |
 |------|----------|---------|
 | **Normal** | Direct task execution | "Fill out this form and submit" |
+| **Step** | Interactive, step-by-step control | "Click here" → "Now search for X" → "Extract that" |
 | **DFS** | Deep investigation | "Analyze this GitHub user's contribution patterns" |
 | **BFS** | Wide discovery | "Map all pages linked from this homepage" |
 
 ```python
-from pyba import Engine, DFS, BFS
+from pyba import Engine, Step, DFS, BFS
 
 # Normal mode (default)
 engine = Engine(openai_api_key="...")
+
+# Step-by-step interactive mode
+step = Step(openai_api_key="...")
 
 # Deep-first exploration
 dfs = DFS(openai_api_key="...")
 
 # Breadth-first discovery
 bfs = BFS(openai_api_key="...")
+```
+
+### Interactive Step-by-Step Automation
+```python
+from pyba import Step
+
+step = Step(openai_api_key="sk-...")
+
+await step.start()
+await step.step("Go to google.com and search for 'playwright python'")
+await step.step("Click the first result")
+output = await step.step("Extract the installation instructions")
+await step.stop()
 ```
 
 ---

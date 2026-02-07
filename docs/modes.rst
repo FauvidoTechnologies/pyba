@@ -1,7 +1,7 @@
 Exploration Modes
 =================
 
-PyBA supports three exploration modes designed for different use cases. This page explains when and how to use each.
+PyBA supports four exploration modes designed for different use cases. This page explains when and how to use each.
 
 .. contents::
    :local:
@@ -14,6 +14,8 @@ Overview
 | Mode     | Use Case            | How It Works                             |
 +==========+=====================+==========================================+
 | Normal   | Direct tasks        | Execute actions sequentially until done  |
++----------+---------------------+------------------------------------------+
+| Step     | Interactive control | User feeds instructions one at a time    |
 +----------+---------------------+------------------------------------------+
 | DFS      | Deep investigation  | One detailed plan at a time, retry with  |
 |          |                     | new plans if stuck                       |
@@ -50,6 +52,68 @@ The default mode. Best for straightforward tasks with clear steps.
    engine = Engine(
        openai_api_key="sk-...",
        max_depth=20   # Maximum actions before stopping
+   )
+
+Step Mode
+---------
+
+Step mode gives you interactive, step-by-step control over a persistent browser session. You feed one instruction at a time, and the browser stays open between calls.
+
+Unlike other modes where a single ``run()`` call handles everything, Step mode splits the lifecycle into three methods:
+
+- ``start()`` launches the browser
+- ``step()`` executes one instruction
+- ``stop()`` tears down the browser
+
+.. code-block:: python
+
+   from pyba import Step
+
+   step = Step(openai_api_key="sk-...")
+
+   await step.start()
+
+   await step.step("Go to google.com and search for 'playwright python'")
+   await step.step("Click the first result")
+   output = await step.step("Extract the installation instructions")
+
+   await step.stop()
+
+**How Step Works:**
+
+1. ``start()`` launches a stealth browser and keeps it alive on the instance
+2. Each ``step()`` call takes one user instruction and executes up to ``max_actions_per_step`` actions to fulfill it
+3. The model tracks what it did within a single ``step()`` call to avoid repeating actions
+4. When the model decides the instruction is complete, it returns an output
+5. The DOM is re-extracted after each action so the next call has a fresh view
+6. ``stop()`` saves the trace and shuts down the browser
+
+**When to use Step mode:**
+
+- Interactive workflows where you want control between instructions
+- Debugging or exploring a site manually with AI assistance
+- Building conversational browser agents
+- When you want to inspect results between actions
+
+**Sync usage:**
+
+.. code-block:: python
+
+   step = Step(openai_api_key="sk-...")
+
+   step.sync_start()
+   step.sync_step("Go to news.ycombinator.com")
+   step.sync_step("Click the top story")
+   output = step.sync_step("Extract the title and top 3 comments")
+   step.sync_stop()
+
+**Configuration:**
+
+.. code-block:: python
+
+   step = Step(
+       openai_api_key="sk-...",
+       max_actions_per_step=5   # Max actions per instruction (default: 5)
    )
 
 DFS Mode (Depth-First Search)
@@ -174,7 +238,10 @@ All modes share these parameters:
    trace_save_directory=None      # Where to save traces
    database=None                  # Database instance
 
-   # Mode-specific (DFS and BFS)
+   # Step-specific
+   max_actions_per_step=5         # Max actions per instruction
+
+   # DFS and BFS-specific
    max_depth=10                   # Actions per plan
    max_breadth=5                  # DFS: plans to try, BFS: parallel plans
 
@@ -191,6 +258,12 @@ Choosing the Right Mode
      - Normal
    * - Scrape a single page
      - Normal
+   * - Interactive browser exploration
+     - Step
+   * - Conversational browser agent
+     - Step
+   * - Debugging a workflow step by step
+     - Step
    * - Investigate a person/company
      - DFS
    * - Follow a chain of links

@@ -20,7 +20,7 @@ PyBA follows a layered architecture:
                               │
                               ▼
    ┌─────────────────────────────────────────────────────────────┐
-   │              Entry Points: Engine, DFS, BFS                 │
+   │           Entry Points: Engine, Step, DFS, BFS              │
    │                    (pyba/core/main.py)                      │
    │                 (pyba/core/lib/mode/*.py)                   │
    └─────────────────────────────────────────────────────────────┘
@@ -51,7 +51,7 @@ Directory Structure
 .. code-block:: text
 
    pyba/
-   ├── __init__.py              # Public exports: Engine, Database, DFS, BFS
+   ├── __init__.py              # Public exports: Engine, Database, Step, DFS, BFS
    ├── config.yaml              # Default configuration
    ├── logger.py                # Logging setup
    ├── version.py               # Version string
@@ -75,6 +75,7 @@ Directory Structure
    │   │   ├── handle_dependencies.py  # Playwright setup
    │   │   └── mode/            # Exploration modes
    │   │       ├── base.py      # BaseEngine (shared logic)
+   │   │       ├── step.py      # Step-by-step interactive mode
    │   │       ├── DFS.py       # Depth-first search
    │   │       └── BFS.py       # Breadth-first search
    │   │
@@ -125,13 +126,13 @@ The public API. Users import from here:
 
 .. code-block:: python
 
-   from pyba import Engine, Database, DFS, BFS
+   from pyba import Engine, Database, Step, DFS, BFS
 
 This file re-exports:
 
 - ``Engine`` from ``pyba.core.main``
 - ``Database`` from ``pyba.database``
-- ``DFS``, ``BFS`` from ``pyba.core.lib``
+- ``Step``, ``DFS``, ``BFS`` from ``pyba.core.lib``
 
 The Engine Class
 ----------------
@@ -146,15 +147,16 @@ The ``Engine`` class is the main entry point for normal mode automation.
 
    BaseEngine (pyba/core/lib/mode/base.py)
         │
-        └── Engine (pyba/core/main.py)
-        └── DFS (pyba/core/lib/mode/DFS.py)
+        ├── Engine (pyba/core/main.py)
+        ├── Step (pyba/core/lib/mode/step.py)
+        ├── DFS (pyba/core/lib/mode/DFS.py)
         └── BFS (pyba/core/lib/mode/BFS.py)
 
 **Key attributes:**
 
 - ``session_id``: Unique identifier for this run
 - ``playwright_agent``: The agent that decides actions
-- ``mode``: "Normal", "DFS", or "BFS"
+- ``mode``: "Normal", "STEP", "DFS", or "BFS"
 - ``max_depth``: Maximum actions to take
 
 **The run() method flow:**
@@ -638,6 +640,59 @@ Execution Flow Diagram
    Log to database                  │
          │                          │
          └──────────────────────────┘
+
+**Step Mode:**
+
+.. code-block:: text
+
+   User calls step.start()
+         │
+         ▼
+   Launch browser with Stealth
+         │
+         ▼
+   Create context & page
+         │
+         ▼
+   Extract initial DOM
+         │
+         ▼
+   Return control to user
+         │
+         ▼
+   User calls step.step(instruction)
+         │
+         ▼
+   FOR up to max_actions_per_step: ◄──┐
+         │                            │
+         ▼                            │
+   PlaywrightAgent.process_action()   │
+         │                            │
+         ▼                            │
+   Action is None? ───Yes──► Return output to user
+         │                            │
+         No                           │
+         │                            │
+         ▼                            │
+   PlaywrightActionPerformer          │
+         │                            │
+         ▼                            │
+   Action failed? ───Yes──► Retry     │
+         │                            │
+         No                           │
+         │                            │
+         ▼                            │
+   Update previous_action             │
+   Extract new DOM ───────────────────┘
+         │
+         ▼
+   Return control to user
+         │
+         ▼
+   User calls step.stop()
+         │
+         ▼
+   Save trace & close browser
 
 **DFS Mode:**
 

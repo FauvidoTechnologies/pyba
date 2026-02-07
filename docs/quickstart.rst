@@ -172,11 +172,46 @@ Generate trace files for debugging with Playwright Trace Viewer:
 
    # Open the trace with: npx playwright show-trace /tmp/traces/<session_id>_trace.zip
 
+Step-by-Step Mode
+-----------------
+
+Want to control the browser interactively, one instruction at a time?
+
+.. code-block:: python
+
+   from pyba import Step
+
+   step = Step(openai_api_key="sk-...")
+
+   # Launch a persistent browser
+   await step.start()
+
+   # Feed instructions one at a time
+   await step.step("Go to news.ycombinator.com")
+   await step.step("Click the top story")
+   output = await step.step("Extract the title and all comments")
+   print(output)
+
+   # Done
+   await step.stop()
+
+The browser stays open between ``step()`` calls, so you can inspect results and decide what to do next.
+
+**Synchronous version:**
+
+.. code-block:: python
+
+   step = Step(openai_api_key="sk-...")
+   step.sync_start()
+   step.sync_step("Go to news.ycombinator.com")
+   output = step.sync_step("Get the top 3 headlines")
+   step.sync_stop()
+
 Next Steps
 ----------
 
 - :doc:`guide` — Full feature walkthrough
-- :doc:`modes` — Learn about DFS and BFS exploration modes
+- :doc:`modes` — Learn about Normal, Step, DFS and BFS exploration modes
 - :doc:`cli` — Use PyBA from the command line
 - :doc:`architecture` — Understand how PyBA works internally
 
