@@ -2,7 +2,7 @@ from typing import Optional
 
 from pyba import Engine
 from pyba.cli.cli_core.arg_parser import ArgParser
-from pyba.core.lib import DFS, BFS
+from pyba.core.lib import DFS, BFS, Step
 from pyba.database import Database
 
 
@@ -72,6 +72,8 @@ class CLIMain(ArgParser):
             self.engine = BFS(**engine_configs)
         elif self.arguments.operation_mode == "DFS":
             self.engine = DFS(**engine_configs)
+        elif self.arguments.operation_mode == "STEP":
+            self.engine = Step(**engine_configs)
         else:
             self.engine = Engine(**engine_configs)
 
@@ -79,7 +81,23 @@ class CLIMain(ArgParser):
         """
         The CLI run function which calls the main runner with the instantiated arguments
         """
-        self.engine.sync_run(self.task, automated_login_sites=self.automated_login_sites)
+        if self.mode == "STEP":
+            self.engine.sync_start(automated_login_sites=self.automated_login_sites)
+            try:
+                while True:
+                    instruction = input(">> ").strip()
+                    if not instruction:
+                        continue
+                    if instruction == "quit":
+                        break
+                    output = self.engine.sync_step(instruction)
+                    if output:
+                        print(f"[output] {output}")
+            finally:
+                self.engine.sync_stop()
+        else:
+            self.engine.sync_run(self.task, automated_login_sites=self.automated_login_sites)
+
         if self.generate_code:
             self.engine.generate_code(output_path=self.code_output_path)
 

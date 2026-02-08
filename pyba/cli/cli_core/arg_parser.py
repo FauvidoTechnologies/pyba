@@ -133,7 +133,7 @@ class ArgParser(ArgumentParser):
             action="store",
             dest="operation_mode",
             default="Normal",
-            help="Select the operation mode from (DFS|BFS|Normal), defaults at Normal mode",
+            help="Select the operation mode from (DFS|BFS|STEP|Normal), defaults at Normal mode",
         )
 
         base_parser.add_argument(
@@ -271,9 +271,9 @@ class ArgParser(ArgumentParser):
                 print(f"Automated login enabled for: {site}")
 
         if options.operation_mode:
-            if options.operation_mode not in {"DFS", "BFS", "Normal"}:
+            if options.operation_mode not in {"DFS", "BFS", "Normal", "STEP"}:
                 print(
-                    f"Mode of operation '{options.operation_mode}' not recognized! Please choose from (BFS|DFS|Normal)"
+                    f"Mode of operation '{options.operation_mode}' not recognized! Please choose from (BFS|DFS|STEP|Normal)"
                 )
                 sys.exit(0)
 

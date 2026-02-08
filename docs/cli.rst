@@ -31,7 +31,7 @@ Run a simple task:
 Modes
 -----
 
-The CLI has two main modes:
+The CLI has three main modes:
 
 normal
 ^^^^^^
@@ -117,9 +117,10 @@ Exploration Modes
 
 .. code-block:: bash
 
-   --op-mode BFS       # Breadth-first search
+   --op-mode Normal    # Default autonomous mode
+   --op-mode STEP      # Interactive step-by-step mode
    --op-mode DFS       # Depth-first search
-   --op-mode Normal    # Default mode
+   --op-mode BFS       # Breadth-first search
 
    --max-depth 10      # Actions per plan (DFS/BFS)
    --max-breadth 5     # Number of plans (BFS) or retries (DFS)
@@ -231,6 +232,28 @@ Using Gemini
      -n /tmp/pyba.db \
      -t "search for Python tutorials" \
      --gemini-api-key "$GEMINI_API_KEY"
+
+Step-by-Step Mode
+^^^^^^^^^^^^^^^^^
+
+In STEP mode, the CLI launches a persistent browser and reads instructions from the terminal one at a time:
+
+.. code-block:: bash
+
+   pyba normal \
+     --op-mode STEP \
+     --openai-api-key "sk-..."
+
+You will be prompted for instructions interactively:
+
+.. code-block:: text
+
+   >> Go to youtube.com
+   >> Search for rickroll
+   >> Click the first video
+   >> quit
+
+Type ``quit`` to stop the session.
 
 BFS Exploration Mode
 ^^^^^^^^^^^^^^^^^^^^
