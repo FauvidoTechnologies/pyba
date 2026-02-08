@@ -1455,8 +1455,8 @@ typer = ">=0.12.5,<0.16"
 [package.source]
 type = "git"
 url = "https://github.com/purge12/oxymouse-fork.git"
-reference = "v1.1.0-patched"
-resolved_reference = "f9d10268c73f464c8fc9379f726c817cd0ab568b"
+reference = "v1.1.1-patched"
+resolved_reference = "9c9c4179b1edfae8ecce45404a4c7d1699d72e7a"
 
 [[package]]
 name = "packaging"
@@ -2919,4 +2919,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "fda5311424660a873fee9e85ee79eaeac775d435df6a75f2fed2e5e9d575b5e7"
+content-hash = "b4a7bee8223f4fc598ac4aa035c0b678abdf8696b2d551f5fffe47d48beb38b7"
