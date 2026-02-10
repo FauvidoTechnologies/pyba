@@ -33,7 +33,6 @@ class Engine(BaseEngine):
         `trace_save_directory`: The directory where you want the .zip file to be saved
         `max_depth`: The maximum number of actions that you want the model to execute
         `database`: An instance of the Database class which will define all database specific configs
-        `model_name`: The model name for the specific API key being referenced
 
     Find these default values at `pyba/config.yaml`.
 
@@ -57,7 +56,6 @@ class Engine(BaseEngine):
         trace_save_directory: str = None,
         max_depth: int = config["main_engine_configs"]["max_iteration_steps"],
         database: Database = None,
-        model_name: str = None,
     ):
         self.mode = "Normal"
         # Passing the common setup to the BaseEngine
