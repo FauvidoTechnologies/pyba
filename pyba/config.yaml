@@ -4,7 +4,7 @@ main_engine_configs:
   max_iteration_steps: 100
   input_field_test_value: "PyBA"
   headless_mode: False        # By default, doesn't run in the headless mode
-  handle_dependencies: True   # By default, we try to install all the recommended dependencies
+  handle_dependencies: False   # By default, we try to install all the recommended dependencies
   enable_tracing: True        # By default, we allow for tracing of the activity
   exploratory_mode: False     # Will not be running in exploratory mode by default
   use_random: False           # Will not use random jitters for human movements by default (slightly faster)
