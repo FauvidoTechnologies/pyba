@@ -33,7 +33,7 @@ playwright-stealth = "^2.0.0"
 colorama = "^0.4.6"
 sqlalchemy = "^2.0.44"
 requests = "^2.32.5"
-oxymouse = { git = "https://github.com/purge12/oxymouse-fork.git", tag = "v1.1.1-patched" }
+oxymouse = "^1.1.0"
 
 [tool.poetry.group.docs.dependencies]
 sphinx = "<8.0.0"
