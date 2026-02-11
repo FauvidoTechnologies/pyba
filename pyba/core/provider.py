@@ -59,27 +59,38 @@ class Provider:
             raise ServerLocationUndefined(self.location)
 
         if (
-            self.openai_api_key
-            and self.vertexai_project_id
+            (self.openai_api_key and self.vertexai_project_id)
             or (self.vertexai_project_id and self.gemini_api_key)
             or (self.openai_api_key and self.gemini_api_key)
         ):
-            self.log.warning(
-                "You've defined more than one LLM keys, we're choosing to go with openai!"
-            )
-            self.provider = config["openai"]["provider"]
-            self.vertexai_project_id = None
-            self.location = None
+            if self.openai_api_key:
+                self.log.warning(
+                    "You've defined more than one LLM keys, we're choosing to go with openai!"
+                )
+                self.provider = config["openai"]["provider"]
+                self.vertexai_project_id = None
+                self.location = None
+                self.gemini_api_key = None
+            elif self.vertexai_project_id:
+                self.log.warning(
+                    "You've defined more than one LLM keys, we're choosing to go with vertexai!"
+                )
+                self.provider = config["vertexai"]["provider"]
+                self.gemini_api_key = None
+            else:
+                self.log.warning(
+                    "You've defined more than one LLM keys, we're choosing to go with gemini!"
+                )
+                self.provider = config["gemini"]["provider"]
+                self.vertexai_project_id = None
+                self.location = None
 
         elif self.vertexai_project_id:
-            # Assuming that we don't have an openai_api_key
-            provider = config["vertexai"]["provider"]
+            self.provider = config["vertexai"]["provider"]
         elif self.openai_api_key:
-            provider = config["openai"]["provider"]
+            self.provider = config["openai"]["provider"]
         else:
-            provider = config["gemini"]["provider"]
-
-        self.provider = provider
+            self.provider = config["gemini"]["provider"]
 
     def handle_model(self, provider: str):
         """
