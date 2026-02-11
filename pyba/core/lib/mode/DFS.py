@@ -88,7 +88,7 @@ class DFS(BaseEngine):
         self.planner_agent = PlannerAgent(engine=self)
 
         self.max_depth = max_depth
-        self.max_breadth = max_depth
+        self.max_breadth = max_breadth
         self.old_plan = None  # A variable to hold the old plan for the planner agent to understand what has been done already
 
     async def run(
