@@ -147,25 +147,14 @@ class Engine(BaseEngine):
                 self.context = await self.get_trace_context()
                 self.page = await self.context.new_page()
                 cleaned_dom = await initial_page_setup(self.page)
+                previous_action = None
 
                 for steps in range(0, self.max_depth):
-                    # If LoginEngines have been chosen then self.automated_login_engine_classes will be populated
                     login_attempted_successfully = await self.attempt_login()
                     if login_attempted_successfully:
                         cleaned_dom = await self.successful_login_clean_and_get_dom()
-                        # Jump to the next iteration of the loop
                         continue
 
-                    # Get an actionable PlaywrightResponse from the models, along with `extracted results` if any
-
-                    # NOTE: This function needs to actually fetch history, but right now its fetching the previous_action only
-                    # We need to ensure that we store the previous action REGARDLESS of whether a database has been provided by
-                    # the user or not
-
-                    # history = self.fetch_history()
-                    previous_action = (
-                        self.fetch_history()
-                    )  # This needs to change... Do not forget to change this in DFS mode as well.
                     action = self.fetch_action(
                         cleaned_dom=cleaned_dom.to_dict(),
                         user_prompt=prompt,
@@ -185,12 +174,9 @@ class Engine(BaseEngine):
 
                     self.log.action(action)
 
-                    # If its not None, then perform it
                     value, fail_reason = await perform_action(self.page, action)
 
                     if value is None:
-                        # This means the action failed due to whatever reason. The best bet is to
-                        # pass in the latest cleaned_dom and get the output again
                         if self.db_funcs:
                             self.db_funcs.push_to_episodic_memory(
                                 session_id=self.session_id,
@@ -204,8 +190,8 @@ class Engine(BaseEngine):
                         output = await self.retry_perform_action(
                             cleaned_dom=cleaned_dom.to_dict(),
                             prompt=prompt,
-                            previous_action=previous_action,
-                            action_status=False,  # This is pretty much unncessary because passing a fail_reason DOES mean that action failed, but it makes it a little more coherent
+                            previous_action=str(action),
+                            action_status=False,
                             fail_reason=fail_reason,
                         )
 
@@ -213,16 +199,17 @@ class Engine(BaseEngine):
                             await self.save_trace()
                             await self.shut_down()
                             return output
+                    else:
+                        if self.db_funcs:
+                            self.db_funcs.push_to_episodic_memory(
+                                session_id=self.session_id,
+                                action=str(action),
+                                page_url=str(self.page.url),
+                                action_status=True,
+                                fail_reason=None,
+                            )
 
-                    # Else, get the new DOM and restart loop
-                    if self.db_funcs:
-                        self.db_funcs.push_to_episodic_memory(
-                            session_id=self.session_id,
-                            action=str(action),
-                            page_url=str(self.page.url),
-                            action_status=True,  # Defaults to true anyway so I don't HAVE to do this
-                            fail_reason=None,
-                        )
+                    previous_action = str(action)
                     cleaned_dom = await self.extract_dom()
         finally:
             await self.save_trace()

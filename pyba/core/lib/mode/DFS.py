@@ -129,37 +129,24 @@ class DFS(BaseEngine):
                 cleaned_dom = await initial_page_setup(self.page)
 
                 for steps in range(0, self.max_breadth):
-                    # The breadth specifies the number of different plans we can execute
                     plan = self.planner_agent.generate(task=prompt, old_plan=self.old_plan)
                     self.log.info(f"This is the plan for a DFS: {plan}")
+                    previous_action = None
 
                     for _ in range(0, self.max_depth):
-                        # The depth is the number of actions for each plan
-                        # First check for login
                         login_attempted_successfully = await self.attempt_login()
-                        # We'll count logging in as another step in the process
                         if login_attempted_successfully:
                             cleaned_dom = await self.successful_login_clean_and_get_dom()
                             continue
-                        # Get an actionable element from the playwright agent
 
-                        # NOTE: This function needs to actually fetch history, but right now its fetching the previous_action only
-                        # We need to ensure that we store the previous action REGARDLESS of whether a database has been provided by
-                        # the user or not
-
-                        # history = self.fetch_history()
-                        previous_action = self.fetch_history()  # This part needs to change...
-
-                        # TODO: This needs to be fixed with the right history implementation
                         action = self.fetch_action(
                             cleaned_dom=cleaned_dom.to_dict(),
                             user_prompt=plan,
                             previous_action=previous_action,
                             extraction_format=extraction_format,
-                            action_status=True,  # How do I get the result of the previous action without querying it from the DB?
+                            action_status=True,
                             fail_reason=None,
                         )
-                        # Check if the automation has finished and if so, get the output
                         output = await self.generate_output(
                             action=action, cleaned_dom=cleaned_dom, prompt=plan
                         )
@@ -167,13 +154,11 @@ class DFS(BaseEngine):
                             await self.save_trace()
                             await self.shut_down()
                             return output
-                        # If not, store the action and perform the action
+
                         self.log.action(action)
 
                         value, fail_reason = await perform_action(self.page, action)
                         if value is None:
-                            # This means the action failed due to whatever reason. The best bet is to
-                            # pass in the latest cleaned_dom and get the output again
                             if self.db_funcs:
                                 self.db_funcs.push_to_episodic_memory(
                                     session_id=self.session_id,
@@ -186,23 +171,25 @@ class DFS(BaseEngine):
                             output = await self.retry_perform_action(
                                 cleaned_dom=cleaned_dom.to_dict(),
                                 prompt=plan,
-                                previous_action=previous_action,
-                                action_status=False,  # This is pretty much unncessary because passing a fail_reason DOES mean that action failed, but it makes it a little more coherent
+                                previous_action=str(action),
+                                action_status=False,
                                 fail_reason=fail_reason,
                             )
                             if output:
                                 await self.save_trace()
                                 await self.shut_down()
                                 return output
-                        # Picking the clean DOM now
-                        if self.db_funcs:
-                            self.db_funcs.push_to_episodic_memory(
-                                session_id=self.session_id,
-                                action=str(action),
-                                page_url=str(self.page.url),
-                                action_status=True,
-                                fail_reason=None,
-                            )
+                        else:
+                            if self.db_funcs:
+                                self.db_funcs.push_to_episodic_memory(
+                                    session_id=self.session_id,
+                                    action=str(action),
+                                    page_url=str(self.page.url),
+                                    action_status=True,
+                                    fail_reason=None,
+                                )
+
+                        previous_action = str(action)
                         cleaned_dom = await self.extract_dom()
 
                     self.log.warning(

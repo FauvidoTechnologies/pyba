@@ -120,17 +120,14 @@ class BFS(BaseEngine):
                 context = await self.get_trace_context(browser_instance=browser)
                 page = await context.new_page()
                 cleaned_dom = await initial_page_setup(page)
+                previous_action = None
 
                 for _ in range(0, self.max_depth):
-                    # The depth is the number of actions for each plan
-                    # First check for login
                     login_attempted_successfully = await self.attempt_login(page)
-                    # We'll count logging in as another step in the process
                     if login_attempted_successfully:
                         cleaned_dom = await self.successful_login_clean_and_get_dom()
                         continue
-                    # Get an actionable element from the playwright agent
-                    previous_action = self.fetch_history()  # We need to fix history implementation for multiple agents in parallel as well!
+
                     action = self.fetch_action(
                         cleaned_dom=cleaned_dom.to_dict(),
                         user_prompt=task,
@@ -140,7 +137,6 @@ class BFS(BaseEngine):
                         action_status=True,
                         fail_reason=None,
                     )
-                    # Check if the automation has finished and if so, get the output
                     output = await self.generate_output(
                         action=action, cleaned_dom=cleaned_dom, prompt=task
                     )
@@ -148,13 +144,11 @@ class BFS(BaseEngine):
                         await self.save_trace()
                         await self.shut_down()
                         return output
-                    # If not, perform the action
+
                     self.log.action(action)
 
                     value, fail_reason = await perform_action(page, action)
                     if value is None:
-                        # This means the action failed due to whatever reason. The best bet is to
-                        # pass in the latest cleaned_dom and get the output again
                         if self.db_funcs:
                             self.db_funcs.push_to_bfs_episodic_memory(
                                 session_id=self.session_id,
@@ -166,7 +160,7 @@ class BFS(BaseEngine):
                         output = await self.retry_perform_action(
                             cleaned_dom=cleaned_dom.to_dict(),
                             prompt=task,
-                            previous_action=previous_action,
+                            previous_action=str(action),
                             action_status=False,
                             fail_reason=fail_reason,
                             page=page,
@@ -175,17 +169,16 @@ class BFS(BaseEngine):
                             await self.save_trace(context)
                             await self.shut_down(context, browser)
                             return output
-                        # Continue to the next iteration after retry
-                        continue
+                    else:
+                        if self.db_funcs:
+                            self.db_funcs.push_to_bfs_episodic_memory(
+                                session_id=self.session_id,
+                                context_id=context_id,
+                                action=str(action),
+                                page_url=str(page.url),
+                            )
 
-                    # Action succeeded, log and get the new DOM
-                    if self.db_funcs:
-                        self.db_funcs.push_to_bfs_episodic_memory(
-                            session_id=self.session_id,
-                            context_id=context_id,
-                            action=str(action),
-                            page_url=str(page.url),
-                        )
+                    previous_action = str(action)
                     cleaned_dom = await self.extract_dom(page)
 
                 self.log.warning(
