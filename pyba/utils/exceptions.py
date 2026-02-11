@@ -68,3 +68,26 @@ class IncorrectMode(Exception):
         super().__init__(
             f"Mode {mode} is not supported. Please choose between DFS or BFS and enter as a string"
         )
+
+
+class UnsupportedModelUsed(Exception):
+    """
+    Exception to be raised when the model specified by the user is not supported
+    """
+
+    def __init__(self, model_name: str, valid_model_names: list):
+        super().__init__(
+            f"The model {model_name} is not supposed. Please choose one from {valid_model_names}"
+        )
+
+
+class InvalidModelSelected(Exception):
+    """
+    Exception to be raised when the model chosen by the user doesn't fall under the
+    provider for whom the keys are specified
+    """
+
+    def __init__(self, model_name: str, provider: str, provider_valid_models: list):
+        super().__init__(
+            f"The model {model_name} is not supported by the provider {provider}. For the provider specified, please choose from the following: {provider_valid_models}"
+        )

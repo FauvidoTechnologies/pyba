@@ -46,6 +46,7 @@ class BaseEngine:
         vertexai_project_id: str = None,
         vertexai_server_location: str = None,
         gemini_api_key: str = None,
+        model_name: str = None,
     ):
         self.headless_mode = headless
         self.tracing = enable_tracing
@@ -72,6 +73,7 @@ class BaseEngine:
             gemini_api_key=gemini_api_key,
             vertexai_project_id=vertexai_project_id,
             vertexai_server_location=vertexai_server_location,
+            model_name=model_name,
         )
 
         self.provider = provider_instance.provider

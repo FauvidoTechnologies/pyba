@@ -21,13 +21,26 @@ main_engine_configs:
   # Default values for the LLMs
   vertexai:
     provider: "vertexai"
-    model: "gemini-2.5-flash"
+    model: "gemini-3-pro-preview"
+    available_models:
+      - "gemini-2.5-flash"
+      - "gemini-2.5-pro"
+      - "gemini-3-pro-preview"
+      - "gemini-3-flash-preview"
   openai:
     provider: "openai"
     model: "gpt-4o"
+    available_models:
+      - "gpt-4.1"
+      - "gpt-4.2"
   gemini:
     provider: "gemini"
-    model: "gemini-2.5-flash"
+    model: "gemini-3-pro-preview"
+    available_models:
+      - "gemini-2.5-flash"
+      - "gemini-2.5-pro"
+      - "gemini-3-pro-preview"
+      - "gemini-3-flash-preview"
 
   # Depth and breadth parameters for the exploratory mode
   max_depth: 5

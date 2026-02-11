@@ -33,6 +33,7 @@ class Engine(BaseEngine):
         `trace_save_directory`: The directory where you want the .zip file to be saved
         `max_depth`: The maximum number of actions that you want the model to execute
         `database`: An instance of the Database class which will define all database specific configs
+        `model_name`: The model name which you want to run. The default is set to None (because it depends on the provider).
 
     Find these default values at `pyba/config.yaml`.
 
@@ -56,6 +57,7 @@ class Engine(BaseEngine):
         trace_save_directory: str = None,
         max_depth: int = config["main_engine_configs"]["max_iteration_steps"],
         database: Database = None,
+        model_name: str = None,
     ):
         self.mode = "Normal"
         # Passing the common setup to the BaseEngine
@@ -72,6 +74,7 @@ class Engine(BaseEngine):
             vertexai_project_id=vertexai_project_id,
             vertexai_server_location=vertexai_server_location,
             gemini_api_key=gemini_api_key,
+            model_name=model_name,
         )
 
         self.max_depth = max_depth
