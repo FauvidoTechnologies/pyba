@@ -44,6 +44,7 @@ class DatabaseFunctions:
                     self.session.commit()
                     return True
                 except Exception:
+                    self.session.rollback()
                     time.sleep(0.1)
         except Exception:
             self.session.rollback()
