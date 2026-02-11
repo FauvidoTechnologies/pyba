@@ -145,7 +145,7 @@ class BFS(BaseEngine):
                         await self.shut_down()
                         return output
 
-                    self.log.action(action)
+                    self.log.action(serialize_action(action))
 
                     value, fail_reason = await perform_action(page, action)
                     if value is None:

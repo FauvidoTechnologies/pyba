@@ -16,6 +16,7 @@ from pyba.core.scripts import ExtractionEngines
 from pyba.core.tracing import Tracing
 from pyba.database import DatabaseFunctions
 from pyba.logger import setup_logger, get_logger
+from pyba.utils.common import serialize_action
 from pyba.utils.exceptions import DatabaseNotInitialised
 
 
@@ -461,7 +462,7 @@ class BaseEngine:
         if output:
             return output
 
-        self.log.action(action)
+        self.log.action(serialize_action(action))
 
         # Deprecated. We now log data before calling retry action
         # if self.db_funcs:
