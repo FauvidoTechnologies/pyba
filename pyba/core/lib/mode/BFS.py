@@ -41,6 +41,7 @@ class BFS(BaseEngine):
         `trace_save_directory`: The directory where you want the .zip file to be saved
 
         `database`: An instance of the Database class which will define all database specific configs
+        `model_name`: The model name which you want to run. The default is set to None (because it depends on the provider).
 
     Find these default values at `pyba/config.yaml`.
     """
@@ -59,6 +60,7 @@ class BFS(BaseEngine):
         enable_tracing: bool = config["main_engine_configs"]["enable_tracing"],
         trace_save_directory: str = None,
         database: Database = None,
+        model_name: str = None,
     ):
         self.mode = "BFS"
         # Passing the common setup to the BaseEngine
@@ -73,6 +75,7 @@ class BFS(BaseEngine):
             vertexai_project_id=vertexai_project_id,
             vertexai_server_location=vertexai_server_location,
             gemini_api_key=gemini_api_key,
+            model_name=model_name,
         )
 
         # session_id stays here becasue BaseEngine will be inherited by many

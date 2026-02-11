@@ -35,6 +35,8 @@ class Step(BaseEngine):
         `trace_save_directory`: The directory where you want the .zip file to be saved
         `database`: An instance of the Database class which will define all database specific configs
         `get_output`: When True, asks the model for a summarised output when a step completes. When False (default), step() silently returns None on completion
+        `model_name`: The model name which you want to run. The default is set to None (because it depends on the provider).
+
     """
 
     def __init__(
@@ -52,6 +54,7 @@ class Step(BaseEngine):
         max_actions_per_step: int = 5,
         database: Database = None,
         get_output: bool = False,
+        model_name: str = None,
     ):
         self.mode = "STEP"
         super().__init__(
@@ -67,6 +70,7 @@ class Step(BaseEngine):
             vertexai_project_id=vertexai_project_id,
             vertexai_server_location=vertexai_server_location,
             gemini_api_key=gemini_api_key,
+            model_name=model_name,
         )
 
         self.session_id = uuid.uuid4().hex
