@@ -63,6 +63,14 @@ class ArgParser(ArgumentParser):
         )
 
         base_parser.add_argument(
+            "--model-name",
+            action="store",
+            default=None,
+            dest="model_name",
+            help="Override the default model for the chosen provider",
+        )
+
+        base_parser.add_argument(
             "--headless",
             action="store_true",
             default=False,

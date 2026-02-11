@@ -74,6 +74,9 @@ LLM Provider
    # VertexAI
    --vertexai-project-id "project-id" --vertexai-server-location "us-central1"
 
+   # Override the default model for any provider
+   --model-name "gpt-4.1"
+
 Task
 ^^^^
 

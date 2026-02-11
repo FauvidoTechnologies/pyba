@@ -233,6 +233,7 @@ All modes share these parameters:
 
    # Common parameters
    openai_api_key="..."          # Or gemini_api_key, or vertexai_*
+   model_name=None                # Override default model for the chosen provider
    headless=True                  # Browser visibility
    use_logger=False               # Console logging
    enable_tracing=False           # Trace file generation

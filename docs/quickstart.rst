@@ -97,13 +97,16 @@ PyBA works with multiple LLM providers:
 
    from pyba import Engine
 
-   # OpenAI
+   # OpenAI (defaults to gpt-4o)
    engine = Engine(openai_api_key="sk-...")
 
-   # Google Gemini
+   # OpenAI with a specific model
+   engine = Engine(openai_api_key="sk-...", model_name="gpt-4o-mini")
+
+   # Google Gemini (defaults to gemini-2.5-pro)
    engine = Engine(gemini_api_key="your-gemini-key")
 
-   # Google VertexAI
+   # Google VertexAI (defaults to gemini-2.0-flash)
    engine = Engine(
        vertexai_project_id="your-project",
        vertexai_server_location="us-central1"

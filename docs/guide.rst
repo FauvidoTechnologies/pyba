@@ -23,6 +23,9 @@ The ``Engine`` class is the main entry point for PyBA. Here are all available op
        vertexai_project_id="...",         # VertexAI project ID
        vertexai_server_location="...",    # VertexAI region (required with project_id)
 
+       # Model Override
+       model_name=None,                   # Override the default model (default: None, uses provider default)
+
        # Browser Settings
        headless=True,                     # Run without visible browser (default: True)
        handle_dependencies=False,         # Auto-install Playwright deps (default: False)
@@ -57,6 +60,9 @@ The ``Step`` class provides interactive, step-by-step control over a persistent 
        gemini_api_key="...",              # Google Gemini API key
        vertexai_project_id="...",         # VertexAI project ID
        vertexai_server_location="...",    # VertexAI region
+
+       # Model Override
+       model_name=None,                   # Override the default model (default: None, uses provider default)
 
        # Browser Settings
        headless=False,                    # Always visible by default

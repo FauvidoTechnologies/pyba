@@ -55,6 +55,7 @@ class CLIMain(ArgParser):
             "vertexai_project_id": self.arguments.vertexai_project_id,
             "vertexai_server_location": self.arguments.vertexai_server_location,
             "gemini_api_key": self.arguments.gemini_api_key,
+            "model_name": self.arguments.model_name,
             "headless": self.arguments.headless_mode,
             "handle_dependencies": self.arguments.handle_dependencies,
             "use_random": self.arguments.use_random,
