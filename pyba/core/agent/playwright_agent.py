@@ -72,6 +72,8 @@ class PlaywrightAgent(BaseAgent):
         agent_type: str,
         cleaned_dom: Dict = None,
         context_id: str = None,
+        extractor=None,
+        user_prompt: str = None,
     ) -> Any:
         """
         Generic method to call the correct LLM provider and parse the response.
@@ -82,6 +84,8 @@ class PlaywrightAgent(BaseAgent):
             `agent_type`: "action" or "output", to determine parsing logic
             `cleaned_dom`: A dictionary that holds the `actual_text` from which the data is to be extracted
             `context_id`: A unique identifier for this browser window (useful when multiple windows)
+            `extractor`: The extraction agent for this call (passed in to avoid shared mutable state)
+            `user_prompt`: The original user prompt for this call (passed in to avoid shared mutable state)
 
         Returns:
             The parsed response (SimpleNamespace for action, str for output)
@@ -102,8 +106,8 @@ class PlaywrightAgent(BaseAgent):
                 actions = SimpleNamespace(**parsed_json.get("actions")[0])
                 extract_info_flag = parsed_json.get("extract_info")
                 if extract_info_flag:
-                    self.extractor.run_threaded_info_extraction(
-                        task=self.user_prompt, actual_text=cleaned_dom["actual_text"]
+                    extractor.run_threaded_info_extraction(
+                        task=user_prompt, actual_text=cleaned_dom["actual_text"]
                     )
                 return actions
             elif agent_type == "output":
@@ -128,8 +132,8 @@ class PlaywrightAgent(BaseAgent):
                         actions = parsed_object.actions[0]
                         extract_info_flag = parsed_object.extract_info
                         if extract_info_flag:
-                            self.extractor.run_threaded_info_extraction(
-                                task=self.user_prompt, actual_text=cleaned_dom["actual_text"]
+                            extractor.run_threaded_info_extraction(
+                                task=user_prompt, actual_text=cleaned_dom["actual_text"]
                             )
                         return actions
                     raise IndexError("No 'actions' found in VertexAI response.")
@@ -152,8 +156,8 @@ class PlaywrightAgent(BaseAgent):
                 actions = parsed_object.actions[0]
                 extract_info_flag = parsed_object.extract_info
                 if extract_info_flag:
-                    self.extractor.run_threaded_info_extraction(
-                        task=self.user_prompt, actual_text=cleaned_dom["actual_text"]
+                    extractor.run_threaded_info_extraction(
+                        task=user_prompt, actual_text=cleaned_dom["actual_text"]
                     )
                 return actions
             elif agent_type == "output":
@@ -199,8 +203,7 @@ class PlaywrightAgent(BaseAgent):
             action_status=action_status if action_status else "",
         )
 
-        self.user_prompt = user_prompt
-        self.extractor = ExtractionAgent(engine=self.engine, extraction_format=extraction_format)
+        extractor = ExtractionAgent(engine=self.engine, extraction_format=extraction_format)
 
         return self._call_model(
             agent=self.action_agent,
@@ -208,6 +211,8 @@ class PlaywrightAgent(BaseAgent):
             agent_type="action",
             cleaned_dom=cleaned_dom,
             context_id=context_id,
+            extractor=extractor,
+            user_prompt=user_prompt,
         )
 
     def get_output(
