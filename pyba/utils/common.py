@@ -1,3 +1,4 @@
+import json
 import math
 from collections import Counter
 from typing import List
@@ -44,6 +45,18 @@ async def initial_page_setup(page: Page) -> CleanedDOM:
     )
 
     return cleaned_dom
+
+
+def serialize_action(action) -> str:
+    """
+    Serializes a PlaywrightAction (SimpleNamespace or Pydantic model) into a
+    clean JSON string containing only the non-null fields.
+    """
+    if hasattr(action, "model_dump"):
+        raw = action.model_dump(exclude_none=True)
+    else:
+        raw = {k: v for k, v in vars(action).items() if v is not None}
+    return json.dumps(raw)
 
 
 def verify_login_page(page_url: str, url_list: List[str]):

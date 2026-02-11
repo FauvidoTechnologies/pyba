@@ -11,7 +11,7 @@ from pyba.core.lib.action import perform_action
 from pyba.core.lib.mode.base import BaseEngine
 from pyba.core.scripts import LoginEngine
 from pyba.database import Database
-from pyba.utils.common import initial_page_setup
+from pyba.utils.common import initial_page_setup, serialize_action
 from pyba.utils.exceptions import UnknownSiteChosen
 from pyba.utils.load_yaml import load_config
 
@@ -153,14 +153,14 @@ class BFS(BaseEngine):
                             self.db_funcs.push_to_bfs_episodic_memory(
                                 session_id=self.session_id,
                                 context_id=context_id,
-                                action=str(action),
+                                action=serialize_action(action),
                                 page_url=str(page.url),
                             )
                         cleaned_dom = await self.extract_dom(page)
                         output = await self.retry_perform_action(
                             cleaned_dom=cleaned_dom.to_dict(),
                             prompt=task,
-                            previous_action=str(action),
+                            previous_action=serialize_action(action),
                             action_status=False,
                             fail_reason=fail_reason,
                             page=page,
@@ -174,11 +174,11 @@ class BFS(BaseEngine):
                             self.db_funcs.push_to_bfs_episodic_memory(
                                 session_id=self.session_id,
                                 context_id=context_id,
-                                action=str(action),
+                                action=serialize_action(action),
                                 page_url=str(page.url),
                             )
 
-                    previous_action = str(action)
+                    previous_action = serialize_action(action)
                     cleaned_dom = await self.extract_dom(page)
 
                 self.log.warning(

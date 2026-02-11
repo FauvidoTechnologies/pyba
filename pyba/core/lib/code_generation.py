@@ -1,8 +1,8 @@
 import json
-import re
-from typing import List
+from typing import Dict, List
 
 from pyba.database import DatabaseFunctions
+from pyba.logger import get_logger
 
 
 class CodeGeneration:
@@ -16,212 +16,158 @@ class CodeGeneration:
             `session_id`: The unique idenfier for this session
             `output_path`: Path to save the code to
             `database_funcs`: The Database instantiated by the user
-
-    Probably rewritten a lot of the code I already have from the dispatcher. There must be a simpler way
-    TODO: Clean up
     """
+
+    # Selector-value pairs: maps the selector field to its corresponding value field
+    SELECTOR_VALUE_PAIRS = {
+        "fill_selector": "fill_value",
+        "type_selector": "type_text",
+        "press_selector": "press_key",
+        "select_selector": "select_value",
+        "upload_selector": "upload_path",
+    }
+
+    # X/Y coordinate pairs: maps the x field to its corresponding y field
+    XY_PAIRS = {
+        "scroll_x": "scroll_y",
+        "mouse_move_x": "mouse_move_y",
+        "mouse_click_x": "mouse_click_y",
+    }
+
+    # Code templates for each action type
+    TEMPLATES = {
+        # Navigation
+        "goto": 'page.goto("{value}")',
+        "go_back": "page.go_back()",
+        "go_forward": "page.go_forward()",
+        "reload": "page.reload()",
+        # Interactions
+        "click": 'page.click("{value}")',
+        "dblclick": 'page.dblclick("{value}")',
+        "hover": 'page.hover("{value}")',
+        "right_click": 'page.click("{value}", button="right")',
+        "check": 'page.check("{value}")',
+        "uncheck": 'page.uncheck("{value}")',
+        # Selector + value pairs
+        "fill_selector": 'page.fill("{selector}", "{value}")',
+        "type_selector": 'page.type("{selector}", "{value}")',
+        "press_selector": 'page.press("{selector}", "{value}")',
+        "select_selector": 'page.select_option("{selector}", "{value}")',
+        "upload_selector": 'page.set_input_files("{selector}", "{value}")',
+        # Dropdowns
+        "dropdown_field_id": 'page.locator("{selector}").select_option(label="{value}")',
+        # Waits
+        "wait_selector": 'page.wait_for_selector("{value}", timeout={timeout})',
+        "wait_ms": "page.wait_for_timeout({value})",
+        # Keyboard and mouse
+        "keyboard_press": 'page.keyboard.press("{value}")',
+        "keyboard_type": 'page.keyboard.type("{value}")',
+        # X/Y pairs
+        "scroll_x": "page.mouse.wheel({x}, {y})",
+        "mouse_move_x": "page.mouse.move({x}, {y})",
+        "mouse_click_x": "page.mouse.click({x}, {y})",
+        # Evaluation and utilities
+        "evaluate_js": "page.evaluate({value})",
+        "screenshot_path": 'page.screenshot(path="{value}")',
+        "download_selector": 'with page.expect_download() as download_info:\n    page.click("{value}")\ndownload = download_info.value\ndownload.save_as(download.suggested_filename)',
+        # Page management
+        "new_page": 'page.context.new_page().goto("{value}")',
+        "close_page": "page.close()",
+        "switch_page_index": "page = page.context.pages[{value}]",
+    }
 
     def __init__(self, session_id: str, output_path: str, database_funcs: DatabaseFunctions):
         self.session_id = session_id
         self.output_path = output_path
         self.db_funcs = database_funcs
+        self.log = get_logger()
 
-        # Mapping of action fields to their corresponding Playwright code method and format
-        # The format string uses {selector} and {value} placeholders
-        # For actions involving both selector and value, both are expected.
-        # For navigation/single-value actions, only the value is used (as {value}).
-        self.action_map = {
-            "goto": (
-                'page.goto("{value}")',
-                1,
-            ),  # (code_template, num_args: 1 for value, 2 for selector/value)
-            "go_back": ("page.go_back()", 0),
-            "go_forward": ("page.go_forward()", 0),
-            "reload": ("page.reload()", 0),
-            "click": ('page.click("{value}")', 1),
-            "dblclick": ('page.dblclick("{value}")', 1),
-            "hover": ('page.hover("{value}")', 1),
-            "fill_selector": ('page.fill("{selector}", "{value}")', 2),  # Uses fill_value
-            "type_selector": ('page.type("{selector}", "{value}")', 2),  # Uses type_text
-            "press_selector": ('page.press("{selector}", "{value}")', 2),  # Uses press_key
-            "check": ('page.check("{value}")', 1),
-            "uncheck": ('page.uncheck("{value}")', 1),
-            "select_selector": (
-                'page.select_option("{selector}", "{value}")',
-                2,
-            ),  # Uses select_value
-            "upload_selector": (
-                'page.set_input_files("{selector}", "{value}")',
-                2,
-            ),  # Uses upload_path
-            "scroll_x": (
-                "page.mouse.wheel({value_x}, {value_y})",
-                2,
-                "scroll_y",
-            ),  # Special handling in _parse_action_to_code
-            "wait_selector": (
-                'page.wait_for_selector("{value}", timeout={value_timeout})',
-                2,
-                "wait_timeout",
-            ),  # Special handling
-            "wait_ms": ("page.wait_for_timeout({value})", 1),  # Uses wait_ms
-            "keyboard_press": ('page.keyboard.press("{value}")', 1),
-            "keyboard_type": ('page.keyboard.type("{value}")', 1),
-            "mouse_move_x": (
-                "page.mouse.move({value_x}, {value_y})",
-                2,
-                "mouse_move_y",
-            ),  # Special handling
-            "mouse_click_x": (
-                "page.mouse.click({value_x}, {value_y})",
-                2,
-                "mouse_click_y",
-            ),  # Special handling
-            # New pages/context actions are generally harder to script simply; using basic page-level equivalent
-            "screenshot_path": ('page.screenshot(path="{value}")', 1),
-            "evaluate_js": ('page.evaluate("{value}")', 1),
-            "download_selector": (
-                'with page.expect_download() as download_info:\n    page.click("{value}")\ndownload = download_info.value\ndownload.save_as(download.suggested_filename)',
-                1,
-            ),
-            "new_page": (
-                '# NOTE: Creating new pages is complex in a simple script\npage.context.new_page().goto("{value}")',
-                1,
-            ),  # Simplified, not strictly correct for current page state
-            "close_page": ("page.close()", 0),
-            "switch_page_index": (
-                "# NOTE: Page switching is context-dependent\npage = page.context.pages[{value}]",
-                1,
-            ),  # Simplified assumption
-        }
-
-    def _get_run_actions(self) -> List:
+    def _get_run_actions(self) -> List[Dict]:
         """
-        Function to query the database and get the stack of all actions
-        that have been performed up to the time the function was called
+        Queries the database and returns the list of actions as parsed dicts.
+        Each action is a dict with only the non-null fields.
         """
-
         logs = self.db_funcs.get_episodic_memory_by_session_id(session_id=self.session_id)
 
-        if logs and logs.actions:
-            actions_list = json.loads(logs.actions)
-            return actions_list
-        return []
+        if not logs or not logs.actions:
+            return []
 
-    def _parse_action_to_code(self, action_str: str) -> str:
+        raw_actions = json.loads(logs.actions)
+        parsed = []
+        for entry in raw_actions:
+            if isinstance(entry, dict):
+                parsed.append(entry)
+            elif isinstance(entry, str):
+                try:
+                    parsed.append(json.loads(entry))
+                except json.JSONDecodeError:
+                    pass
+        return parsed
+
+    def _parse_action_to_code(self, action: Dict) -> str:
         """
-        Converts a single action string (e.g., 'goto="url" fill_selector=None...')
-        into a Playwright code string.
+        Converts a single action dict into a Playwright code string.
         """
-        # The first step is to parse the action string into a dictionary of key-value pairs
-        # This pattern is robust to handle both 'key=value' and 'key="value"'
-        action_data = {}
+        # Selector + value pairs (fill_selector/fill_value, etc.)
+        for selector_field, value_field in self.SELECTOR_VALUE_PAIRS.items():
+            if selector_field in action:
+                template = self.TEMPLATES[selector_field]
+                selector = action[selector_field]
+                value = action.get(value_field, "")
+                return template.format(selector=selector, value=value)
 
-        # Replace quoted strings with a placeholder to avoid splitting on commas inside the value
-        # A simpler approach given the specific format is to split by spaces and then by '='
-        # The initial format of the action string is: key1=value1 key2=value2 ...
-        parts = re.findall(r"(\w+)=([^ ]*)", action_str)
+        # X/Y coordinate pairs (scroll_x/scroll_y, etc.)
+        for x_field, y_field in self.XY_PAIRS.items():
+            if x_field in action:
+                template = self.TEMPLATES[x_field]
+                x_val = action.get(x_field, 0)
+                y_val = action.get(y_field, 0)
+                return template.format(x=x_val, y=y_val)
 
-        for key, value in parts:
-            # Strip quotes/None/None-like strings
-            cleaned_value = value.strip().strip("'\"")
-            if cleaned_value.lower() not in ("none", "false", ""):
-                action_data[key] = cleaned_value
+        # Dropdown (needs both field_id and field_value)
+        if "dropdown_field_id" in action:
+            template = self.TEMPLATES["dropdown_field_id"]
+            return template.format(
+                selector=action["dropdown_field_id"],
+                value=action.get("dropdown_field_value", ""),
+            )
 
-        code_lines = []
+        # Wait selector (needs value + timeout)
+        if "wait_selector" in action:
+            template = self.TEMPLATES["wait_selector"]
+            return template.format(
+                value=action["wait_selector"],
+                timeout=action.get("wait_timeout", 5000),
+            )
 
-        # Check the action_map keys to find the one that is present (not None) in action_data
-        for action_field, (template, num_args, *extra_field) in self.action_map.items():
-            if action_field in action_data:
-                # Navigation actions (e.g., go_back, reload)
-                if num_args == 0:
-                    code_lines.append(template)
-                    break  # Assuming only one action per step right now
+        # evaluate_js gets repr() to safely quote the JS string
+        if "evaluate_js" in action:
+            template = self.TEMPLATES["evaluate_js"]
+            return template.format(value=repr(action["evaluate_js"]))
 
-                elif num_args == 1:
-                    if action_field == "download_selector":
-                        code = template.replace('"{value}"', f'"{action_data[action_field]}"')
-                        code_lines.extend(code.split("\n"))
-                    else:
-                        # Simple template replacement
-                        code = template.format(value=action_data[action_field])
-                        code_lines.append(code)
-                    break
+        # All remaining single-value and zero-arg actions
+        for field, template in self.TEMPLATES.items():
+            if field in action:
+                if "{value}" in template:
+                    return template.format(value=action[field])
+                return template
 
-                # Two-argument actions (e.g., fill_selector/fill_value, scroll_x/scroll_y)
-                elif num_args == 2:
-                    # 1. Selector/Value pairs (e.g., fill_selector/fill_value, type_selector/type_text)
-                    if action_field.endswith("_selector") or action_field == "wait_selector":
-                        # Determine the corresponding value field
-                        if action_field == "fill_selector":
-                            value_field = "fill_value"
-                        elif action_field == "type_selector":
-                            value_field = "type_text"
-                        elif action_field == "press_selector":
-                            value_field = "press_key"
-                        elif action_field == "select_selector":
-                            value_field = "select_value"
-                        elif action_field == "upload_selector":
-                            value_field = "upload_path"
-                        elif action_field == "wait_selector":
-                            value_field = "wait_timeout"
-                        else:
-                            continue  # Should not happen
-
-                        selector = action_data.get(action_field)
-                        value = action_data.get(value_field)
-
-                        if selector and value is not None:
-                            # Handlin special case for wait_selector and wait_timeout
-                            if action_field == "wait_selector" and "wait_timeout" in action_data:
-                                timeout = action_data["wait_timeout"]
-                                code = template.format(value=selector, value_timeout=timeout)
-                            # Handling special case for fill_value being an empty string (is still a valid action)
-                            elif (
-                                action_field == "fill_selector"
-                                and action_data.get("fill_value") == ""
-                            ):
-                                code = template.format(selector=selector, value="")
-                            else:
-                                code = template.format(selector=selector, value=value)
-
-                            code_lines.append(code)
-                            break
-
-                    # 2. X/Y pairs (e.g., scroll_x/scroll_y)
-                    elif (
-                        action_field.endswith("_x")
-                        and extra_field
-                        and extra_field[0].endswith("_y")
-                    ):
-                        y_field = extra_field[0]
-                        x_val = action_data.get(action_field)
-                        y_val = action_data.get(y_field)
-
-                        if x_val is not None or y_val is not None:
-                            # Default to 0 if the other is None, as per Playwright
-                            x_val = x_val if x_val is not None else 0
-                            y_val = y_val if y_val is not None else 0
-
-                            code = template.format(value_x=x_val, value_y=y_val)
-                            code_lines.append(code)
-                            break
-
-        return (
-            "\n".join(code_lines)
-            if code_lines
-            else f"# Action not supported or complete: {action_str}"
-        )
+        return f"# Unrecognized action: {json.dumps(action)}"
 
     def generate_script(self):
         """
         Generates the full Playwright script from the sequence of actions and
         writes it to the output path.
         """
-
         actions_list = self._get_run_actions()
 
-        # Boilerplate
+        # Derive the start URL from the first goto action if available
+        start_url = "https://search.brave.com/"
+        for action in actions_list:
+            if "goto" in action:
+                start_url = action["goto"]
+                break
+
         script_header = (
             "import time\n"
             "from playwright.sync_api import sync_playwright\n\n"
@@ -229,25 +175,22 @@ class CodeGeneration:
             "    with sync_playwright() as p:\n"
             "        browser = p.chromium.launch(headless=False)\n"
             "        page = browser.new_page()\n\n"
-            "        page.goto('https://search.brave.com/')\n\n"
+            f"        page.goto('{start_url}')\n\n"
         )
 
         script_footer = (
-            "        time.sleep(3) # Keep browser open for 3 seconds to see the result\n"
+            "        time.sleep(3)\n"
             "        browser.close()\n\n"
             "if __name__ == '__main__':\n"
             "    run_automation()\n"
         )
 
         script_body = []
-
-        for i, action_str in enumerate(actions_list):
-            code = self._parse_action_to_code(action_str)
-
+        for action in actions_list:
+            code = self._parse_action_to_code(action)
             indented_code = "        " + code.replace("\n", "\n        ")
-
             script_body.append(indented_code)
-            script_body.append("")  # Empty line for separation
+            script_body.append("")
 
         final_script = script_header + "\n".join(script_body) + script_footer
 
@@ -255,4 +198,4 @@ class CodeGeneration:
             with open(self.output_path, "w") as f:
                 f.write(final_script)
         except Exception as e:
-            print(f"Error writing script to file: {e}")
+            self.log.error(f"Error writing script to file: {e}")
