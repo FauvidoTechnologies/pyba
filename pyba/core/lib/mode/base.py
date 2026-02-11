@@ -471,7 +471,9 @@ class BaseEngine:
         #         page_url=str(page_obj.url),
         #     )
 
-        await perform_action(page_obj, action)
+        value, fail_reason = await perform_action(page_obj, action)
+        if value is None:
+            self.log.error(f"Retry also failed: {fail_reason}")
 
     async def wait_till_loaded(self, page=None):
         """
