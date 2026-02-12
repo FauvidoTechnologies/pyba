@@ -36,6 +36,8 @@ Every AI browser agent has the same issue: **you pay for every single run.**
 
 **PyBA is different.** Let the AI figure it out once, then export a deterministic script you own forever.
 
+**pyba also supports a web interface.** You can enter scan configurations without having to write a script or work on the terminal!
+
 ```python
 from pyba import Engine
 
@@ -59,6 +61,18 @@ Now run `python hacker_news_scraper.py` forever. No AI. No API costs. Just Playw
 ```sh
 pip install py-browser-automation
 ```
+
+If you want to use the web interface, install the library from source: (assuming you have poetry and git installed)
+
+```sh
+# Uncomment the below line if you need to install poetry in your system
+# pip install poetry
+git clone https://github.com/FauvidoTechnologies/pyba && cd pyba
+poetry install --with web
+poetry run python3 pyba/core/web/streamlit_app.py
+```
+
+The webserver will launch at `http://localhost:8501`. Read more about the web server [here](https://github.com/FauvidoTechnologies/pyba/core/web/README.md).
 
 ---
 
