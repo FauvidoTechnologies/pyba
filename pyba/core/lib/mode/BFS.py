@@ -56,7 +56,7 @@ class BFS(BaseEngine):
         handle_dependencies: bool = config["main_engine_configs"]["handle_dependencies"],
         use_logger: bool = config["main_engine_configs"]["use_logger"],
         max_depth: int = config["main_engine_configs"]["max_depth"],
-        max_breadth: int = config["main_engine_configs"]["max_depth"],
+        max_breadth: int = config["main_engine_configs"]["max_breadth"],
         enable_tracing: bool = config["main_engine_configs"]["enable_tracing"],
         trace_save_directory: str = None,
         database: Database = None,
