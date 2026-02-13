@@ -160,6 +160,14 @@ class ArgParser(ArgumentParser):
             help="Define the maximum number of different ideas to explore in the exploratory mode",
         )
 
+        base_parser.add_argument(
+            "--low-memory-usage",
+            action="store",
+            dest="low_memory_usage",
+            default=False,
+            help="Determines whether to enable the low memory kwargs in playwright browser initiation",
+        )
+
         subparsers = self.add_subparsers(
             title="modes",
             dest="mode",
