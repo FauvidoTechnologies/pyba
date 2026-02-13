@@ -467,5 +467,4 @@ async def perform_action(page: Page, action: PlaywrightAction):
         await performer.perform()
         return True, None  # The fail_reason is None
     except Exception as e:
-        print(e)
         return None, e

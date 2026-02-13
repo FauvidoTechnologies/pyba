@@ -272,7 +272,6 @@ class DatabaseFunctions:
         Returns:
             A boolean to indicate the success or failure of the operation
         """
-        print("in here")
         if not hasattr(self, "session"):
             return False
 
@@ -303,8 +302,7 @@ class DatabaseFunctions:
 
             return self.submit_query_with_retry()
 
-        except Exception as e:
-            print(f"Hit exception: {e}")
+        except Exception:
             self.session.rollback()
             return False
         finally:

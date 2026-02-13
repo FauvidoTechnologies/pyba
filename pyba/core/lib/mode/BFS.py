@@ -223,7 +223,6 @@ class BFS(BaseEngine):
 
         plan_list = self.planner_agent.generate(task=prompt)
 
-        print(plan_list)
         assert isinstance(
             plan_list, list
         ), f"Expected the plan to be a list, got {type(plan_list)} instead."

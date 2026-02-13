@@ -32,8 +32,8 @@ class MySQLHandler:
                     conn.execute(
                         text("CREATE DATABASE {0} ".format(self.database_engine_configs.name))
                     )
-        except Exception as e:
-            print(e)
+        except Exception:
+            pass
 
     def mysql_create_tables(self):
         """

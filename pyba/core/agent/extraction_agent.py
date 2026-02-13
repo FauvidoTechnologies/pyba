@@ -69,7 +69,6 @@ class ExtractionAgent(BaseAgent):
                 self.log.error(f"Unable to parse the outoput from OpenAI response: {e}")
                 return None
         elif self.engine.provider == "vertexai":
-            print("In here")
             response = self.handle_vertexai_execution(
                 agent=self.agent, prompt=prompt, context_id=context_id
             )
@@ -85,14 +84,12 @@ class ExtractionAgent(BaseAgent):
 
                 self.log.info(f"Extracted content: {parsed_object}")
                 if self.engine.db_funcs:
-                    print("in here")
                     self.engine.db_funcs.push_to_semantic_memory(
                         self.engine.session_id, logs=parsed_object.json()
                     )
                     self.log.info("Added to semantic memory")
 
             except Exception as e:
-                print(f"hit exception: {e}")
                 if not response:
                     self.log.error(f"Unable to parse the output from VertexAI response: {e}")
                 # If we have a response which cannot be parsed, it MUST be a None value
