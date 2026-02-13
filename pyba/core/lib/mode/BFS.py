@@ -209,9 +209,9 @@ class BFS(BaseEngine):
         """
 
         if automated_login_sites is not None:
-            assert isinstance(
-                automated_login_sites, list
-            ), "Make sure the automated_login_sites is a list!"
+            assert isinstance(automated_login_sites, list), (
+                "Make sure the automated_login_sites is a list!"
+            )
 
             for engine in automated_login_sites:
                 # Each engine is going to be a name like "instagram"
@@ -223,9 +223,9 @@ class BFS(BaseEngine):
 
         plan_list = self.planner_agent.generate(task=prompt)
 
-        assert isinstance(
-            plan_list, list
-        ), f"Expected the plan to be a list, got {type(plan_list)} instead."
+        assert isinstance(plan_list, list), (
+            f"Expected the plan to be a list, got {type(plan_list)} instead."
+        )
 
         self.log.info(f"This is the plan for a BFS: {plan_list}")
 

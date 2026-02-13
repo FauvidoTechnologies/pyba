@@ -111,9 +111,9 @@ class DFS(BaseEngine):
         to fetch an actionable element.
         """
         if automated_login_sites is not None:
-            assert isinstance(
-                automated_login_sites, list
-            ), "Make sure the automated_login_sites is a list!"
+            assert isinstance(automated_login_sites, list), (
+                "Make sure the automated_login_sites is a list!"
+            )
 
             for engine in automated_login_sites:
                 # Each engine is going to be a name like "instagram"

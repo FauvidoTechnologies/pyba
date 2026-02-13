@@ -92,5 +92,5 @@ class BFSEpisodicMemory(Base):
 
     def __repr__(self):
         return (
-            "BFSEpisodicMemory(session_id: {0}, context_id: {1}, " "actions: {2}, page_url: {3})"
+            "BFSEpisodicMemory(session_id: {0}, context_id: {1}, actions: {2}, page_url: {3})"
         ).format(self.session_id, self.context_id, self.actions, self.page_url)

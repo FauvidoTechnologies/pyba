@@ -92,9 +92,9 @@ class Step(BaseEngine):
         for us as well.
         """
         if automated_login_sites is not None:
-            assert isinstance(
-                automated_login_sites, list
-            ), "Make sure the automated_login_sites is a list!"
+            assert isinstance(automated_login_sites, list), (
+                "Make sure the automated_login_sites is a list!"
+            )
             for engine in automated_login_sites:
                 if hasattr(LoginEngine, engine):
                     self.automated_login_engine_classes.append(getattr(LoginEngine, engine))
