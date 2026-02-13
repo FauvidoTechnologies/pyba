@@ -43,6 +43,9 @@ The ``Engine`` class is the main entry point for PyBA. Here are all available op
 
        # Database
        database=None,                     # Database instance for logging
+
+       # Resource Optimization
+       low_memory=False,                  # Enable low memory mode (default: False)
    )
 
 Step-by-Step Configuration
@@ -82,6 +85,9 @@ The ``Step`` class provides interactive, step-by-step control over a persistent 
 
        # Database
        database=None,                     # Database instance for logging
+
+       # Resource Optimization
+       low_memory=False,                  # Enable low memory mode (default: False)
    )
 
 **The Step lifecycle:**
@@ -343,13 +349,49 @@ Writing Good Prompts
    # Unclear order
    "Get trending Python repos from GitHub"
 
+Low Memory Mode
+^^^^^^^^^^^^^^^^
+
+For resource-constrained environments (CI servers, containers, low-spec machines), enable low memory mode to reduce browser resource usage:
+
+.. code-block:: python
+
+   engine = Engine(
+       openai_api_key="...",
+       low_memory=True
+   )
+
+**What low memory mode does:**
+
+- Disables GPU rendering (``--disable-gpu``)
+- Disables background networking and throttling
+- Disables extensions, sync, and default apps
+- Reduces viewport to 800x600 (from default 1920x1080)
+- Sets device scale factor to 1
+- Mutes audio
+
+Low memory mode is available on all engine classes: ``Engine``, ``Step``, ``DFS``, and ``BFS``.
+
+.. code-block:: python
+
+   from pyba import Step, DFS, BFS, Database
+
+   # Step mode with low memory
+   step = Step(openai_api_key="...", low_memory=True)
+
+   # DFS/BFS with low memory
+   db = Database(engine="sqlite", name="/tmp/pyba.db")
+   dfs = DFS(openai_api_key="...", database=db, low_memory=True)
+   bfs = BFS(openai_api_key="...", database=db, low_memory=True)
+
 Performance Tips
 ^^^^^^^^^^^^^^^^
 
 1. **Use headless mode** for faster execution (``headless=True``)
-2. **Enable database logging** only when you need code generation
-3. **Set appropriate max_depth** — higher isn't always better
-4. **Use extraction_format** when you need structured data
+2. **Enable low memory mode** on resource-constrained environments (``low_memory=True``)
+3. **Enable database logging** only when you need code generation
+4. **Set appropriate max_depth** — higher isn't always better
+5. **Use extraction_format** when you need structured data
 
 Common Issues
 ^^^^^^^^^^^^^

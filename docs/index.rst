@@ -44,6 +44,7 @@ Key Features
 - **Trace Files**: Every run generates a Playwright ``trace.zip`` for debugging
 - **Stealth Mode**: Anti-fingerprinting, random mouse movements, human-like delays
 - **Multi-Provider**: Works with OpenAI, Google VertexAI, or Gemini
+- **Low Memory Mode**: Optimized browser settings for resource-constrained environments
 - **Database Logging**: Store every action in SQLite, PostgreSQL, or MySQL
 - **Platform Logins**: Built-in login handlers for Instagram, Gmail, Facebook
 

@@ -239,6 +239,7 @@ All modes share these parameters:
    enable_tracing=False           # Trace file generation
    trace_save_directory=None      # Where to save traces
    database=None                  # Database instance
+   low_memory=False               # Reduce browser resource usage
 
    # Step-specific
    max_actions_per_step=5         # Max actions per instruction

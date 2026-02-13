@@ -101,6 +101,15 @@ Logging & Tracing
    --enable-tracing    # Generate trace.zip files
    --trace-save-dir    # Directory for trace files
 
+Low Memory
+^^^^^^^^^^
+
+.. code-block:: bash
+
+   --low-memory-usage True   # Enable low memory browser mode
+
+Reduces browser resource usage by disabling GPU, background processes, extensions, and using a smaller viewport (800x600). Useful for CI servers, containers, or low-spec machines.
+
 Stealth
 ^^^^^^^
 
@@ -186,6 +195,16 @@ Database Mode with SQLite
      -v \
      --enable-tracing \
      --trace-save-dir /tmp/traces
+
+Low Memory Mode
+^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+   pyba normal \
+     -t "scrape data from example.com" \
+     --openai-api-key "sk-..." \
+     --low-memory-usage True
 
 Full Featured Run
 ^^^^^^^^^^^^^^^^^
@@ -343,3 +362,10 @@ Headless Failing on Servers
 
 - Use ``--handle-deps`` to install required system libraries
 - On Linux, you may need: ``sudo apt install libnss3 libatk-bridge2.0-0 libcups2``
+
+High Memory Usage
+^^^^^^^^^^^^^^^^^
+
+- Use ``--low-memory-usage True`` to reduce browser resource consumption
+- This disables GPU, background processes, and reduces the viewport size
+- Recommended for CI/CD pipelines, Docker containers, and low-spec servers
