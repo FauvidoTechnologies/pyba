@@ -55,6 +55,7 @@ class Step(BaseEngine):
         database: Database = None,
         get_output: bool = False,
         model_name: str = None,
+        low_memory: bool = False,
     ):
         self.mode = "STEP"
         super().__init__(
@@ -71,6 +72,7 @@ class Step(BaseEngine):
             vertexai_server_location=vertexai_server_location,
             gemini_api_key=gemini_api_key,
             model_name=model_name,
+            low_memory=low_memory,
         )
 
         self.session_id = uuid.uuid4().hex
@@ -101,7 +103,7 @@ class Step(BaseEngine):
 
         self._playwright_context_manager = Stealth().use_async(async_playwright())
         self._pw = await self._playwright_context_manager.__aenter__()
-        self.browser = await self._pw.chromium.launch(headless=self.headless_mode)
+        self.browser = await self._pw.chromium.launch(**self._launch_kwargs)
         self.context = await self.get_trace_context()
         self.page = await self.context.new_page()
         self._cleaned_dom = await initial_page_setup(self.page)

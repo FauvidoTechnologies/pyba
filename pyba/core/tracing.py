@@ -1,15 +1,14 @@
 from pathlib import Path
 
 from pyba.utils.load_yaml import load_config
+from pyba.utils.low_memory import CONTEXT_KWARGS as LOW_MEMORY_CONTEXT_KWARGS
 
 config = load_config("general")["main_engine_configs"]
 
+DEFAULT_VIEWPORT = {"width": 1920, "height": 1080}
+
 
 class Tracing:
-    """
-    Class to manage all tracing functions
-    """
-
     def __init__(
         self,
         browser_instance,
@@ -19,6 +18,7 @@ class Tracing:
         screenshots: bool = False,
         snapshots: bool = False,
         sources: bool = False,
+        low_memory: bool = False,
     ):
         """
         Args:
@@ -26,13 +26,18 @@ class Tracing:
                 `session_id`: A unique identifier for this session
                 `enable_tracing`: A boolean to indicate the use of tracing
                 `trace_save_directory`: Directory to save the traces
-
+                `screenshots`: Enable screenshot taking during tracing
+                `snapshots`: Enable capturing snapshots during tracing
+                `sources`: Enable sources during tracing
+                `low_memory`: Enable low memory mode by reducing the viewport and disabling features
         """
+
         self.browser = browser_instance
 
         self.session_id = session_id
         self.enable_tracing = enable_tracing
         self.trace_save_directory = trace_save_directory
+        self.low_memory = low_memory
 
         self.screenshots: bool = config["tracing"]["screenshots"] | screenshots
         self.snapshots: bool = config["tracing"]["snapshots"] | snapshots
@@ -50,17 +55,15 @@ class Tracing:
         self.har_file_path = self.trace_dir / f"{self.session_id}_network.har"
 
     async def initialize_context(self):
+        context_kwargs = (
+            LOW_MEMORY_CONTEXT_KWARGS.copy() if self.low_memory else {"viewport": DEFAULT_VIEWPORT}
+        )
+
         if self.enable_tracing:
-            context = await self.browser.new_context(
-                record_har_path=self.har_file_path,  # HAR file output
-                record_har_content=config["tracing"][
-                    "record_har_content"
-                ],  # include request/response bodies
-                viewport={
-                    "width": 1920,
-                    "height": 1080,
-                },  # Including a generic viewport, can later move this to config
-            )
+            context_kwargs["record_har_path"] = self.har_file_path
+            context_kwargs["record_har_content"] = config["tracing"]["record_har_content"]
+
+            context = await self.browser.new_context(**context_kwargs)
 
             await context.tracing.start(
                 screenshots=self.screenshots,
@@ -69,6 +72,6 @@ class Tracing:
             )
 
         else:
-            context = await self.browser.new_context(viewport={"width": 1920, "height": 1080})
+            context = await self.browser.new_context(**context_kwargs)
 
         return context

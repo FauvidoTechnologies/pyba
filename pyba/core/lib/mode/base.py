@@ -18,6 +18,7 @@ from pyba.database import DatabaseFunctions
 from pyba.logger import setup_logger, get_logger
 from pyba.utils.common import serialize_action
 from pyba.utils.exceptions import DatabaseNotInitialised
+from pyba.utils.low_memory import LAUNCH_ARGS as LOW_MEMORY_LAUNCH_ARGS
 
 
 class BaseEngine:
@@ -48,8 +49,10 @@ class BaseEngine:
         vertexai_server_location: str = None,
         gemini_api_key: str = None,
         model_name: str = None,
+        low_memory: bool = False,
     ):
         self.headless_mode = headless
+        self.low_memory = low_memory
         self.tracing = enable_tracing
         self.trace_save_directory = trace_save_directory
 
@@ -89,6 +92,13 @@ class BaseEngine:
 
         if handle_dependencies:
             HandleDependencies.playwright.handle_dependencies()
+
+    @property
+    def _launch_kwargs(self):
+        kwargs = {"headless": self.headless_mode}
+        if self.low_memory:
+            kwargs["args"] = LOW_MEMORY_LAUNCH_ARGS
+        return kwargs
 
     async def run(self):
         """
@@ -253,6 +263,7 @@ class BaseEngine:
             session_id=self.session_id,
             enable_tracing=self.tracing,
             trace_save_directory=self.trace_save_directory,
+            low_memory=self.low_memory,
         )
 
         self.trace_dir = tracing.trace_dir

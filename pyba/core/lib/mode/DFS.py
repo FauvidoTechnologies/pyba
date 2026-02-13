@@ -62,6 +62,7 @@ class DFS(BaseEngine):
         trace_save_directory: str = None,
         database: Database = None,
         model_name: str = None,
+        low_memory: bool = False,
     ):
         self.mode = "DFS"
         # Passing the common setup to the BaseEngine
@@ -78,6 +79,7 @@ class DFS(BaseEngine):
             vertexai_server_location=vertexai_server_location,
             gemini_api_key=gemini_api_key,
             model_name=model_name,
+            low_memory=low_memory,
         )
 
         # session_id stays here becasue BaseEngine will be inherited by many
@@ -122,7 +124,7 @@ class DFS(BaseEngine):
                     raise UnknownSiteChosen(LoginEngine.available_engines())
         try:
             async with Stealth().use_async(async_playwright()) as p:
-                self.browser = await p.chromium.launch(headless=self.headless_mode)
+                self.browser = await p.chromium.launch(**self._launch_kwargs)
 
                 self.context = await self.get_trace_context()
                 self.page = await self.context.new_page()
