@@ -88,7 +88,7 @@ class BFS(BaseEngine):
         self.planner_agent = PlannerAgent(engine=self)
 
         self.max_depth = max_depth
-        self.max_breadth = max_depth
+        self.max_breadth = max_breadth
 
     # def run(self, task: str):
     # async with Stealth().use_async(async_playwright()) as p:
