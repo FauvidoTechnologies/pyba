@@ -153,13 +153,14 @@ class PlaywrightAgent(BaseAgent):
             )
             parsed_object = agent["response_format"].model_validate_json(response.text)
             if agent_type == "action":
-                actions = parsed_object.actions[0]
-                extract_info_flag = parsed_object.extract_info
-                if extract_info_flag:
-                    extractor.run_threaded_info_extraction(
-                        task=user_prompt, actual_text=cleaned_dom["actual_text"]
-                    )
-                return actions
+                if parsed_object.actions:
+                    actions = parsed_object.actions[0]
+                    extract_info_flag = parsed_object.extract_info
+                    if extract_info_flag:
+                        extractor.run_threaded_info_extraction(
+                            task=user_prompt, actual_text=cleaned_dom["actual_text"]
+                        )
+                    return actions
             elif agent_type == "output":
                 return str(parsed_object.output)
 
