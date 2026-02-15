@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import List, Dict
 
 from playwright.async_api import Page
 
@@ -30,12 +31,18 @@ class YouTubeDOMExtraction:
         js_file_path = Path(__file__).parent.parent / "js/extractions.js"
         self.js_function_string = js_file_path.read_text()
 
-    async def extract_links_and_titles(self):
+    async def extract_links_and_titles(self) -> List[Dict[str, str]]:
         """
         Extracts all the video links and their title names from a YouTube page. Its simply checking for
         all possible `/watch?v=` type selectors and querying their names. We're first writing the vanilla
         Javascript which is to be executed in the browser session to get all the results from it, otherwise
         we'd need to use BeautifulSoup.
+
+        Return object: [
+                {"title": "Some title", "href": "link"},
+                {"title": "Some other title", "href": "some other link"},
+                ...
+            ]
         """
 
         # TODO: As a fallback mechanism we can also use bs4 in here

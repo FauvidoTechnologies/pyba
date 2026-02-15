@@ -11,6 +11,8 @@ main_engine_configs:
   use_logger: False           # Will not use the logger by default
   trace_save_directory: "."   # Saving the trace in the current directory by detault
   banner_path: "pyba/cli/banner.txt"
+  minimize_tokens: False    # Sets a bunch of optimisations that can minimize your input tokens -> Might break navigation, this is an experimental feature!
+  
   # Tracing configs
   tracing:
     screenshots: False # Capture screenshots

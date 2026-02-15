@@ -1,6 +1,7 @@
 from playwright.async_api import Page
 from pyba.core.scripts.extractions.general import GeneralDOMExtraction
 from pyba.core.scripts.extractions.youtube_ import YouTubeDOMExtraction
+from pyba.core.scripts.extractions.wikipedia_ import WikipediaDOMExtraction
 
 import asyncio
 
@@ -12,6 +13,7 @@ class ExtractionEngines:
 
     general = GeneralDOMExtraction
     youtube = YouTubeDOMExtraction
+    wikipedia = WikipediaDOMExtraction
 
     @classmethod
     def available_engines(cls):
@@ -47,5 +49,14 @@ class ExtractionEngines:
             await asyncio.sleep(3)
             youtube_output = await youtube.extract()
             self.output.youtube = youtube_output
+
+        if "wikipedia.org" in self.page.url:
+            # In case of wikipedia, we can overwrite the links in self.output with what we get
+            # from wikipedia.extract() because this is much more informative
+            await asyncio.sleep(1)  # Not really needed in case of wikipedia but added for defense
+            wikipedia_articles = await wikipedia.extract()
+            self.output.hyperlinks = (
+                wikipedia_articles  # .hyperlinks was also a List. See general.py
+            )
 
         return self.output
