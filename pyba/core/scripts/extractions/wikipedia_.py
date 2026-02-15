@@ -36,6 +36,17 @@ class WikipediaDOMExtraction:
         js_file_path = Path(__file__).parent.parent / "js/extractions.js"
         self.js_function_string = js_file_path.read_text()
 
+
+    def _add_indices(self, articles: List[Dict[str, str]]) -> List[Dict[str, str]]:
+        """
+        The returned articles from the JS execution are already ordered. This method
+        is to bring that point home by adding an index param to the Dictionaries
+        """
+        return [
+            {"index": i + 1, **article}
+            for i, article in enumerate(articles)
+        ]
+
     def _minimize_token_effort(self, articles: List[Dict[str, str]]) -> List[Dict[str, str]]:
         """
         All the links in wikipedia can be categorized into two types:
@@ -76,6 +87,8 @@ class WikipediaDOMExtraction:
         # TODO: FIX THIS ASAP
         if self.main_config["minimize_tokens"]:
             return self._minimize_token_effort(articles)
+
+        articles = self._add_indices(articles)
         return articles
 
     async def extract(self) -> List[Dict[str, str]]:

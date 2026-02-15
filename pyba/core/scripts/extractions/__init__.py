@@ -42,6 +42,7 @@ class ExtractionEngines:
         self.output = general_output
 
         youtube = ExtractionEngines.youtube(page=self.page)
+        wikipedia = ExtractionEngines.wikipedia(page=self.page)
 
         if "youtube.com" in self.page.url:
             # Usually the dom extraction is pretty fast but the videos take some time to load up in the javascript
