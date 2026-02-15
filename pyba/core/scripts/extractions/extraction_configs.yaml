@@ -59,4 +59,11 @@ youtube:
   title_selector: "#video-title"  # The selector used when a search query is entered: This element will provide the title in plain text
   label_name: "aria-label"  # YouTube uses aria-label for accessibility reqirements (these are unlikely to change in the near future)
   usual_title_name: "title" # Simple enough, probably shouldn't change very frequently
-  usual_youtube_relative_link_format: "/watch?v=" # This is how relative links are present in YouTube DOMs
+  usual_relative_link_format: "/watch?v=" # This is how relative links are present in YouTube DOMs
+
+wikipedia:
+  link_selector: "a[href^='/wiki/']:not([href*=':'])"   # This works for both search results and inside articles
+  title_selector: null  # Don't need this
+  usual_title_name: "title" # This is very unlikely to change in wikipedia
+  label_name: "aria-label"  # Wikipedia uses aria-label for accessibility reqirements as well
+  usual_relative_link_format: "/wiki/"  # This is how relative links are presented in Wikipedia DOMs

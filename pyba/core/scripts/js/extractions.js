@@ -13,7 +13,7 @@
             a.getAttribute(config.label_name) ||     // The third fallback
             "";
 
-        if (title && a.href && a.getAttribute('href').startsWith(config.usual_youtube_relative_link_format)) {
+        if (title && a.href && a.getAttribute('href').startsWith(config.usual_relative_link_format)) {
             results.push({
                 title,
                 href: new URL(a.getAttribute('href'), window.location.origin).href
