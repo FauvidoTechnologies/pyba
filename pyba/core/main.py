@@ -34,6 +34,7 @@ class Engine(BaseEngine):
         `max_depth`: The maximum number of actions that you want the model to execute
         `database`: An instance of the Database class which will define all database specific configs
         `model_name`: The model name which you want to run. The default is set to None (because it depends on the provider).
+        `low_memory`: Optional parameter, defaults to False for disable some heavy dependencies and running with additional flags.
 
     Find these default values at `pyba/config.yaml`.
 
@@ -58,7 +59,7 @@ class Engine(BaseEngine):
         max_depth: int = config["main_engine_configs"]["max_iteration_steps"],
         database: Database = None,
         model_name: str = None,
-        low_memory: bool = False,
+        low_memory: bool = config["main_engine_configs"]["minimize_memory"],
     ):
         self.mode = "Normal"
         # Passing the common setup to the BaseEngine

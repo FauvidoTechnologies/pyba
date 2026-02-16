@@ -12,7 +12,8 @@ main_engine_configs:
   trace_save_directory: "."   # Saving the trace in the current directory by detault
   banner_path: "pyba/cli/banner.txt"
   minimize_tokens: False    # Sets a bunch of optimisations that can minimize your input tokens -> Might break navigation, this is an experimental feature!
-  
+  minimize_memory: False    # Disables oxymouse, numpy and scipy dependencies and runs the browser with additional flags
+
   # Tracing configs
   tracing:
     screenshots: False # Capture screenshots
