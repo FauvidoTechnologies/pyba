@@ -1,11 +1,5 @@
 from typing import Tuple, Dict, Optional
 
-# VertexAI and gemini
-from google import genai
-from google.genai.types import GenerateContentConfig
-
-# OpenAI
-from openai import OpenAI
 from pydantic import BaseModel
 
 from pyba.utils.exceptions import IncorrectMode
@@ -64,6 +58,8 @@ class LLMFactory:
         Initialises the VertexAI client using engine parameters
         """
 
+        from google import genai
+
         vertexai_client = genai.Client(
             vertexai=True, project=self.engine.vertexai_project_id, location=self.engine.location
         )
@@ -79,6 +75,8 @@ class LLMFactory:
                 `response_schema`: The response schema for the Agent
         """
         assert system_instruction is not None and response_schema is not None
+
+        from google.genai.types import GenerateContentConfig
 
         agent = self.vertexai_client.chats.create(
             model=self.engine.model,
@@ -96,6 +94,8 @@ class LLMFactory:
         """
         Initialize the OpenAI client using engine parameters
         """
+        from openai import OpenAI
+
         openai_client = OpenAI(api_key=self.engine.openai_api_key)
         return openai_client
 
@@ -124,6 +124,8 @@ class LLMFactory:
         """
         Initialises the native gemini-2.5-pro client (without VertexAI)
         """
+        from google import genai
+
         gemini_client = genai.Client(vertexai=False, api_key=self.engine.gemini_api_key)
         return gemini_client
 
