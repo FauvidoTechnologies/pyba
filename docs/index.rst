@@ -48,7 +48,7 @@ Key Features
 - **Database Logging**: Store every action in SQLite, PostgreSQL, or MySQL
 - **Platform Logins**: Built-in login handlers for Instagram, Gmail, Facebook
 
-Current Version: **0.3.21**
+Current Version: **0.3.3**
 
 .. toctree::
    :maxdepth: 2
