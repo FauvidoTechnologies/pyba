@@ -108,7 +108,7 @@ Low Memory
 
    --low-memory-usage        # Enable low memory mode
 
-Saves ~327MB total: ~119MB from Python-side lazy imports (oxymouse, LLM providers) and ~208MB from Chromium process optimizations (single-process mode, V8 heap cap, disabled site isolation). Cannot be used with ``-r``. Useful for CI servers, containers, or low-spec machines.
+Saves ~166MB of RAM by lazy-loading heavy Python dependencies (oxymouse, LLM providers) and reducing browser resource usage. Cannot be used with ``-r``. Useful for CI servers, containers, or low-spec machines.
 
 Stealth
 ^^^^^^^
@@ -366,7 +366,7 @@ Headless Failing on Servers
 High Memory Usage
 ^^^^^^^^^^^^^^^^^
 
-- Use ``--low-memory-usage`` to save ~327MB total (~119MB Python + ~208MB Chromium)
-- Merges Chromium into a single process, caps V8 heap, skips unused Python dependencies
+- Use ``--low-memory-usage`` to save ~166MB by lazy-loading heavy Python dependencies
+- Disables GPU, background processes, and reduces browser resource usage
 - Cannot be combined with ``-r`` (random mouse movements)
 - Recommended for CI/CD pipelines, Docker containers, and low-spec servers

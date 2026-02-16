@@ -369,23 +369,16 @@ For resource-constrained environments (CI servers, containers, low-spec machines
 - Lazy-loads LLM provider libraries — only the chosen provider (OpenAI or Gemini) is loaded, saving ~64-73MB
 - Reduces SQLAlchemy connection pool from 50 to 5 connections
 
-*Chromium-side optimizations (~208MB saved, benchmarked on Amazon.com):*
+*Chromium-side optimizations:*
 
-- ``--single-process`` — Merges all Chromium processes (browser, renderer, GPU, utility) into one, eliminating ~100-150MB of per-process overhead
-- ``--js-flags=--max-old-space-size=256`` — Caps V8 JavaScript heap at 256MB (default is ~1.5GB)
-- ``--disable-site-isolation-trials`` — Disables per-origin renderer process isolation
-- ``--disable-features=IsolateOrigins,site-per-process`` — Prevents separate processes per site origin
-- ``--disable-features=Translate,BackForwardCache`` — Disables page translation and back/forward page caching in RAM
-- ``--disable-accelerated-2d-canvas`` — Uses software rendering for canvas elements (less memory)
 - ``--disable-gpu`` — Disables GPU compositing (not needed for headless)
 - ``--disable-dev-shm-usage`` — Uses /tmp instead of /dev/shm (avoids OOM in containers)
 - ``--disable-background-networking`` — Stops background network requests (updates, safe browsing)
 - ``--disable-extensions`` — No browser extensions loaded
 - ``--disable-sync`` — Disables Chrome profile sync
-- ``--disable-shared-workers`` — Disables SharedWorker API (not needed for automation)
-- ``--disable-component-update`` — Prevents downloading component updates at runtime
+- ``--disable-features=Translate,BackForwardCache`` — Disables page translation and back/forward page caching in RAM
 - ``--mute-audio`` — Mutes all audio output
-- ``--disable-lcd-text`` — Disables subpixel text rendering (saves rendering memory)
+- ``--disable-lcd-text`` — Disables subpixel text rendering
 - Sets device scale factor to 1
 
 .. note::
