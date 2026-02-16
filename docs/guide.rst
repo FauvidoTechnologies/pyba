@@ -371,10 +371,21 @@ For resource-constrained environments (CI servers, containers, low-spec machines
 
 *Chromium-side optimizations (~208MB saved, benchmarked on Amazon.com):*
 
-- Merges Chromium into a single process (``--single-process``), eliminating per-process overhead
-- Caps V8 JavaScript heap at 256MB (``--max-old-space-size=256``)
-- Disables site isolation (``--disable-site-isolation-trials``)
-- Disables GPU rendering, background networking, extensions, sync, and canvas acceleration
+- ``--single-process`` — Merges all Chromium processes (browser, renderer, GPU, utility) into one, eliminating ~100-150MB of per-process overhead
+- ``--js-flags=--max-old-space-size=256`` — Caps V8 JavaScript heap at 256MB (default is ~1.5GB)
+- ``--disable-site-isolation-trials`` — Disables per-origin renderer process isolation
+- ``--disable-features=IsolateOrigins,site-per-process`` — Prevents separate processes per site origin
+- ``--disable-features=Translate,BackForwardCache`` — Disables page translation and back/forward page caching in RAM
+- ``--disable-accelerated-2d-canvas`` — Uses software rendering for canvas elements (less memory)
+- ``--disable-gpu`` — Disables GPU compositing (not needed for headless)
+- ``--disable-dev-shm-usage`` — Uses /tmp instead of /dev/shm (avoids OOM in containers)
+- ``--disable-background-networking`` — Stops background network requests (updates, safe browsing)
+- ``--disable-extensions`` — No browser extensions loaded
+- ``--disable-sync`` — Disables Chrome profile sync
+- ``--disable-shared-workers`` — Disables SharedWorker API (not needed for automation)
+- ``--disable-component-update`` — Prevents downloading component updates at runtime
+- ``--mute-audio`` — Mutes all audio output
+- ``--disable-lcd-text`` — Disables subpixel text rendering (saves rendering memory)
 - Sets device scale factor to 1
 
 .. note::
