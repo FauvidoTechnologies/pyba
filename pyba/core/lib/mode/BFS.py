@@ -28,20 +28,20 @@ class BFS(BaseEngine):
     The following params are defined:
 
     Args:
-        `openai_api_key`: API key for OpenAI models should you want to use that
-        `vertexai_project_id`: Create a VertexAI project to use that instead of OpenAI
-        `vertexai_server_location`: VertexAI server location
-        `gemini_api_key`: API key for Gemini-2.5-pro native support without VertexAI
-        `headless`: Choose if you want to run in the headless mode or not
-        `handle_dependencies`: Choose if you want to automatically install dependencies during runtime
-        `use_logger`: Choose if you want to use the logger (that is enable logging of data)
-        `max_depth`: The maximum depth to go into for each plan, where each level of depth corresponds to an action
-        `max_breadth`: The number of plans to execute one by one in depth
-        `enable_tracing`: Choose if you want to enable tracing. This will create a .zip file which you can use in traceviewer
-        `trace_save_directory`: The directory where you want the .zip file to be saved
+        openai_api_key: API key for OpenAI models should you want to use that
+        vertexai_project_id: Create a VertexAI project to use that instead of OpenAI
+        vertexai_server_location: VertexAI server location
+        gemini_api_key: API key for Gemini-2.5-pro native support without VertexAI
+        headless: Choose if you want to run in the headless mode or not
+        handle_dependencies: Choose if you want to automatically install dependencies during runtime
+        use_logger: Choose if you want to use the logger (that is enable logging of data)
+        max_depth: The maximum depth to go into for each plan, where each level of depth corresponds to an action
+        max_breadth: The number of plans to execute one by one in depth
+        enable_tracing: Choose if you want to enable tracing. This will create a .zip file which you can use in traceviewer
+        trace_save_directory: The directory where you want the .zip file to be saved
 
-        `database`: An instance of the Database class which will define all database specific configs
-        `model_name`: The model name which you want to run. The default is set to None (because it depends on the provider).
+        database: An instance of the Database class which will define all database specific configs
+        model_name: The model name which you want to run. The default is set to None (because it depends on the provider).
 
     Find these default values at `pyba/config.yaml`.
     """
@@ -80,7 +80,7 @@ class BFS(BaseEngine):
             low_memory=low_memory,
         )
 
-        # session_id stays here becasue BaseEngine will be inherited by many
+        # session_id is per-engine, not in BaseEngine, because BaseEngine is shared across modes
         self.session_id = uuid.uuid4().hex
 
         selectors = tuple(config["process_config"]["selectors"])
@@ -90,17 +90,6 @@ class BFS(BaseEngine):
         self.max_depth = max_depth
         self.max_breadth = max_breadth
 
-    # def run(self, task: str):
-    # async with Stealth().use_async(async_playwright()) as p:
-    #   self.browser = await p.chromium.launch(headless=self.headless_mode)
-    #   self.context = await self.get_trace_context()
-    #   self.page = await self.context.new_page()
-    #   cleaned_dom = await initial_page_setup(self.page)
-
-    #   for steps in range(0, self.max_breadth):
-    #       # The breadth specifies the number of different plans we can execute
-    #       plan = self.planner_agent.generate(task=task, old_plan=self.old_plan)
-
     async def _run(
         self, task: str, extraction_format: BaseModel = None, context_id: str = None
     ) -> Union[str, None]:
@@ -108,12 +97,12 @@ class BFS(BaseEngine):
         helper run function for BFS
 
         Args:
-            `task`: A singular task which needs to be performed
-            `extraction_format`: The extraction format for the required goal
-            `context_id`: A dynamically generated context-id for each browser window
+            task: A singular task which needs to be performed
+            extraction_format: The extraction format for the required goal
+            context_id: A dynamically generated context-id for each browser window
 
-        Since BFS is going to generated multiple windows at runtime, we assign each one its own ID. This helps manage their
-        individual exponential retires and logging.
+        Since BFS generates multiple browser windows at runtime, each gets its own context ID
+        to manage individual exponential retries and logging.
         """
         try:
             async with Stealth().use_async(async_playwright()) as p:
@@ -200,9 +189,9 @@ class BFS(BaseEngine):
         The async run function
 
         Args:
-            `prompt`: The prompt which needs to be converted to plans
-            `automated_login_sites`: List of names for which sites to login automatically
-            `extraction_format`: The extraction format for any extraction that needs to be done
+            prompt: The prompt which needs to be converted to plans
+            automated_login_sites: List of names for which sites to login automatically
+            extraction_format: The extraction format for any extraction that needs to be done
 
         Returns:
             List
@@ -245,12 +234,12 @@ class BFS(BaseEngine):
         extraction_format: BaseModel = None,
     ):
         """
-        Sync endpoint for running the BFS mode (to be used from synchrnous code)
+        Synchronous endpoint for running BFS mode.
 
         Args:
-            `prompt`: The prompt which needs to be converted to plans
-            `automated_login_sites`: List of names for which sites to login automatically
-            `extraction_format`: The extraction format for any extraction that needs to be done
+            prompt: The prompt which needs to be converted to plans
+            automated_login_sites: List of names for which sites to login automatically
+            extraction_format: The extraction format for any extraction that needs to be done
         """
         try:
             output = asyncio.run(

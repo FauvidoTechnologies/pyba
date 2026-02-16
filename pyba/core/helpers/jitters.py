@@ -20,9 +20,9 @@ class MouseMovements:
     def __init__(self, page: Page, width: int = 1200, height: int = 1024):
         """
         Args:
-            `page`: The current page object
-            `width`: The viewport width for the session, defaults at 1200
-            `height`: The viewport height for the session, defaults at 1024
+            page: The current page object
+            width: The viewport width for the session, defaults at 1200
+            height: The viewport height for the session, defaults at 1024
         """
         self.page = page
 

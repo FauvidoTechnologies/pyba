@@ -15,14 +15,12 @@ config = load_config("general")["database"]
 
 class Database:
     """
-    Client-side database function -> Minimizes the config use
+    Client-side database interface that minimizes config usage.
     """
 
     def __init__(
         self,
-        engine: Literal[
-            "sqlite", "postgres", "mysql"
-        ],  # Optional: Can be specified inside the config as well
+        engine: Literal["sqlite", "postgres", "mysql"],
         name: str = None,
         host: str = None,
         port: int = None,
@@ -31,32 +29,35 @@ class Database:
         ssl_mode: Literal["disable", "require"] = None,
     ):
         """
+        Initialize database connection.
+
         Args:
-                sqlite:
-                        `engine`: "sqlite"
-                        `name`: path to the database file
-                        other details can be left empty
+            engine: Database engine type ("sqlite", "postgres", or "mysql").
+                   Can also be specified in config if not provided here.
+            name: Database name or file path (for SQLite).
+            host: Database server host.
+            port: Database server port.
+            username: Database username.
+            password: Database password.
+            ssl_mode: SSL mode for PostgreSQL ("disable" or "require").
 
-                mysql:
-                        `engine`: "mysql"
-                        `name`: Name of the mysql database
-                        `username` and `password`: For logging into the server
-                        `host` and `port`: Location of the server
+        SQLite configuration:
+            - engine: "sqlite"
+            - name: Path to the database file
+            - Other parameters can be left empty
 
-                        Note: Default port is 3306 for MySQL
+        MySQL configuration:
+            - engine: "mysql"
+            - name: Name of the MySQL database
+            - username, password: Credentials for server authentication
+            - host, port: Server location (default port: 3306)
 
-                postgres:
-                        `engine`: "postgres"
-                        `name`: Name of the postgres database
-                        `username` and `password`: For logging into the server
-                        `host` and `port`: Location of the server
-
-                        Note: Default port is 5432 for MySQL
-                        Note: `ssl_mode`: "require" for encrypted databases
-
-        Optionally supports entries defined inside the config as well in case they are not provided here.
-
-        > This engine is the recommended way to define the database structure
+        PostgreSQL configuration:
+            - engine: "postgres"
+            - name: Name of the PostgreSQL database
+            - username, password: Credentials for server authentication
+            - host, port: Server location (default port: 5432)
+            - ssl_mode: "require" for encrypted databases
         """
         self.engine: str = engine or config["engine"]
         self.log = get_logger()
@@ -75,13 +76,13 @@ class Database:
 
     def build_connection_string(self, engine_name: Literal["sqlite", "postgres", "mysql"]) -> str:
         """
-        Defines connection URLs for the different databases for SQLAlchemy usage
+        Builds connection URLs for different database engines for SQLAlchemy usage.
 
         Args:
-                `engine_name`: The database model name for initialisation
+            engine_name: The database engine name for initialization.
 
         Returns:
-                A string for SQLAlchemy connection
+            Connection string for SQLAlchemy.
         """
 
         return {
@@ -92,13 +93,13 @@ class Database:
 
     def create_connection(self, engine_name: Literal["sqlite", "postgres", "mysql"]):
         """
-        Function to create connections to the database
+        Creates a connection to the database.
 
         Args:
-                `engine_name`: The database engine name
+            engine_name: The database engine name.
 
         Returns:
-                connection if successful otherwise False
+            Database session if successful, otherwise False.
         """
         connection_args = {}
 
@@ -121,13 +122,12 @@ class Database:
 
             return Session()
         except Exception as e:
-            # We might get an OperationalError here if the DB doesn't exist yet
             self.log.error(f"Couldn't create a connection to the database: {e}")
             return False
 
     def initialise_tables_and_database(self):
         """
-        Method to manage the creation of sqlite, postgres and mysql database and tables
+        Manages the creation of database and tables for SQLite, PostgreSQL, and MySQL.
         """
         handler_map = {
             "sqlite": SQLiteHandler,

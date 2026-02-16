@@ -11,7 +11,7 @@ class SQLiteHandler:
     def __init__(self, database_engine_configs):
         """
         Args:
-                `database_engine_configs`: User supplied configurations imported from the Database class
+            database_engine_configs: User-supplied configurations imported from the Database class.
         """
 
         self.database_engine_configs = database_engine_configs
@@ -23,12 +23,12 @@ class SQLiteHandler:
 
     def sqlite_create_tables(self):
         """
-        Method to create the SQLite tables
+        Creates the SQLite tables.
         """
         try:
             Base.metadata.create_all(self.engine)
         except Exception as e:
-            print(f"Something went wrong in creating the SQLite tables: {e}")
+            print(f"Error creating SQLite tables: {e}")
 
     def setup(self):
         """

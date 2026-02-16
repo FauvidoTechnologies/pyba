@@ -26,28 +26,20 @@ class YouTubeDOMExtraction:
         self.page = page
         self.config = load_config("extraction")["youtube"]
 
-        # TODO: take care of the fact that we might define multiple functions later
-        # We'll be using the same javascript for all extraction functions to be executed in the browser
         js_file_path = Path(__file__).parent.parent / "js/extractions.js"
         self.js_function_string = js_file_path.read_text()
 
     async def extract_links_and_titles(self) -> List[Dict[str, str]]:
         """
-        Extracts all the video links and their title names from a YouTube page. Its simply checking for
-        all possible `/watch?v=` type selectors and querying their names. We're first writing the vanilla
-        Javascript which is to be executed in the browser session to get all the results from it, otherwise
-        we'd need to use BeautifulSoup.
+        Extracts all the video links and their title names from a YouTube page. It checks for
+        all possible `/watch?v=` type selectors and queries their names. Uses vanilla
+        Javascript executed in the browser session to get all the results.
 
-        Return object: [
-                {"title": "Some title", "href": "link"},
-                {"title": "Some other title", "href": "some other link"},
-                ...
-            ]
+        Returns:
+            List[Dict[str, str]]: List of dictionaries with "title" and "href" keys
         """
 
-        # TODO: As a fallback mechanism we can also use bs4 in here
         videos = await self.page.evaluate(self.js_function_string, self.config)
-        # We don't want to touch the page again or any other system
         return videos
 
     async def extract(self):

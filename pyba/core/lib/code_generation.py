@@ -13,9 +13,9 @@ class CodeGeneration:
     - Pulls action from the database and writes the script at a user location
 
     Args:
-            `session_id`: The unique idenfier for this session
-            `output_path`: Path to save the code to
-            `database_funcs`: The Database instantiated by the user
+        session_id: The unique identifier for this session
+        output_path: Path to save the code to
+        database_funcs: The Database instantiated by the user
     """
 
     # Selector-value pairs: maps the selector field to its corresponding value field

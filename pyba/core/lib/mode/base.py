@@ -28,10 +28,10 @@ class BaseEngine:
 
         The following will be initialised by the BaseEngine:
 
-        - `db_funcs`: The database functions to be used for inserting and querying logs
-        - `mode`: The mode of operation (DFS, BFS or Normal)
-        - `provider_instance`: This will detect the provider you're using
-        - `playwright_agent`: The actual playwright brains of the operation
+        - db_funcs: The database functions to be used for inserting and querying logs
+        - mode: The mode of operation (DFS, BFS or Normal)
+        - provider_instance: This will detect the provider you're using
+        - playwright_agent: The actual playwright brains of the operation
     """
 
     def __init__(
@@ -62,9 +62,7 @@ class BaseEngine:
 
         self.automated_login_engine_classes = []
 
-        self.use_random_flag = (
-            use_random if use_random else False
-        )  # I like to set defaults as None...
+        self.use_random_flag = use_random if use_random else False
         global_vars._use_random = self.use_random_flag
         global_vars._low_memory = self.low_memory
 
@@ -118,7 +116,7 @@ class BaseEngine:
         it supports BFS by pinning the page down.
 
         Args:
-            `page`: Optional argument to pin the page for removing self dependency
+            page: Optional argument to pin the page for removing self dependency
         """
         page_obj = page if page is not None else self.page
         self.mouse = MouseMovements(page=page_obj)
@@ -128,16 +126,11 @@ class BaseEngine:
             await self.wait_till_loaded(page_obj)
             page_html = await page_obj.content()
         except Exception:
-            # We might get a "Unable to retrieve content because the page is navigating and changing the content" exception
-            # This might happen because page.content() will start and issue an evaluate, while the page is reloading and making network calls
-            # So, once it gets a response, it commits it and clears the execution contents so page.content() fails.
-            # See https://github.com/microsoft/playwright/issues/16108
-
-            # We might choose to wait for networkidle -> https://github.com/microsoft/playwright/issues/22897
+            # page.content() can fail if the page is mid-navigation. Retry after waiting.
+            # See: https://github.com/microsoft/playwright/issues/16108
             try:
                 await self.wait_till_loaded(page_obj)
             except Exception:
-                # If networkidle never happens, then we'll try a direct wait
                 await asyncio.sleep(3)
 
             page_html = await page_obj.content()
@@ -150,9 +143,6 @@ class BaseEngine:
             self.log.error("The page has not loaded within the defined timeout, going back")
             return None
 
-        # Then we need to extract the new cleaned_dom from the page
-        # Passing in known_fields for the input fields that we already know off so that
-        # its easier for the extraction engine to work
         extraction_engine = ExtractionEngines(
             html=page_html,
             body_text=body_text,
@@ -161,7 +151,6 @@ class BaseEngine:
             page=page_obj,
         )
 
-        # Perform an all out extraction
         cleaned_dom = await extraction_engine.extract_all()
         cleaned_dom.current_url = base_url
         return cleaned_dom
@@ -172,9 +161,9 @@ class BaseEngine:
         has been completed.
 
         Args:
-            `action`: The action as given out by the model
-            `cleaned_dom`: The latest cleaned_dom for the model to read
-            `prompt`: The prompt which was given to the model
+            action: The action as given out by the model
+            cleaned_dom: The latest cleaned_dom for the model to read
+            prompt: The prompt which was given to the model
         """
         if action is None or all(value is None for value in vars(action).values()):
             self.log.success("Automation completed, agent has returned None")
@@ -197,11 +186,11 @@ class BaseEngine:
 
     async def save_trace(self, context=None):
         """
-        Endpoint to save the trace if required. This is backwards compatible for Engine
-        and DFS while is supports BFS by removing the self dependency
+        Saves the trace if tracing is enabled. Accepts an optional context to support
+        BFS mode where multiple browser contexts exist.
 
         Args:
-            `context`: Optional argument to pin the browser context down
+            context: Optional argument to pin the browser context down
         """
         context_obj = context if context is not None else self.context
         if self.tracing:
@@ -215,15 +204,12 @@ class BaseEngine:
 
     async def shut_down(self, context=None, browser=None):
         """
-        Function to cleanly close the existing browsers and contexts. This also saves
-        the traces in the provided trace_dir by the user or the default.
-
-        This is backwards compatible for Engine and DFS while is supports BFS by
-        removing the self dependency
+        Closes the browser context and browser instance. Accepts optional arguments
+        to support BFS mode where multiple browsers exist.
 
         Args:
-            `context`: Optional argument to pin the specific brower context down
-            `browser`: Optional argument to pin the browser instance down
+            context: Optional browser context to close
+            browser: Optional argument to pin the browser instance down
         """
         context_obj = context if context is not None else self.context
         browser_obj = browser if browser is not None else self.browser
@@ -239,7 +225,7 @@ class BaseEngine:
         Function end-point for code generation
 
         Args:
-            `output_path`: output file path to save the generated code to
+            output_path: output file path to save the generated code to
         """
         if not self.db_funcs:
             raise DatabaseNotInitialised()
@@ -253,14 +239,14 @@ class BaseEngine:
 
     async def get_trace_context(self, browser_instance=None):
         """
-        Helper function to intialise the context using the Tracing class. This is backwards compatible
-        for Engine and DFS while is supports BFS by removing the self dependency
+        Initialises the browser context with tracing configuration. Accepts an optional
+        browser instance to support BFS mode.
 
         Args:
-            `browser_instance`: Optional argument to pin the browser session down
+            browser_instance: Optional argument to pin the browser session down
 
         Return:
-            `context`: The playwright to be used for automation
+            context: The playwright to be used for automation
         """
 
         tracing = Tracing(
@@ -282,10 +268,10 @@ class BaseEngine:
         with Engine and DFS while it supports BFS by pinning the page down.
 
         Args:
-            `page`: Optional argument to pin the page for removing self dependency
+            page: Optional argument to pin the page for removing self dependency
 
         Returns:
-            `flag`: A boolean to indicate the success or failure for the attempt
+            flag: A boolean to indicate the success or failure for the attempt
 
         The login attempt may fail due to two reasons:
 
@@ -323,7 +309,7 @@ class BaseEngine:
         with Engine and DFS while it supports BFS by pinning the page down.
 
         Args:
-            `page`: Optional argument to pin the page for removing self dependency
+            page: Optional argument to pin the page for removing self dependency
 
         Functionality:
 
@@ -367,7 +353,7 @@ class BaseEngine:
         NOT previous_action. The previous_action and its status must be stored regardless.
 
         Returns:
-            `history`: The last logged action
+            history: The last logged action
         """
 
         try:
@@ -399,18 +385,18 @@ class BaseEngine:
         Helper function to fetch an actionable PlaywrightResponse element
 
         Args:
-            `cleaned_dom`: The DOM for the current page
-            `user_prompt`: The actual task given by the user
-            `previous_action`: The last action performed by the model
-            `extraction_format`: The extraction format requested by the user.
-            `context_id`: A unique identifier for this browser window (useful when multiple windows)
-            `fail_reason`: The reason for the failure of the previous action
-            `action_status`: A boolean to indicate if the previous action was successful or not
+            cleaned_dom: The DOM for the current page
+            user_prompt: The actual task given by the user
+            previous_action: The last action performed by the model
+            extraction_format: The extraction format requested by the user.
+            context_id: A unique identifier for this browser window (useful when multiple windows)
+            fail_reason: The reason for the failure of the previous action
+            action_status: A boolean to indicate if the previous action was successful or not
 
         For an explanation of the `extraction_format` read the main file documentation.
 
         Returns:
-            `action`: An actionable playwrightresponse element
+            action: An actionable playwrightresponse element
         """
 
         try:
@@ -446,20 +432,20 @@ class BaseEngine:
 
 
         Args:
-            `cleaned_dom`: The new cleaned DOM for the current page
-            `prompt`: The original prompt given by the user
-            `previous_action`: The past action that failed
-            `action_status`: A boolean to indicate the failure of the action (I know, not needed but let's keep it for now!)
-            `fail_reason`: Reason for the failure for the action
-            `extraction_format`: In case the current page needs extraction as well
-            `page`: Optional argument to pin the page down to remove self dependency
+            cleaned_dom: The new cleaned DOM for the current page
+            prompt: The original prompt given by the user
+            previous_action: The past action that failed
+            action_status: Boolean indicating the previous action's success or failure
+            fail_reason: Reason for the failure for the action
+            extraction_format: In case the current page needs extraction as well
+            page: Optional argument to pin the page down to remove self dependency
 
         This function will retry the action based on the current DOM and the past action. This should
         most likely fix the issue of a stale element or a hallucinated component or something.
 
         Return:
-            `output`: If the action was successful and automation is completed
-            `None`: The usual case where an action is performed
+            output: If the action was successful and automation is completed
+            None: The usual case where an action is performed
         """
         page_obj = page if page is not None else self.page
 
@@ -480,14 +466,6 @@ class BaseEngine:
 
         self.log.action(serialize_action(action))
 
-        # Deprecated. We now log data before calling retry action
-        # if self.db_funcs:
-        #     self.db_funcs.push_to_episodic_memory(
-        #         session_id=self.session_id,
-        #         action=str(action),
-        #         page_url=str(page_obj.url),
-        #     )
-
         value, fail_reason = await perform_action(page_obj, action)
         if value is None:
             self.log.error(f"Retry also failed: {fail_reason}")
@@ -499,7 +477,7 @@ class BaseEngine:
         and DFS while it supports BFS by pinning the page down.
 
         Args:
-            `page`: Optional argument to pin the page for removing self dependency
+            page: Optional argument to pin the page for removing self dependency
         """
         page_obj = page if page is not None else self.page
         if self.use_random_flag:
@@ -507,6 +485,6 @@ class BaseEngine:
                 page_obj.wait_for_load_state("networkidle", timeout=1000),
                 self.mouse.random_movement(),
                 self.scroll_manager.apply_scroll_jitters(),
-            )  # Wait for a second for network calls to stablize
+            )
         else:
             (await page_obj.wait_for_load_state("networkidle", timeout=1000),)

@@ -68,11 +68,11 @@ class LLMFactory:
 
     def _initialize_vertexai_agent(self, system_instruction: str, response_schema):
         """
-        Initiaises a VertexAI agent
+        Initialises a VertexAI agent
 
         Args:
-                `system_instruction`: The system instruction for the agent
-                `response_schema`: The response schema for the Agent
+                system_instruction: The system instruction for the agent
+                response_schema: The response schema for the Agent
         """
         assert system_instruction is not None and response_schema is not None
 
@@ -104,8 +104,8 @@ class LLMFactory:
         Initialize the OpenAI agent
 
         Args:
-                `system_instruction`: The system instruction for the agent
-                `response_schema`: The response type for the agent
+                system_instruction: The system instruction for the agent
+                response_schema: The response type for the agent
 
         Returns:
                 Dictionary of the agent parameters
@@ -131,11 +131,11 @@ class LLMFactory:
 
     def _initialize_gemini_agent(self, system_instruction: str, response_schema) -> Dict:
         """
-        Initilse the Gemini Agent
+        Initialises a Gemini agent
 
         Args:
-            `system_instruction`: The system instruction for the agent
-            `response_schema`: The response type for the agent
+            system_instruction: The system instruction for the agent
+            response_schema: The response type for the agent
 
         Returns:
             Dictionary of the agent parameters
@@ -154,7 +154,7 @@ class LLMFactory:
         Create the action and output agents for different LLMs
 
         Args:
-            `init_method`: Function to initialise the respective LLM agent
+            init_method: Function to initialise the respective LLM agent
 
         Returns:
             A tuple containing the action and output agent
@@ -177,7 +177,7 @@ class LLMFactory:
         Helper function to return the appropriate planner agent
 
         Args:
-            `init_method`: Function to initialise the respective LLM agent
+            init_method: Function to initialise the respective LLM agent
 
         Returns:
             A planner agent instance
@@ -200,8 +200,8 @@ class LLMFactory:
         Helper function to return the appropriate extraction agent
 
         Args:
-            `init_method`: Function to initialise the respective LLM agent
-            `response_format`: The response output type for the extraction agent
+            init_method: Function to initialise the respective LLM agent
+            response_format: The response output type for the extraction agent
         """
 
         if response_format:
@@ -240,7 +240,7 @@ class LLMFactory:
         this endpoint is called, the mode must be specified correctly.
 
         Args:
-            `mode`: DFS|BFS|STEP. ALl three of these modes have their own system prompts.
+            mode: DFS|BFS|STEP. ALl three of these modes have their own system prompts.
 
         The mode must be specified. If mode is None, then planner-agent shouldn't be called.
 
@@ -267,7 +267,7 @@ class LLMFactory:
         Endpoint to return the extraction agent depending on the LLM called for.
 
         Args:
-            `extraction_format`: This is the extraction format which is expected, it can be `None`
+            extraction_format: This is the extraction format which is expected, it can be `None`
         """
 
         if self.engine.provider == "openai":

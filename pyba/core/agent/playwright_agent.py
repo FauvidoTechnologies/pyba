@@ -15,14 +15,14 @@ class PlaywrightAgent(BaseAgent):
     Defines the playwright agent's actions
 
     Provides two endpoints:
-        - `process_action`: for returning the right action on a page
-        - `get_output`: for summarizing the chat and returning a string
+        - process_action: for returning the right action on a page
+        - get_output: for summarizing the chat and returning a string
     """
 
     def __init__(self, engine) -> None:
         """
         Args:
-            `engine`: holds all the arguments from the user including the mode
+            engine: holds all the arguments from the user including the mode
         """
         super().__init__(engine=engine)  # Initialising the base params from BaseAgent
         self.action_agent, self.output_agent = self.llm_factory.get_agent()
@@ -37,25 +37,17 @@ class PlaywrightAgent(BaseAgent):
         action_status: bool = None,
     ):
         """
-        Method to initailise the main instruction for any agent
+        Formats the prompt template by injecting DOM data and action context.
 
         Args:
-            `cleaned_dom`: A dictionary containing nicely formatted DOM elements
-            `user_prompt`: The instructions given by the user
-            `main_instruction`: The prompt for the playwright agent
-            `previous_action`: The previous action
-            `fail_reason`: The reason for the failure of the previous action
-            `action_status`: Boolean to decide if the previous action was a success or not
-
-        TODO: Add `history` of ALL/SOME actions to give some context as to where we are headed
-
-        # DEPRECATED - The fail_reason decides if the previous access was a success or not.
-
-        For each run, a prompt containing the previous action, its status (success or failure) and a fail reason (if
-        it failed) is provided. This helps the model reason better
+            cleaned_dom: Dictionary of extracted DOM elements.
+            user_prompt: The user's task instruction.
+            main_instruction: The prompt template to format.
+            previous_action: Serialised previous action.
+            fail_reason: Reason the previous action failed, if applicable.
+            action_status: Whether the previous action succeeded.
         """
 
-        # Adding the user_prompt to the DOM to make it easier to format the prompt
         cleaned_dom["user_prompt"] = user_prompt
         cleaned_dom["previous_action"] = previous_action
         cleaned_dom["action_status"] = action_status
@@ -79,21 +71,17 @@ class PlaywrightAgent(BaseAgent):
         Generic method to call the correct LLM provider and parse the response.
 
         Args:
-            `agent`: The agent to use (action_agent or output_agent)
-            `prompt`: The fully formatted prompt string
-            `agent_type`: "action" or "output", to determine parsing logic
-            `cleaned_dom`: A dictionary that holds the `actual_text` from which the data is to be extracted
-            `context_id`: A unique identifier for this browser window (useful when multiple windows)
-            `extractor`: The extraction agent for this call (passed in to avoid shared mutable state)
-            `user_prompt`: The original user prompt for this call (passed in to avoid shared mutable state)
+            agent: The agent to use (action_agent or output_agent)
+            prompt: The fully formatted prompt string
+            agent_type: "action" or "output", to determine parsing logic
+            cleaned_dom: A dictionary that holds the `actual_text` from which the data is to be extracted
+            context_id: A unique identifier for this browser window (useful when multiple windows)
+            extractor: The extraction agent for this call (passed in to avoid shared mutable state)
+            user_prompt: The original user prompt for this call (passed in to avoid shared mutable state)
 
         Returns:
             The parsed response (SimpleNamespace for action, str for output)
         """
-
-        # If this guy gives me an output which says I need to extract the relevant data from this page,
-        # Then I call the extraction agent here and extract information in a separate thread? Separate thread is easier,
-        # I don't have to write my functions as async then
 
         if self.engine.provider == "openai":
             response = self.handle_openai_execution(
@@ -101,7 +89,6 @@ class PlaywrightAgent(BaseAgent):
             )
             parsed_json = json.loads(response.choices[0].message.content)
 
-            # Parse based on agent type
             if agent_type == "action":
                 actions = SimpleNamespace(**parsed_json.get("actions")[0])
                 extract_info_flag = parsed_json.get("extract_info")
@@ -126,7 +113,6 @@ class PlaywrightAgent(BaseAgent):
                     self.log.error("No parsed object found in VertexAI response.")
                     return None
 
-                # Parse based on agent type
                 if agent_type == "action":
                     if hasattr(parsed_object, "actions") and parsed_object.actions:
                         actions = parsed_object.actions[0]
@@ -145,9 +131,7 @@ class PlaywrightAgent(BaseAgent):
             except Exception as e:
                 if not response:
                     self.log.error(f"Unable to parse the output from VertexAI response: {e}")
-                # If we have a response which cannot be parsed, it MUST be a None value
-
-        else:  # Using gemini
+        else:
             response = self.handle_gemini_execution(
                 agent=agent, prompt=prompt, context_id=context_id
             )
@@ -175,24 +159,19 @@ class PlaywrightAgent(BaseAgent):
         action_status: bool = None,
     ) -> PlaywrightResponse:
         """
-        Method to process the DOM and provide an actionable playwright response
+        Processes the current DOM and returns the next PlaywrightAction to execute.
 
         Args:
-            `cleaned_dom`: Dictionary of the extracted items from the DOM
-                - `hyperlinks`: List
-                - `input_fields` (basically all fillable boxes): List
-                - `clickable_fields`: List
-                - `actual_text`: string
-            `user_prompt`: The instructions given by the user
-            `previous_action`: The previous executed action
-            `fail_reason`: Holds the fail-reason should the previous task fail
-            `extraction_format`: The extraction format for the task
-            `context_id`: A unique identifier for this browser window (useful when multiple windows)
-            `fail_reason`: The reason for failure of the previous action (None if not provided => Action passed)
-            `action_status`: The success or the failure of an action
+            cleaned_dom: Dictionary of extracted DOM elements (hyperlinks, input_fields, clickable_fields, actual_text).
+            user_prompt: The user's task instruction.
+            previous_action: Serialised previous action.
+            fail_reason: Reason the previous action failed, if applicable.
+            extraction_format: Pydantic model defining the extraction output schema.
+            context_id: Unique identifier for this browser window (used in BFS mode).
+            action_status: Whether the previous action succeeded.
 
-        output:
-            A predefined pydantic model called `PlaywrightResponse` which defines our DSL
+        Returns:
+            A PlaywrightAction to execute next, or None if the task is complete.
         """
 
         prompt = self._initialise_prompt(
@@ -220,7 +199,7 @@ class PlaywrightAgent(BaseAgent):
         self, cleaned_dom: Dict[str, Union[List, str]], user_prompt: str, context_id: str = None
     ) -> str:
         """
-        Method to get the final output from the model if the user requested for one
+        Gets the final text output from the model based on the current page state.
         """
 
         prompt = self._initialise_prompt(

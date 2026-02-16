@@ -25,10 +25,11 @@ class Provider:
     ):
         """
         Args:
-                openai_api_key: API key for OpenAI models should you want to use that
-                vertexai_project_id: Create a VertexAI project to use that instead of OpenAI
-                vertexai_server_location: VertexAI server location
-                logger: The logger instance
+            openai_api_key: API key for OpenAI models should you want to use that
+            vertexai_project_id: Create a VertexAI project to use that instead of OpenAI
+            vertexai_server_location: VertexAI server location
+            model_name: Model name to use
+            gemini_api_key: API key for Gemini models
         """
 
         self.provider: str | None = None
@@ -64,23 +65,17 @@ class Provider:
             or (self.openai_api_key and self.gemini_api_key)
         ):
             if self.openai_api_key:
-                self.log.warning(
-                    "You've defined more than one LLM keys, we're choosing to go with openai!"
-                )
+                self.log.warning("Multiple LLM keys defined, defaulting to OpenAI")
                 self.provider = config["openai"]["provider"]
                 self.vertexai_project_id = None
                 self.location = None
                 self.gemini_api_key = None
             elif self.vertexai_project_id:
-                self.log.warning(
-                    "You've defined more than one LLM keys, we're choosing to go with vertexai!"
-                )
+                self.log.warning("Multiple LLM keys defined, defaulting to VertexAI")
                 self.provider = config["vertexai"]["provider"]
                 self.gemini_api_key = None
             else:
-                self.log.warning(
-                    "You've defined more than one LLM keys, we're choosing to go with gemini!"
-                )
+                self.log.warning("Multiple LLM keys defined, defaulting to Gemini")
                 self.provider = config["gemini"]["provider"]
                 self.vertexai_project_id = None
                 self.location = None
@@ -102,7 +97,7 @@ class Provider:
             in the config file as well.
 
         Args:
-            `provider`: The name of the provider in question
+            provider: The name of the provider in question
         """
         if not self.model_name:  # Default model based on provider
             self.model = config[self.provider]["model"]
@@ -127,5 +122,4 @@ class Provider:
                 provider_valid_models=self.valid_models.get(self.provider),
             )
         else:
-            # Otherwise choose that simply
             self.model = self.model_name

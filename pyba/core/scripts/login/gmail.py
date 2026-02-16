@@ -23,7 +23,6 @@ class GmailLogin(BaseLogin):
             await self.page.fill(self.config["username_selector"], self.username)
             await self.page.click(self.config["submit_selector"])
         except Exception:
-            # Google's too smart
             return False
 
         try:
@@ -35,7 +34,6 @@ class GmailLogin(BaseLogin):
             await self.page.fill(self.config["password_selector"], self.password)
             await self.page.click(self.config["submit_selector"])
         except Exception:
-            # Now this is bad
             try:
                 # Alternate fields that gmail might use
                 await asyncio.gather(

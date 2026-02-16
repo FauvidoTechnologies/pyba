@@ -58,9 +58,9 @@ class Memory:
         Save a single conversational unit to Pinecone.
 
         Args:
-            `text`: The actual text to be saved
-            `role`: A role assignment for the text
-            `turn_id`: A unique ID for the current turn of chats
+            text: The actual text to be saved
+            role: A role assignment for the text
+            turn_id: A unique ID for the current turn of chats
 
         Usage:
         ```python3
@@ -100,8 +100,8 @@ class Memory:
         within the same session.
 
         Args:
-            `query_text`: The text being used to query the DB
-            `top_k`: Number of matches to return
+            query_text: The text being used to query the DB
+            top_k: Number of matches to return
 
         Usage:
             - Combine the last two messages of the user INCLUDING the current one as the `query_text`

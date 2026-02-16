@@ -81,12 +81,12 @@ class PlaywrightActionPerformer:
             (await self.page.wait_for_load_state("domcontentloaded"),)
 
     # -----------------
-    # Handle nagivation
+    # Handle navigation
     # -----------------
     async def handle_navigation(self):
         """
-        Handle's browser naviation -> Opening new websites
-        Wait's until the page is loaded
+        Handles browser navigation by opening new websites.
+        Waits until the page is loaded.
         """
         await self.page.goto(self.action.goto)
         await self.wait_till_loaded()
@@ -135,15 +135,13 @@ class PlaywrightActionPerformer:
 
     async def handle_click(self):
         """
-        Handle's clicking elements. Has additional checks to ensure that
+        Handles clicking elements. Has additional checks to ensure that
         the element is not actually a relational hyperlink.
 
         This is done in the following ways:
 
         - We first check if the click element is actually an <a> tag
-        - Or if it has a closest ancestory <a> tag
-
-        TODO: MAKE THIS CLEANER
+        - Or if it has a closest ancestor <a> tag
 
         In either case we extract the href from that <a> tag and directly goto that
         """
@@ -151,8 +149,7 @@ class PlaywrightActionPerformer:
         if click_target is None:
             return
 
-        # Patch: for absolute URLs
-        # If the click string contains a full URL, just extract and goto it.
+        # Handle absolute URLs: if the click string contains a full URL, extract and navigate to it.
         url_match = re.search(r"https?://[^\s'\"]+", click_target)
         if url_match:
             href = url_match.group(0)
@@ -197,7 +194,7 @@ class PlaywrightActionPerformer:
         if href:
             # Handling relative links by checking for a schema and a netloc (host + optional port)
             if not is_absolute_url(href):
-                base_url = "/".join(self.page.url.split("/")[0:3])  # This won't be 0:3 always
+                base_url = "/".join(self.page.url.split("/")[0:3])
                 href = urljoin(base_url, href)
             await self.page.goto(href)
             await self.wait_till_loaded()
@@ -220,7 +217,7 @@ class PlaywrightActionPerformer:
     async def handle_dropdown_click(self):
         """
         Dispatch function to handle dropdown menus. This function requires both
-        the field_id and the field_value to be spciefied in the single action.
+        the field_id and the field_value to be specified in the single action.
         """
         field_id = self.action.dropdown_field_id
         field_value = self.action.dropdown_field_value
@@ -235,13 +232,13 @@ class PlaywrightActionPerformer:
 
     async def handle_double_click(self):
         """
-        Handle's double clicking an element
+        Handles double clicking an element.
         """
         await self.page.dblclick(self.action.dblclick)
 
     async def handle_hover(self):
         """
-        Handle's hovering over an element to make new actions visible
+        Handles hovering over an element to make new actions visible.
         """
         await self.page.hover(self.action.hover)
 
@@ -336,13 +333,13 @@ class PlaywrightActionPerformer:
     # ---------------------------
     async def handle_evaluate_js(self):
         """
-        Handles the evaluation of Javascript in the browser enviornement
-        and brings the result back to the code
+        Handles the evaluation of Javascript in the browser environment
+        and brings the result back to the code.
 
         This is the recommended way to using it.
         ```js
         const href = await page.evaluate(() => document.location.href);
-        ```evaluate_js
+        ```
 
         We strip the js snippet here for any return statements because those
         aren't required for inline functions.
@@ -352,7 +349,6 @@ class PlaywrightActionPerformer:
             self.action.evaluate_js = " ".join(self.action.evaluate_js.split(" ")[1:])
         result = await self.page.evaluate(self.action.evaluate_js)
 
-        # Letting this be here for debugging
         self.log.info(f"[JS Evaluation Result]: {result}")
         return result
 
@@ -460,7 +456,6 @@ async def perform_action(page: Page, action: PlaywrightAction):
     """
     The entry point function
     """
-    # assert isinstance(action, PlaywrightAction), "the input type for action is incorrect!"
     performer = PlaywrightActionPerformer(page, action)
 
     try:

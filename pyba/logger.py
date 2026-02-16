@@ -44,8 +44,6 @@ class Logger:
         self._log("[ACTION] ", message, Fore.MAGENTA)
 
 
-# Private names cause we don't want modifications, not that it will happen
-# Initialising the logger
 _global_logger = Logger(use_logger=False)
 
 

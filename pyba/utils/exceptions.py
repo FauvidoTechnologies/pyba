@@ -28,7 +28,7 @@ class ServerLocationUndefined(Exception):
         )
 
 
-class CredentialsnotSpecified(Exception):
+class CredentialsNotSpecified(Exception):
     """
     Exception raised in the login scripts when the relevant credentials haven't been specified
     """
@@ -77,7 +77,7 @@ class UnsupportedModelUsed(Exception):
 
     def __init__(self, model_name: str, valid_model_names: list):
         super().__init__(
-            f"The model {model_name} is not supposed. Please choose one from {valid_model_names}"
+            f"The model {model_name} is not supported. Please choose one from {valid_model_names}"
         )
 
 

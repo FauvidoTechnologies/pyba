@@ -107,7 +107,7 @@ class ArgParser(ArgumentParser):
             action="store_true",
             default=False,
             dest="enable_tracing",
-            help="Start's tracing all playwright moves and network requests to create a zip file which can be viewed in playwright traceviewer",
+            help="Starts tracing all playwright moves and network requests to create a zip file which can be viewed in playwright traceviewer",
         )
 
         base_parser.add_argument(
@@ -133,7 +133,7 @@ class ArgParser(ArgumentParser):
             action="append",
             dest="automated_login_sites",
             default=None,
-            help="The automated login engine names. Note: To use these you will need to set the username and password in your enviornment. Please read the man page.",
+            help="The automated login engine names. Note: To use these you will need to set the username and password in your environment. Please read the man page.",
         )
 
         base_parser.add_argument(
@@ -176,9 +176,6 @@ class ArgParser(ArgumentParser):
             parser_class=ArgumentParser,
         )
 
-        # TODO
-        # clarification_mode = subparsers.add_parser("clarify", help="Clarification mode for asking questions to the user about unsure steps", parents=[base_parser])
-
         # Normal Mode
         subparsers.add_parser(
             "normal",
@@ -199,7 +196,7 @@ class ArgParser(ArgumentParser):
             default=None,
             required=True,
             dest="database_engine",
-            help="The database engine you wish to use",  # This needs to be more explicit
+            help="The database engine you wish to use",
         )
 
         database_mode.add_argument(
@@ -268,13 +265,10 @@ class ArgParser(ArgumentParser):
 
     def initialise_arguments(self):
         """
-        check all rules and requirements for ARGS
-
-        Args:
-        api_forms: values from nettacker.api
+        Check all rules and requirements for ARGS.
 
         Returns:
-        all ARGS with applied rules
+            Parsed arguments with applied rules
         """
         options = self.parse_args()
 
@@ -293,17 +287,15 @@ class ArgParser(ArgumentParser):
                 )
                 sys.exit(0)
 
-        # passing all the keys directly to the run function because that handles it using the provider instance
         if options.mode == "database":
             if options.database_engine not in ["sqlite", "mysql", "postgres"]:
                 print("Wrong database engine chosen. Please choose from sqlite, mysql or postgres")
                 sys.exit(0)
 
-            if not options.code_output_path:
-                # Default save to /tmp/pyba_script.py
-                options.code_output_path = "/tmp/pyba_script.py"
-                print(
-                    "Output path not specified, the generated script will be saved at /tmp/pyba_script.py"
-                )
+        if not options.code_output_path:
+            options.code_output_path = "/tmp/pyba_script.py"
+            print(
+                "Output path not specified, the generated script will be saved at /tmp/pyba_script.py"
+            )
 
         self.arguments = options

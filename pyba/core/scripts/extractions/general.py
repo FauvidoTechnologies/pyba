@@ -25,10 +25,10 @@ class GeneralDOMExtraction:
     3. Extract all the clickables from it
     4. Extract all the actual text from it (we don't have to do any OCR for this!)
 
-    Note that extracing all clickable elements might get messy so we'll use that only when
+    Note that extracting all clickable elements might get messy so we'll use that only when
     the total length is lower than a certain threshold.
 
-    This is the general extraction. Some specific websites require a different way to do this. Checkout the README for more.
+    This is the general extraction. Some specific websites require a different way to do this.
     """
 
     def __init__(
@@ -109,7 +109,6 @@ class GeneralDOMExtraction:
             if href and self.base_url:
                 href = urljoin(self.base_url, href)
 
-            # Not sure how junk these are but dropping them for now to avoid explosion of context
             junk_keywords = config["extraction_configs"]["clickables"]["junk_keywords"]
             if any(k in text.lower() for k in junk_keywords):
                 continue
@@ -155,8 +154,7 @@ class GeneralDOMExtraction:
             ):
                 continue
 
-            # Have to figure out a bettery way to handle these
-            # In the case where we do have relative URLs, we just make it absolute
+            # Convert relative URLs to absolute URLs
             full_url = urljoin(self.base_url, href)
 
             if any(
@@ -165,7 +163,6 @@ class GeneralDOMExtraction:
             ):
                 continue
 
-            # Skipping any other type of URL. Will have to make this a confugrable parameter
             parsed = urlparse(full_url)
             if parsed.scheme not in set(
                 config["extraction_configs"]["hyperlinks"]["valid_schemas"]
@@ -174,15 +171,9 @@ class GeneralDOMExtraction:
 
             clean_hrefs.append(full_url)
 
-        # Before moving forward, we can filter them based on entropy
-        """
-        From what I noticed, big sites like amazon or facebook, have lots and lots of URLs and most of them
-        contain a bunch of random strings for IDs and whatnot. We don't want that because that gives no
-        additional context to the model regarding what the href is actually for!
-
-        So, we'll strip those based on entropy. I noticed from multiple scans that the shannon entropy for
-        such URLs are almost always greater than 5. Its interesting...
-        """
+        # Filter URLs based on entropy to remove URLs with random IDs
+        # URLs with high entropy (typically > 5) contain random strings that provide
+        # no additional context to the model
 
         output = [href for href in clean_hrefs if url_entropy(href) < 5.0]
         return output
@@ -201,12 +192,10 @@ class GeneralDOMExtraction:
         of so that it caches it and doesn't mess with the actual DOM during execution.
 
         Args:
-            known_fields : List[Dict], optional
-            Previously detected valid fields (to avoid duplicate fills).
+            known_fields: List[Dict], optional. Previously detected valid fields (to avoid duplicate fills).
 
         Returns:
-            List[Dict]
-                List of valid fillable fields with tag/type/id/name/selector info.
+            List[Dict]: List of valid fillable fields with tag/type/id/name/selector info.
         """
 
         valid_fields = [] if known_fields is None else known_fields.copy()
@@ -264,7 +253,7 @@ class GeneralDOMExtraction:
                     seen_selectors.add(selector)
                     continue
 
-                # Filling it and seein
+                # Filling it and checking
                 await el.fill(self.test_value, timeout=1500)
                 await asyncio.sleep(0.05)
                 new_value = await el.input_value()
@@ -273,12 +262,9 @@ class GeneralDOMExtraction:
                     valid_fields.append(field_info)
                     seen_selectors.add(selector)
 
-                    # TODO: This is failing in some cases because some websites re-render them so we need the selectors again!
-                    # This means cleanup requires its own set of elements.
-                    # Atleast we understand the problem now
                     await el.fill("")  # clearing the field after testing it
                 else:
-                    pass  # ignore false positives
+                    pass
 
             except PlaywrightTimeoutError:
                 continue
@@ -307,8 +293,6 @@ class GeneralDOMExtraction:
                 cleaned_dom.clickable_fields = self._extract_clickables()
             else:
                 cleaned_dom.clickable_fields = self._extract_clickables()[:10]
-                # This is taking way too many tokens so restricting the total number.
-                # There has to be a better way to do this!
         except Exception as e:
             cleaned_dom.clickable_fields = []
             self.log.error(f"Failed to extract clickables: {e}")

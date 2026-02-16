@@ -11,16 +11,11 @@ config = load_config("general")["main_engine_configs"]
 
 class PlannerAgent(BaseAgent):
     """
-    Planner agent for DFS and BFS modes under exploratory cases. This is inheriting off
-    from the Retry class as well and supports all agents under LLM_factory.
+    Planner agent for DFS and BFS exploration modes. Generates execution plans
+    that are then carried out by the action agent.
 
     Args:
-            `engine`: Engine to hold all arguments provided by the user
-
-    Initialises the `max_breadth` for the maximum number of plans to generate for BFS mode
-
-    NOTE:
-        `context_id` is not relevant here because this is a higer level class
+        engine: Engine instance holding all user-provided configuration.
     """
 
     def __init__(self, engine) -> None:
@@ -33,11 +28,11 @@ class PlannerAgent(BaseAgent):
 
     def _initialise_prompt(self, task: str, old_plan: str = None):
         """
-                Initialise the prompt for the planner agent
+        Formats the planner prompt based on the current mode (BFS or DFS).
 
         Args:
-                `task`: Task given by the user
-                `old_plan`: The previous plan in case of DFS mode
+            task: The user's exploratory task.
+            old_plan: The previous plan to diverge from (DFS mode only).
         """
         if self.mode == "BFS":
             return planner_general_prompt_BFS.format(task=task, max_plans=self.max_breadth)
@@ -53,9 +48,7 @@ class PlannerAgent(BaseAgent):
             prompt: The fully formatted prompt string
 
         Returns:
-            The parsed response (SimpleNamespace for action, str for output)
-
-        Uses the attempt_number to give ou
+            A plan string (DFS) or list of plan strings (BFS).
         """
         if self.engine.provider == "openai":
             response = self.handle_openai_execution(agent=agent, prompt=prompt)
@@ -110,15 +103,14 @@ class PlannerAgent(BaseAgent):
         self, task: str, old_plan: str = None
     ) -> Union[PlannerAgentOutputBFS, PlannerAgentOutputDFS]:
         """
-        Endpoint to generate the plan(s) depending on the set mode (the agent encodes the mode)
+        Generates exploration plan(s) based on the current mode.
 
         Args:
-            `task`: The task provided by the user
-            `old_plan`: The previous plan if using DFS mode
+            task: The user's exploratory task.
+            old_plan: The previous plan to diverge from (DFS mode only).
 
-        Function:
-            - Takes in the user prompt which serves as the task for the model to perform
-            - Depending on DFS or BFS mode generates plan(s)
+        Returns:
+            A plan string (DFS) or list of plan strings (BFS).
         """
         prompt = self._initialise_prompt(task=task, old_plan=old_plan)
         return self._call_model(agent=self.agent, prompt=prompt)

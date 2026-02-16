@@ -10,7 +10,7 @@ from playwright.async_api import Page
 import pyba.core.helpers as global_vars
 from pyba.core.helpers.jitters import MouseMovements, ScrollMovements
 from pyba.utils.common import verify_login_page
-from pyba.utils.exceptions import CredentialsnotSpecified
+from pyba.utils.exceptions import CredentialsNotSpecified
 from pyba.utils.load_yaml import load_config
 
 load_dotenv()  # Loading the username and passwords
@@ -32,7 +32,7 @@ class BaseLogin(ABC):
         self.password = os.getenv(f"{self.engine_name}_password")
 
         if self.username is None or self.password is None:
-            raise CredentialsnotSpecified(self.engine_name)
+            raise CredentialsNotSpecified(self.engine_name)
 
         self.uses_2FA = self.config["uses_2FA"]
         self.final_2FA_url = self.config["2FA_wait_value"]
@@ -63,7 +63,7 @@ class BaseLogin(ABC):
             ):  # Only when we reach the required domain name, we'll break
                 break
 
-            # Continous polling, not the best way but works for now
+            # Continuous polling
             if self.use_random_flag:
                 await asyncio.gather(
                     asyncio.sleep(1),
@@ -91,8 +91,6 @@ class BaseLogin(ABC):
             return False
 
         try:
-            # await self.page.wait_for_load_state("networkidle", timeout=10000)
-            # Replacing a simple wait to do so along with random mouse movements
             if self.use_random_flag:
                 await asyncio.gather(
                     self.page.wait_for_load_state("networkidle", timeout=10000),
@@ -102,7 +100,6 @@ class BaseLogin(ABC):
             else:
                 (await self.page.wait_for_load_state("networkidle", timeout=10000),)
         except Exception:
-            # It's fine, we'll assume that the login worked nicely
             pass
 
         if self.uses_2FA:

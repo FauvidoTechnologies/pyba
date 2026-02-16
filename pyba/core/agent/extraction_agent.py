@@ -9,30 +9,27 @@ from pyba.utils.prompts.extraction_prompts import extraction_general_instruction
 
 class ExtractionAgent(BaseAgent):
     """
-    This is a helper agent in all aspects. To use this, all other agents
-    need to import and initialise this.
-
-    This agent allows for threaded infomation extraction to not hinder the main pipeline flow.
+    Handles structured data extraction from page content in a separate thread
+    so it does not block the main automation pipeline.
 
     Args:
-        `extraction_format`: The format which should be fitted for the extraction
+        extraction_format: Pydantic model defining the expected extraction output schema.
     """
 
     def __init__(self, engine, extraction_format: BaseModel):
-        super().__init__(engine=engine)  # Initialising the base params from BaseAgent
-
+        super().__init__(engine=engine)
         self.extraction_format = extraction_format
         self.agent = self.llm_factory.get_extraction_agent(
             extraction_format=self.extraction_format
-        )  # Getting the extraction agent
+        )
 
     def _initialise_prompt(self, task: str, actual_text: str):
         """
-        Takes in the actual_text and wraps it around the general prompt
+        Formats the extraction prompt with the user task and page text.
 
         Args:
-                `task`: The user's defined task
-                `actual_text`: The current text on the page
+            task: The user's extraction request.
+            actual_text: The visible text content of the current page.
         """
         return extraction_general_instruction.format(task=task, actual_text=actual_text)
 
@@ -41,14 +38,12 @@ class ExtractionAgent(BaseAgent):
         Function to extract data from the current page
 
         Args:
-            `task`: The user's defined task
-            `actual_text`: The current page text
-            `context_id`: A unique identifier for this browser window (useful when multiple windows)
+            task: The user's defined task
+            actual_text: The current page text
+            context_id: A unique identifier for this browser window (useful when multiple windows)
 
-        This function for now only Logs the value and doesn't return anything
+        Extracts data and logs it. Pushes to semantic memory if a database is configured.
         """
-
-        # THE FINAL PIECE OF THE PUZZLE
         prompt = self._initialise_prompt(task=task, actual_text=actual_text)
 
         if self.engine.provider == "openai":
@@ -66,7 +61,7 @@ class ExtractionAgent(BaseAgent):
                     )
                     self.log.info("Added to semantic memory")
             except Exception as e:
-                self.log.error(f"Unable to parse the outoput from OpenAI response: {e}")
+                self.log.error(f"Unable to parse the output from OpenAI response: {e}")
                 return None
         elif self.engine.provider == "vertexai":
             response = self.handle_vertexai_execution(
@@ -92,8 +87,7 @@ class ExtractionAgent(BaseAgent):
             except Exception as e:
                 if not response:
                     self.log.error(f"Unable to parse the output from VertexAI response: {e}")
-                # If we have a response which cannot be parsed, it MUST be a None value
-        else:  # Using gemini
+        else:
             response = self.handle_gemini_execution(
                 agent=self.agent, prompt=prompt, context_id=context_id
             )
@@ -107,14 +101,11 @@ class ExtractionAgent(BaseAgent):
 
     def run_threaded_info_extraction(self, task: str, actual_text: str):
         """
-                Fuction to thread the execution of the `info_extraction` function
+        Runs info_extraction in a daemon thread so extraction does not block the main loop.
 
-                Args:
-            `task`: The user's defined task
-            `actual_text`: The current page text
-
-        This function creates a separate thread for calling the agent on the current page
-        and extracting the relevant information with the right format.
+        Args:
+            task: The user's extraction request.
+            actual_text: The visible text content of the current page.
         """
         self.log.info("Running the extractor on the current page")
         thread = threading.Thread(

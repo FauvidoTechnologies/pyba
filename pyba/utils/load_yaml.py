@@ -20,7 +20,6 @@ def load_config(config_type: str):
     try:
         config_path = getattr(ConfigFilePath, config_type)
     except AttributeError:
-        # This probably will never happen, this is not a userfacing function
         raise ValueError(f"Invalid config type '{config_type}'")
 
     with open(config_path, "r") as f:

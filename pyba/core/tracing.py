@@ -22,14 +22,14 @@ class Tracing:
     ):
         """
         Args:
-                `browser_instance`: The browser instance being used under the main async with statement
-                `session_id`: A unique identifier for this session
-                `enable_tracing`: A boolean to indicate the use of tracing
-                `trace_save_directory`: Directory to save the traces
-                `screenshots`: Enable screenshot taking during tracing
-                `snapshots`: Enable capturing snapshots during tracing
-                `sources`: Enable sources during tracing
-                `low_memory`: Enable low memory mode by reducing the viewport and disabling features
+            browser_instance: The browser instance being used under the main async with statement
+            session_id: A unique identifier for this session
+            enable_tracing: A boolean to indicate the use of tracing
+            trace_save_directory: Directory to save the traces
+            screenshots: Enable screenshot taking during tracing
+            snapshots: Enable capturing snapshots during tracing
+            sources: Enable sources during tracing
+            low_memory: Enable low memory mode by reducing the viewport and disabling features
         """
 
         self.browser = browser_instance
@@ -44,7 +44,6 @@ class Tracing:
         self.sources: bool = config["tracing"]["sources"] | sources
 
         if self.trace_save_directory is None:
-            # This means we revert to default, which is CWD
             trace_save_directory = str(Path.cwd())
         else:
             trace_save_directory = self.trace_save_directory

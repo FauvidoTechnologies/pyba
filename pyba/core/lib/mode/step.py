@@ -23,20 +23,19 @@ class Step(BaseEngine):
     by calling start(), step(), and stop().
 
     Args:
-        `openai_api_key`: API key for OpenAI models should you want to use that
-        `vertexai_project_id`: Create a VertexAI project to use that instead of OpenAI
-        `vertexai_server_location`: VertexAI server location
-        `gemini_api_key`: API key for Gemini-2.5-pro native support without VertexAI
-        `use_random`: Enables mouse and scroll randomisations to evade bot detection
-        `headless`: Choose if you want to run in the headless mode or not
-        `handle_dependencies`: Choose if you want to automatically install dependencies during runtime
-        `use_logger`: Choose if you want to use the logger (that is enable logging of data)
-        `enable_tracing`: Choose if you want to enable tracing. This will create a .zip file which you can use in traceviewer
-        `trace_save_directory`: The directory where you want the .zip file to be saved
-        `database`: An instance of the Database class which will define all database specific configs
-        `get_output`: When True, asks the model for a summarised output when a step completes. When False (default), step() silently returns None on completion
-        `model_name`: The model name which you want to run. The default is set to None (because it depends on the provider).
-
+        openai_api_key: API key for OpenAI models should you want to use that
+        vertexai_project_id: Create a VertexAI project to use that instead of OpenAI
+        vertexai_server_location: VertexAI server location
+        gemini_api_key: API key for Gemini-2.5-pro native support without VertexAI
+        use_random: Enables mouse and scroll randomisations to evade bot detection
+        headless: Choose if you want to run in the headless mode or not
+        handle_dependencies: Choose if you want to automatically install dependencies during runtime
+        use_logger: Choose if you want to use the logger (that is enable logging of data)
+        enable_tracing: Choose if you want to enable tracing. This will create a .zip file which you can use in traceviewer
+        trace_save_directory: The directory where you want the .zip file to be saved
+        database: An instance of the Database class which will define all database specific configs
+        get_output: When True, asks the model for a summarised output when a step completes. When False (default), step() silently returns None on completion
+        model_name: The model name which you want to run. The default is set to None (because it depends on the provider).
     """
 
     def __init__(
@@ -116,8 +115,8 @@ class Step(BaseEngine):
         into context and tries to figure out the best way to achieve the short term prompt given by the user.
 
         Args:
-            `prompt_step`: A single step wise prompt given by the user (This might require more than one steps)
-            `extraction_format`: The final extraction format IF NEEDED
+            prompt_step: A single stepwise prompt given by the user (This might require more than one steps)
+            extraction_format: The final extraction format IF NEEDED
         """
         if prompt_step is None:
             raise PromptNotPresent()
@@ -201,7 +200,7 @@ class Step(BaseEngine):
                 await self._playwright_context_manager.__aexit__(None, None, None)
 
     # Some helper functions for sync endpoints
-    # Note that using these will be a little weireder in the main pipeline.
+    # Note that using these will be a little weirder in the main pipeline.
     def sync_start(self, automated_login_sites: List[str] = None):
         asyncio.run(self.start(automated_login_sites=automated_login_sites))
 

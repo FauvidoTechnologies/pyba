@@ -11,7 +11,7 @@ from pyba.utils.structure import CleanedDOM
 
 def url_entropy(url) -> int:
     """
-    Computes the shannon entropy of a URL useful for determining which URLs to
+    Computes the Shannon entropy of a URL useful for determining which URLs to
     keep during the general DOM href extraction
     """
     counts = Counter(url)
@@ -30,7 +30,7 @@ def is_absolute_url(url: str) -> bool:
 
 async def initial_page_setup(page: Page) -> CleanedDOM:
     """
-    Helper function for main: goto for the initial page -> Optimisation
+    Helper function for initial page setup and navigation.
     """
     start_page = "https://search.brave.com"
 
@@ -64,13 +64,13 @@ def verify_login_page(page_url: str, url_list: List[str]):
     Helper function called inside login engines
 
     Args:
-        `page_url`: The page URL to be checked against a known list
-        `url_list`: The know URL list for login sites for the specific website
+        page_url: The page URL to be checked against a known list
+        url_list: The known URL list for login sites for the specific website
 
     Returns:
-        bool: Depending on whether this page is one of the login ones or not
+        bool: Whether this page is one of the login pages or not
 
-    Note: This assumes that all the urls in the `url_list` are ending with a "/".
+    Note: This assumes that all the urls in the url_list are ending with a "/".
     """
     parsed = urlparse(page_url)
     normalized_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
@@ -78,8 +78,4 @@ def verify_login_page(page_url: str, url_list: List[str]):
     if not normalized_url.endswith("/"):
         normalized_url += "/"
 
-    # Keeping it simple with this right now, later we can make this better
-    if normalized_url in url_list:
-        return True
-    else:
-        return False
+    return normalized_url in url_list

@@ -10,7 +10,7 @@ from pyba.utils.load_yaml import load_config
 class WikipediaDOMExtraction:
     """
     Specialized class for handling extractions in wikipedia which is
-    bundled with links	and text and whatnot.
+    bundled with links and text.
 
     The goal of the class is to correctly and informatively display
     the relevant results to the main model.
@@ -39,7 +39,7 @@ class WikipediaDOMExtraction:
     def _add_indices(self, articles: List[Dict[str, str]]) -> List[Dict[str, str]]:
         """
         The returned articles from the JS execution are already ordered. This method
-        is to bring that point home by adding an index param to the Dictionaries
+        adds an index parameter to the dictionaries.
         """
         return [{"index": i + 1, **article} for i, article in enumerate(articles)]
 
@@ -78,9 +78,6 @@ class WikipediaDOMExtraction:
         """
         articles = await self.page.evaluate(self.js_function_string, self.config)
 
-        # This is a potentailly breaking change because the model MIGHT not format
-        # The article correctly.
-        # TODO: FIX THIS ASAP
         if self.main_config["minimize_tokens"]:
             return self._minimize_token_effort(articles)
 

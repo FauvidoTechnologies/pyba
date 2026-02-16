@@ -7,7 +7,7 @@ from pyba.core.scripts.login.base import BaseLogin
 
 class FacebookLogin(BaseLogin):
     """
-    The facebook login engine, inherited form the BaseLogin class
+    The facebook login engine, inherited from the BaseLogin class.
     """
 
     def __init__(self, page: Page) -> None:
@@ -24,7 +24,6 @@ class FacebookLogin(BaseLogin):
             await self.page.fill(self.config["password_selector"], self.password)
             await self.page.click(self.config["submit_selector"])
         except Exception:
-            # Now this is bad
             return False
 
         return True

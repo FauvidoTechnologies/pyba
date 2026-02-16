@@ -5,13 +5,11 @@ from playwright.async_api import Page
 
 from pyba.utils.load_yaml import load_config
 
-# Adjust this import path based on where you save base.py
 from .base import BaseLogin
 
 load_dotenv()  # Loading the username and passwords
 config = load_config("general")["automated_login_configs"]["instagram"]
 
-# These are specific to instagram's login flow
 screen_height = config["click_location"]["default_screen_height"]
 x_from_left = config["click_location"]["x_from_left"]
 y_from_bottom = config["click_location"]["y_from_bottom"]
@@ -20,9 +18,7 @@ y_top_left = screen_height - y_from_bottom
 
 class InstagramLogin(BaseLogin):
     """
-    The instagram login engine, inherits from the BaseLogin class. This
-    still needs a module level import because it calls for more than what
-    is defined in the BaseLogin class.
+    The instagram login engine, inherits from the BaseLogin class.
     """
 
     def __init__(self, page: Page) -> None:
@@ -52,7 +48,6 @@ class InstagramLogin(BaseLogin):
             except Exception:
                 return False
 
-        # There is a not-now button that we need to click
         try:
             await asyncio.gather(
                 self.page.wait_for_selector(
@@ -65,7 +60,6 @@ class InstagramLogin(BaseLogin):
         except Exception:
             pass
 
-        # Sometimes these things also come up for new updates
         try:
             await asyncio.gather(
                 self.page.wait_for_selector(

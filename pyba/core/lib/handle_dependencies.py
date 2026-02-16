@@ -8,7 +8,7 @@ from pathlib import Path
 class PlaywrightDependencies:
     """
     We'll make use of this class if the user wants us to handle the dependencies. Usually, this
-    shouldn't be the case because its like 2 commands to manage all playwright deps.
+    shouldn't be the case because it requires only 2 commands to manage all playwright deps.
     """
 
     @staticmethod
@@ -18,9 +18,9 @@ class PlaywrightDependencies:
         installed. An OS agnostic check for determining installed playwright browsers.
 
         Uses the following paths:
-            `windows`: "AppData/Local/ms-playwright"
-            `macOS`: "~/Library/Caches/ms-playwright"
-            `linux`: ".cache/ms-playwright"
+            windows: "AppData/Local/ms-playwright"
+            macOS: "~/Library/Caches/ms-playwright"
+            linux: ".cache/ms-playwright"
 
         Note: OSes like freebsd haven't been checked
         """
@@ -36,7 +36,6 @@ class PlaywrightDependencies:
         elif sys.platform == "darwin":
             base = Path.home() / "Library" / "Caches" / "ms-playwright"
         else:
-            # This is buggy
             base = Path.home() / ".cache" / "ms-playwright"
         return base
 

@@ -22,19 +22,19 @@ class Engine(BaseEngine):
     The main entrypoint for browser automation. This engine exposes the main entry point which is the run() method
 
     Args:
-        `openai_api_key`: API key for OpenAI models should you want to use that
-        `vertexai_project_id`: Create a VertexAI project to use that instead of OpenAI
-        `vertexai_server_location`: VertexAI server location
-        `gemini_api_key`: API key for Gemini-2.5-pro native support without VertexAI
-        `headless`: Choose if you want to run in the headless mode or not
-        `handle_dependencies`: Choose if you want to automatically install dependencies during runtime
-        `use_logger`: Choose if you want to use the logger (that is enable logging of data)
-        `enable_tracing`: Choose if you want to enable tracing. This will create a .zip file which you can use in traceviewer
-        `trace_save_directory`: The directory where you want the .zip file to be saved
-        `max_depth`: The maximum number of actions that you want the model to execute
-        `database`: An instance of the Database class which will define all database specific configs
-        `model_name`: The model name which you want to run. The default is set to None (because it depends on the provider).
-        `low_memory`: Optional parameter, defaults to False for disable some heavy dependencies and running with additional flags.
+        openai_api_key: API key for OpenAI models should you want to use that
+        vertexai_project_id: Create a VertexAI project to use that instead of OpenAI
+        vertexai_server_location: VertexAI server location
+        gemini_api_key: API key for Gemini-2.5-pro native support without VertexAI
+        headless: Choose if you want to run in the headless mode or not
+        handle_dependencies: Choose if you want to automatically install dependencies during runtime
+        use_logger: Choose if you want to use the logger (that is enable logging of data)
+        enable_tracing: Choose if you want to enable tracing. This will create a .zip file which you can use in traceviewer
+        trace_save_directory: The directory where you want the .zip file to be saved
+        max_depth: The maximum number of actions that you want the model to execute
+        database: An instance of the Database class which will define all database specific configs
+        model_name: The model name which you want to run. The default is set to None (because it depends on the provider).
+        low_memory: Optional parameter, defaults to False for disable some heavy dependencies and running with additional flags.
 
     Find these default values at `pyba/config.yaml`.
 
@@ -81,7 +81,7 @@ class Engine(BaseEngine):
         )
 
         self.max_depth = max_depth
-        # session_id stays here becasue BaseEngine will be inherited by many
+        # session_id is per-engine, not in BaseEngine, because BaseEngine is shared across modes
         self.session_id = uuid.uuid4().hex
 
         selectors = tuple(config["process_config"]["selectors"])
@@ -97,9 +97,9 @@ class Engine(BaseEngine):
         The most basic implementation for the run function
 
         Args:
-            `prompt`: The user's instructions. This is a well defined instruction.
-            `automated_login_sites`: A list of sites that you want the model to automatically login to using env credentials
-            `extraction_format`: A pydantic BaseModel which defines the extraction format for any data extraction
+            prompt: The user's instructions. This is a well defined instruction.
+            automated_login_sites: A list of sites that you want the model to automatically login to using env credentials
+            extraction_format: A pydantic BaseModel which defines the extraction format for any data extraction
 
         Note:
 
@@ -123,7 +123,7 @@ class Engine(BaseEngine):
         await engine.run(task, extraction_format=Output)
         ```
 
-        would return data **during** the execution, and now once it finishes. It will dump it in the database as well, and it
+        would return data **during** the execution, not once it finishes. It will dump it in the database as well, and it
         decides if data needs to be extracted on an action basis.
 
         Using this feature will NOT cost you any more tokens than usual.

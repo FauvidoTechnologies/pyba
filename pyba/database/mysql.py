@@ -11,7 +11,7 @@ class MySQLHandler:
     def __init__(self, database_engine_configs):
         """
         Args:
-            `database_engine_configs`: User supplied configurations imported from the Database class
+            database_engine_configs: User-supplied configurations imported from the Database class.
         """
         self.database_engine_configs = database_engine_configs
         self.database_connection_string = self.database_engine_configs.database_connection_string
@@ -37,12 +37,7 @@ class MySQLHandler:
 
     def mysql_create_tables(self):
         """
-        Method to create the MySQL tables
-
-        Args:
-            None
-        Returns:
-            True if success otherwise False
+        Creates the MySQL tables.
         """
         Base.metadata.create_all(self.engine)
 

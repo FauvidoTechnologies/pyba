@@ -12,7 +12,7 @@ class PostgresHandler:
     def __init__(self, database_engine_configs):
         """
         Args:
-            `database_engine_configs`: User supplied configurations imported from the Database class
+            database_engine_configs: User-supplied configurations imported from the Database class.
         """
 
         self.database_engine_configs = database_engine_configs
@@ -22,12 +22,11 @@ class PostgresHandler:
 
     def create_postgres_database(self):
         """
-        Method to create a postgres database
+        Creates a PostgreSQL database.
 
-        Note: If the database is not already created, we need to make one using a different
-        connection string: "postgresql+psycopg2://{username}:{password}@{host}:{port}/postgres"
-
-        we connect to the default postgres database and create a new database from there
+        If the database does not exist, connects to the default postgres database
+        using the connection string "postgresql+psycopg2://{username}:{password}@{host}:{port}/postgres"
+        and creates a new database from there.
         """
         try:
             Base.metadata.create_all(self.engine)

@@ -28,20 +28,20 @@ class DFS(BaseEngine):
     The following params are defined:
 
     Args:
-        `openai_api_key`: API key for OpenAI models should you want to use that
-        `vertexai_project_id`: Create a VertexAI project to use that instead of OpenAI
-        `vertexai_server_location`: VertexAI server location
-        `gemini_api_key`: API key for Gemini-2.5-pro native support without VertexAI
-        `headless`: Choose if you want to run in the headless mode or not
-        `handle_dependencies`: Choose if you want to automatically install dependencies during runtime
-        `use_logger`: Choose if you want to use the logger (that is enable logging of data)
-        `max_depth`: The maximum depth to go into for each plan, where each level of depth corresponds to an action
-        `max_breadth`: The number of plans to execute one by one in depth
-        `enable_tracing`: Choose if you want to enable tracing. This will create a .zip file which you can use in traceviewer
-        `trace_save_directory`: The directory where you want the .zip file to be saved
+        openai_api_key: API key for OpenAI models should you want to use that
+        vertexai_project_id: Create a VertexAI project to use that instead of OpenAI
+        vertexai_server_location: VertexAI server location
+        gemini_api_key: API key for Gemini-2.5-pro native support without VertexAI
+        headless: Choose if you want to run in the headless mode or not
+        handle_dependencies: Choose if you want to automatically install dependencies during runtime
+        use_logger: Choose if you want to use the logger (that is enable logging of data)
+        max_depth: The maximum depth to go into for each plan, where each level of depth corresponds to an action
+        max_breadth: The number of plans to execute one by one in depth
+        enable_tracing: Choose if you want to enable tracing. This will create a .zip file which you can use in traceviewer
+        trace_save_directory: The directory where you want the .zip file to be saved
 
-        `database`: An instance of the Database class which will define all database specific configs
-        `model_name`: The model name which you want to run. The default is set to None (because it depends on the provider).
+        database: An instance of the Database class which will define all database specific configs
+        model_name: The model name which you want to run. The default is set to None (because it depends on the provider).
 
     Find these default values at `pyba/config.yaml`.
     """
@@ -82,7 +82,7 @@ class DFS(BaseEngine):
             low_memory=low_memory,
         )
 
-        # session_id stays here becasue BaseEngine will be inherited by many
+        # session_id is per-engine, not in BaseEngine, because BaseEngine is shared across modes
         self.session_id = uuid.uuid4().hex
 
         selectors = tuple(config["process_config"]["selectors"])
@@ -103,9 +103,9 @@ class DFS(BaseEngine):
         Run pyba in DFS mode.
 
         Args:
-            `prompt`: The task assigned to DFS by the user
-            `automated_login_sites`: Login site name for pre-written scripts to run
-            `extraction_format`: A pydantic BaseModel which defines the extraction format for any data extraction
+            prompt: The task assigned to DFS by the user
+            automated_login_sites: Login site name for pre-written scripts to run
+            extraction_format: A pydantic BaseModel which defines the extraction format for any data extraction
 
         The task is fed into the planner to get a plan which is then passed to the action models
         to fetch an actionable element.
