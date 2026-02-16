@@ -67,6 +67,7 @@ Current Version: **0.3.21**
    database
    code-generation
    cli
+   performance
 
 .. toctree::
    :maxdepth: 2

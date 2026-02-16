@@ -165,7 +165,7 @@ class ArgParser(ArgumentParser):
             action="store_true",
             dest="low_memory_usage",
             default=False,
-            help="Enable low memory mode: lazy-loads heavy dependencies (oxymouse, LLM providers) saving ~166MB of RAM and reduces browser resource usage. Cannot be used with -r (use_random).",
+            help="Enable low memory mode: lazy-loads heavy dependencies (oxymouse, LLM providers) saving ~120MB of idle RAM. Chromium flags improve container stability. Cannot be used with -r (use_random).",
         )
 
         subparsers = self.add_subparsers(

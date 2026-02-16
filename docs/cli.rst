@@ -108,7 +108,7 @@ Low Memory
 
    --low-memory-usage        # Enable low memory mode
 
-Saves ~166MB of RAM by lazy-loading heavy Python dependencies (oxymouse, LLM providers) and reducing browser resource usage. Cannot be used with ``-r``. Useful for CI servers, containers, or low-spec machines.
+Saves ~120MB of idle RAM by lazy-loading heavy Python dependencies (oxymouse, LLM providers). Chromium flags improve container stability. Cannot be used with ``-r``. Useful for CI servers, containers, or low-spec machines.
 
 Stealth
 ^^^^^^^
@@ -366,7 +366,7 @@ Headless Failing on Servers
 High Memory Usage
 ^^^^^^^^^^^^^^^^^
 
-- Use ``--low-memory-usage`` to save ~166MB by lazy-loading heavy Python dependencies
-- Disables GPU, background processes, and reduces browser resource usage
+- Use ``--low-memory-usage`` to save ~120MB of idle RAM by lazy-loading heavy Python dependencies
+- Chromium flags improve stability in containers (``--disable-dev-shm-usage``, etc.)
 - Cannot be combined with ``-r`` (random mouse movements)
 - Recommended for CI/CD pipelines, Docker containers, and low-spec servers

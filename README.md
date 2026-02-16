@@ -159,7 +159,7 @@ Export any successful run as a standalone Python script. Run it forever without 
 Every run generates a Playwright trace.zip — replay exactly what happened in [Trace Viewer](https://trace.playwright.dev/).
 
 ### Low Memory Mode
-Saves ~166MB of RAM by lazy-loading heavy dependencies (oxymouse, google-genai, openai) and reducing browser resource usage. Built for CI servers, containers, and low-spec machines.
+Saves ~120MB of idle RAM by lazy-loading heavy Python dependencies (oxymouse, google-genai, openai). Chromium flags improve container stability. Built for CI servers, containers, and low-spec machines.
 
 ```python
 engine = Engine(openai_api_key="sk-...", low_memory=True)

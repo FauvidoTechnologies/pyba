@@ -363,23 +363,29 @@ For resource-constrained environments (CI servers, containers, low-spec machines
 
 **What low memory mode does:**
 
-*Python-side optimizations (~119MB saved):*
+*Python-side optimizations (~120MB saved at idle):*
 
 - Skips loading ``oxymouse`` (and its dependencies ``numpy``, ``scipy``), saving ~46MB of RAM per process
 - Lazy-loads LLM provider libraries — only the chosen provider (OpenAI or Gemini) is loaded, saving ~64-73MB
 - Reduces SQLAlchemy connection pool from 50 to 5 connections
 
-*Chromium-side optimizations:*
+*Chromium-side flags (container stability, not RAM):*
 
+- ``--disable-dev-shm-usage`` — Uses /tmp instead of /dev/shm (prevents OOM in Docker containers)
 - ``--disable-gpu`` — Disables GPU compositing (not needed for headless)
-- ``--disable-dev-shm-usage`` — Uses /tmp instead of /dev/shm (avoids OOM in containers)
 - ``--disable-background-networking`` — Stops background network requests (updates, safe browsing)
 - ``--disable-extensions`` — No browser extensions loaded
 - ``--disable-sync`` — Disables Chrome profile sync
-- ``--disable-features=Translate,BackForwardCache`` — Disables page translation and back/forward page caching in RAM
+- ``--disable-features=Translate,BackForwardCache`` — Disables page translation and back/forward page caching
 - ``--mute-audio`` — Mutes all audio output
 - ``--disable-lcd-text`` — Disables subpixel text rendering
 - Sets device scale factor to 1
+
+.. note::
+
+   The Chromium flags do not measurably reduce browser RSS. Chromium memory is dominated by
+   DOM complexity, JavaScript execution, and network data — not by these flags. The flags improve
+   stability in containerized environments (especially ``--disable-dev-shm-usage``).
 
 .. note::
 
@@ -400,14 +406,9 @@ Low memory mode is available on all engine classes: ``Engine``, ``Step``, ``DFS`
    dfs = DFS(openai_api_key="...", database=db, low_memory=True)
    bfs = BFS(openai_api_key="...", database=db, low_memory=True)
 
-Performance Tips
-^^^^^^^^^^^^^^^^
+.. seealso::
 
-1. **Use headless mode** for faster execution (``headless=True``)
-2. **Enable low memory mode** on resource-constrained environments (``low_memory=True``)
-3. **Enable database logging** only when you need code generation
-4. **Set appropriate max_depth** — higher isn't always better
-5. **Use extraction_format** when you need structured data
+   See :doc:`performance` for benchmarking scripts, measured results, and performance tips.
 
 Common Issues
 ^^^^^^^^^^^^^
