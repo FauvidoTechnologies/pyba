@@ -21,6 +21,5 @@ LAUNCH_ARGS = [
 ]
 
 CONTEXT_KWARGS = {
-    "viewport": {"width": 800, "height": 600},
     "device_scale_factor": 1,
 }

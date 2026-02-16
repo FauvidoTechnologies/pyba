@@ -55,7 +55,7 @@ class Step(BaseEngine):
         database: Database = None,
         get_output: bool = False,
         model_name: str = None,
-        low_memory: bool = False,
+        low_memory: bool = config["main_engine_configs"]["minimize_memory"],
     ):
         self.mode = "STEP"
         super().__init__(

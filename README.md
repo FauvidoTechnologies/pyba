@@ -158,6 +158,13 @@ Export any successful run as a standalone Python script. Run it forever without 
 ### Trace Files
 Every run generates a Playwright trace.zip — replay exactly what happened in [Trace Viewer](https://trace.playwright.dev/).
 
+### Low Memory Mode
+Saves ~46MB of RAM per process by skipping `oxymouse` (`numpy`/`scipy`) and reducing browser resource usage. Built for CI servers, containers, and low-spec machines.
+
+```python
+engine = Engine(openai_api_key="sk-...", low_memory=True)
+```
+
 ### Stealth Mode
 Anti-fingerprinting, random mouse movements, human-like delays. Bypass common bot detection.
 

@@ -162,10 +162,10 @@ class ArgParser(ArgumentParser):
 
         base_parser.add_argument(
             "--low-memory-usage",
-            action="store",
+            action="store_true",
             dest="low_memory_usage",
             default=False,
-            help="Determines whether to enable the low memory kwargs in playwright browser initiation",
+            help="Enable low memory mode: reduces browser resource usage and skips loading oxymouse (numpy/scipy) to save ~46MB of RAM. Cannot be used with -r (use_random).",
         )
 
         subparsers = self.add_subparsers(

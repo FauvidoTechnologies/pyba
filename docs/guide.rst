@@ -363,12 +363,17 @@ For resource-constrained environments (CI servers, containers, low-spec machines
 
 **What low memory mode does:**
 
+- Skips loading ``oxymouse`` (and its dependencies ``numpy``, ``scipy``), saving ~46MB of RAM per process
 - Disables GPU rendering (``--disable-gpu``)
 - Disables background networking and throttling
 - Disables extensions, sync, and default apps
-- Reduces viewport to 800x600 (from default 1920x1080)
 - Sets device scale factor to 1
 - Mutes audio
+
+.. note::
+
+   ``low_memory=True`` and ``use_random=True`` cannot be used together.
+   Random mouse/scroll movements require ``oxymouse``, which low memory mode excludes to save RAM.
 
 Low memory mode is available on all engine classes: ``Engine``, ``Step``, ``DFS``, and ``BFS``.
 

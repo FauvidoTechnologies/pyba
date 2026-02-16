@@ -106,9 +106,9 @@ Low Memory
 
 .. code-block:: bash
 
-   --low-memory-usage True   # Enable low memory browser mode
+   --low-memory-usage        # Enable low memory mode
 
-Reduces browser resource usage by disabling GPU, background processes, extensions, and using a smaller viewport (800x600). Useful for CI servers, containers, or low-spec machines.
+Skips loading ``oxymouse`` (``numpy``/``scipy``) to save ~46MB of RAM and reduces browser resource usage by disabling GPU, background processes, and extensions. Cannot be used with ``-r``. Useful for CI servers, containers, or low-spec machines.
 
 Stealth
 ^^^^^^^
@@ -204,7 +204,7 @@ Low Memory Mode
    pyba normal \
      -t "scrape data from example.com" \
      --openai-api-key "sk-..." \
-     --low-memory-usage True
+     --low-memory-usage
 
 Full Featured Run
 ^^^^^^^^^^^^^^^^^
@@ -366,6 +366,7 @@ Headless Failing on Servers
 High Memory Usage
 ^^^^^^^^^^^^^^^^^
 
-- Use ``--low-memory-usage True`` to reduce browser resource consumption
-- This disables GPU, background processes, and reduces the viewport size
+- Use ``--low-memory-usage`` to reduce browser resource consumption and skip loading oxymouse/numpy/scipy (~46MB saved)
+- This disables GPU, background processes, and extensions
+- Cannot be combined with ``-r`` (random mouse movements)
 - Recommended for CI/CD pipelines, Docker containers, and low-spec servers

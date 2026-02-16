@@ -55,9 +55,9 @@ class Tracing:
         self.har_file_path = self.trace_dir / f"{self.session_id}_network.har"
 
     async def initialize_context(self):
-        context_kwargs = (
-            LOW_MEMORY_CONTEXT_KWARGS.copy() if self.low_memory else {"viewport": DEFAULT_VIEWPORT}
-        )
+        context_kwargs = {"viewport": DEFAULT_VIEWPORT}
+        if self.low_memory:
+            context_kwargs.update(LOW_MEMORY_CONTEXT_KWARGS)
 
         if self.enable_tracing:
             context_kwargs["record_har_path"] = self.har_file_path

@@ -62,7 +62,7 @@ class DFS(BaseEngine):
         trace_save_directory: str = None,
         database: Database = None,
         model_name: str = None,
-        low_memory: bool = False,
+        low_memory: bool = config["main_engine_configs"]["minimize_memory"],
     ):
         self.mode = "DFS"
         # Passing the common setup to the BaseEngine
