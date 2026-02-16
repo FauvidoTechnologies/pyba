@@ -5,146 +5,168 @@ from pydantic import BaseModel, Field
 
 
 class PlaywrightAction(BaseModel):
-    """
-    The BaseModel for playwright automations
-
-    Goal:
-        This contains an exhaustive list of commands that playwright can execute. It
-        will be filled accordingly by the LLM depending on the DOM recieved from playwright
-        and the goal of the task.
-    """
-
-    # Navigation
-    goto: Optional[str] = Field(None, description="Navigate to the given URL using page.goto().")
+    goto: Optional[str] = Field(
+        None,
+        description="URL to navigate to. Provide a full URL including protocol.",
+    )
     go_back: Optional[bool] = Field(
-        None, description="Navigate back in browser history using page.go_back()."
+        None,
+        description="Set true to go back one step in browser history, like clicking the back button.",
     )
     go_forward: Optional[bool] = Field(
-        None, description="Navigate forward in browser history using page.go_forward()."
+        None,
+        description="Set true to go forward one step in browser history.",
     )
     reload: Optional[bool] = Field(
-        None, description="Reload the current page using page.reload()."
+        None,
+        description="Set true to reload the current page.",
     )
 
-    # Interaction
     click: Optional[str] = Field(
-        None, description="Click the specified element using page.click(selector)."
+        None,
+        description="CSS selector of the element to single-click. Use for links, buttons, and interactive elements.",
     )
     dblclick: Optional[str] = Field(
-        None, description="Double-click the specified element using page.dblclick(selector)."
+        None,
+        description="CSS selector of the element to double-click. Use for elements requiring double-click activation.",
     )
     hover: Optional[str] = Field(
-        None, description="Hover over the specified element using page.hover(selector)."
+        None,
+        description="CSS selector of the element to hover over without clicking. Use to reveal tooltips or dropdown menus.",
     )
     right_click: Optional[str] = Field(
         None,
-        description="Right click a specified element using page.click(selector, button='right')",
+        description="CSS selector of the element to right-click. Use to open context menus.",
     )
 
-    # Dropdowns
     dropdown_field_id: Optional[str] = Field(
-        None, description="Select the ID of the dropdown field"
+        None,
+        description="CSS selector of a custom (non-native) dropdown menu. Must be paired with dropdown_field_value. Use for JavaScript-based dropdowns, NOT native <select> elements.",
     )
     dropdown_field_value: Optional[str] = Field(
-        None, description="The value to be selected from the dropdown field"
+        None,
+        description="The visible text or value of the option to choose from the dropdown specified by dropdown_field_id.",
     )
-    # Input
+
     fill_selector: Optional[str] = Field(
-        None, description="Selector of the input element to fill using page.fill()."
+        None,
+        description="CSS selector of an input field to fill. Clears any existing text first, then sets the value. Must be paired with fill_value. Preferred over type_selector for most form inputs.",
     )
     fill_value: Optional[str] = Field(
-        None, description="Value to fill into the element specified by fill_selector."
+        None,
+        description="The text to insert into the input field specified by fill_selector.",
     )
     type_selector: Optional[str] = Field(
-        None, description="Selector of the input element to type into using page.type()."
+        None,
+        description="CSS selector of an input field to type into character-by-character. Fires individual keystroke events, which can trigger autocomplete or live search. Must be paired with type_text. Use instead of fill when keystroke events matter.",
     )
     type_text: Optional[str] = Field(
-        None, description="Text to type into the element specified by type_selector."
+        None,
+        description="The text to type character-by-character into the element specified by type_selector.",
     )
     press_selector: Optional[str] = Field(
         None,
-        description="Selector of the element to send a key press event to using page.press().",
+        description="CSS selector of the element to send a keypress to. Must be paired with press_key. Use to submit forms or trigger keyboard shortcuts on a specific element.",
     )
     press_key: Optional[str] = Field(
-        None, description="Key to press (e.g., 'Enter', 'Escape', 'ArrowDown') in page.press()."
+        None,
+        description="Name of the key to press on the element specified by press_selector. Examples: 'Enter', 'Escape', 'Tab', 'ArrowDown', 'Backspace'.",
     )
     check: Optional[str] = Field(
-        None, description="Selector of a checkbox or radio button to check using page.check()."
+        None,
+        description="CSS selector of a checkbox or radio button to mark as checked.",
     )
     uncheck: Optional[str] = Field(
-        None, description="Selector of a checkbox or radio button to uncheck using page.uncheck()."
+        None,
+        description="CSS selector of a checkbox to mark as unchecked.",
     )
     select_selector: Optional[str] = Field(
-        None, description="Selector of a <select> element to modify using page.select_option()."
+        None,
+        description="CSS selector of a native HTML <select> dropdown. Must be paired with select_value. Use for native <select> elements, NOT custom JavaScript dropdowns.",
     )
     select_value: Optional[str] = Field(
-        None, description="Option value to select within the element specified by select_selector."
+        None,
+        description="The option value to pick from the native <select> element specified by select_selector.",
     )
     upload_selector: Optional[str] = Field(
         None,
-        description="Selector of a file input element to upload a file using page.set_input_files().",
+        description="CSS selector of a file input element (<input type='file'>). Must be paired with upload_path.",
     )
     upload_path: Optional[str] = Field(
-        None, description="Path to the file(s) to upload for upload_selector."
+        None,
+        description="Absolute file path to upload into the file input specified by upload_selector.",
     )
 
-    # Scrolling and Waiting
     scroll_x: Optional[int] = Field(
-        None, description="Horizontal scroll position to move to using page.evaluate()."
+        None,
+        description="Horizontal pixel position to scroll to. 0 is the left edge. Must be paired with scroll_y.",
     )
     scroll_y: Optional[int] = Field(
-        None, description="Vertical scroll position to move to using page.evaluate()."
+        None,
+        description="Vertical pixel position to scroll to. 0 is the top. Use to reveal content below the current viewport. Must be paired with scroll_x.",
     )
     wait_selector: Optional[str] = Field(
-        None, description="Selector to wait for before proceeding using page.wait_for_selector()."
+        None,
+        description="CSS selector to wait for before proceeding. Use when content loads asynchronously after a navigation or action.",
     )
     wait_timeout: Optional[int] = Field(
-        None, description="Maximum time (in ms) to wait for the selector or event."
+        None,
+        description="Maximum time in milliseconds to wait for wait_selector to appear. Only meaningful alongside wait_selector.",
     )
     wait_ms: Optional[int] = Field(
-        None, description="Wait for a fixed duration (in milliseconds) using time.sleep()."
+        None,
+        description="Fixed pause in milliseconds. Use for waiting on animations, transitions, or delays with no specific selector to wait for.",
     )
 
-    # Keyboard and Mouse
     keyboard_press: Optional[str] = Field(
-        None, description="Key to simulate a keyboard press event using page.keyboard.press()."
+        None,
+        description="Key to press globally without targeting a specific element. Acts on whatever is currently focused. Examples: 'Enter', 'Escape', 'Tab'. Differs from press_selector+press_key which targets a specific element.",
     )
     keyboard_type: Optional[str] = Field(
-        None, description="Text to type using page.keyboard.type()."
+        None,
+        description="Text to type globally into whatever element is currently focused. Differs from type_selector+type_text which targets a specific element.",
     )
     mouse_move_x: Optional[int] = Field(
-        None, description="X-coordinate to move the mouse to using page.mouse.move()."
+        None,
+        description="X pixel coordinate to move the mouse cursor to. Must be paired with mouse_move_y.",
     )
     mouse_move_y: Optional[int] = Field(
-        None, description="Y-coordinate to move the mouse to using page.mouse.move()."
+        None,
+        description="Y pixel coordinate to move the mouse cursor to. Must be paired with mouse_move_x.",
     )
     mouse_click_x: Optional[int] = Field(
-        None, description="X-coordinate for a direct mouse click using page.mouse.click()."
+        None,
+        description="X pixel coordinate for a direct mouse click. Must be paired with mouse_click_y. Use as a fallback when no CSS selector is available for the target element.",
     )
     mouse_click_y: Optional[int] = Field(
-        None, description="Y-coordinate for a direct mouse click using page.mouse.click()."
+        None,
+        description="Y pixel coordinate for a direct mouse click. Must be paired with mouse_click_x.",
     )
 
-    # Page and Context Management
     new_page: Optional[str] = Field(
-        None, description="Create a new browser page (optionally with a given URL)."
+        None,
+        description="URL to open in a new browser tab. Pass an empty string to open a blank tab.",
     )
     close_page: Optional[bool] = Field(
-        None, description="Close the current page using page.close()."
+        None,
+        description="Set true to close the current browser tab.",
     )
     switch_page_index: Optional[int] = Field(
-        None, description="Switch to another open page by its index in context.pages()."
+        None,
+        description="Zero-based index of the browser tab to switch to. 0 is the first tab.",
     )
 
-    # Evaluation and Utilities
     evaluate_js: Optional[str] = Field(
-        None, description="Run JavaScript code in the browser context using page.evaluate()."
+        None,
+        description="JavaScript code to execute in the page context. Use as a last resort when no standard action fits the need.",
     )
     screenshot_path: Optional[str] = Field(
-        None, description="Path to save a screenshot using page.screenshot()."
+        None,
+        description="File path to save a screenshot of the current page state.",
     )
     download_selector: Optional[str] = Field(
-        None, description="Selector to trigger a download event from (e.g., a link or button)."
+        None,
+        description="CSS selector of a link or button that triggers a file download when clicked.",
     )
 
 
@@ -152,15 +174,11 @@ class PlaywrightResponse(BaseModel):
     actions: List[PlaywrightAction]
     extract_info: Optional[bool] = Field(
         ...,
-        description="A specific boolean value for the playwright agent to decide if extraction is required from this page",
+        description="Set true if the current page contains data the user requested and extraction should run. Set false otherwise. Never extract content yourself.",
     )
 
 
 class OutputResponseFormat(BaseModel):
-    """
-    Output type for the model for direct response
-    """
-
     output: str
 
 
@@ -191,36 +209,25 @@ class CleanedDOM:
 
 
 class PlannerAgentOutputBFS(BaseModel):
-    """
-    BFS planner agent output
-    """
-
     plans: List[str] = Field(
-        ..., description="List of potential plans that can should be executed in parallel"
+        ...,
+        description="List of independent exploration plans to execute in parallel. Each plan is a self-contained sequence of steps.",
     )
 
 
 class PlannerAgentOutputDFS(BaseModel):
-    """
-    DFS planner agent output
-    """
-
     plan: str = Field(
-        ..., description="A single plan to be executed in depth to achieve the required goal"
+        ...,
+        description="A single sequential plan to execute depth-first. Each step builds on the previous one.",
     )
 
 
 class GeneralExtractionResponse(BaseModel):
-    """
-    The general extraction agent output. This is used when the user hasn't specified an
-    output format themselves
-    """
-
     imp_visible_text: str = Field(
         ...,
-        description="A bunch of visible text on the current page which matches what the user is asking for",
+        description="The relevant visible text from the page that matches the user's extraction request. Exclude navigation, ads, and boilerplate.",
     )
     general_dict: Optional[Dict[str, str]] = Field(
         ...,
-        description="An optional dictionay in case the user's output requirement suits this better",
+        description="Key-value pairs of extracted data when structured output is more appropriate than plain text.",
     )

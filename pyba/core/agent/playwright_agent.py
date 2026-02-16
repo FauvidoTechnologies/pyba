@@ -198,7 +198,7 @@ class PlaywrightAgent(BaseAgent):
         prompt = self._initialise_prompt(
             cleaned_dom=cleaned_dom,
             user_prompt=user_prompt,
-            main_instruction=general_prompt,
+            main_instruction=general_prompt[self.engine.provider],
             previous_action=previous_action if previous_action else "",
             fail_reason=fail_reason if fail_reason else "",
             action_status=action_status if action_status else "",

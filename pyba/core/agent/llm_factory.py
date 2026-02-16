@@ -160,7 +160,8 @@ class LLMFactory:
             A tuple containing the action and output agent
         """
 
-        action_system = step_system_instruction if self.mode == "STEP" else system_instruction
+        prompts = step_system_instruction if self.mode == "STEP" else system_instruction
+        action_system = prompts[self.engine.provider]
 
         action_agent = init_method(
             system_instruction=action_system, response_schema=PlaywrightResponse
