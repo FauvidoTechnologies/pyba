@@ -108,7 +108,7 @@ Low Memory
 
    --low-memory-usage        # Enable low memory mode
 
-Skips loading ``oxymouse`` (``numpy``/``scipy``) to save ~46MB of RAM and reduces browser resource usage by disabling GPU, background processes, and extensions. Cannot be used with ``-r``. Useful for CI servers, containers, or low-spec machines.
+Saves ~327MB total: ~119MB from Python-side lazy imports (oxymouse, LLM providers) and ~208MB from Chromium process optimizations (single-process mode, V8 heap cap, disabled site isolation). Cannot be used with ``-r``. Useful for CI servers, containers, or low-spec machines.
 
 Stealth
 ^^^^^^^
@@ -366,7 +366,7 @@ Headless Failing on Servers
 High Memory Usage
 ^^^^^^^^^^^^^^^^^
 
-- Use ``--low-memory-usage`` to reduce browser resource consumption and skip loading oxymouse/numpy/scipy (~46MB saved)
-- This disables GPU, background processes, and extensions
+- Use ``--low-memory-usage`` to save ~327MB total (~119MB Python + ~208MB Chromium)
+- Merges Chromium into a single process, caps V8 heap, skips unused Python dependencies
 - Cannot be combined with ``-r`` (random mouse movements)
 - Recommended for CI/CD pipelines, Docker containers, and low-spec servers

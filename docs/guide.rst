@@ -363,12 +363,19 @@ For resource-constrained environments (CI servers, containers, low-spec machines
 
 **What low memory mode does:**
 
+*Python-side optimizations (~119MB saved):*
+
 - Skips loading ``oxymouse`` (and its dependencies ``numpy``, ``scipy``), saving ~46MB of RAM per process
-- Disables GPU rendering (``--disable-gpu``)
-- Disables background networking and throttling
-- Disables extensions, sync, and default apps
+- Lazy-loads LLM provider libraries — only the chosen provider (OpenAI or Gemini) is loaded, saving ~64-73MB
+- Reduces SQLAlchemy connection pool from 50 to 5 connections
+
+*Chromium-side optimizations (~208MB saved, benchmarked on Amazon.com):*
+
+- Merges Chromium into a single process (``--single-process``), eliminating per-process overhead
+- Caps V8 JavaScript heap at 256MB (``--max-old-space-size=256``)
+- Disables site isolation (``--disable-site-isolation-trials``)
+- Disables GPU rendering, background networking, extensions, sync, and canvas acceleration
 - Sets device scale factor to 1
-- Mutes audio
 
 .. note::
 
