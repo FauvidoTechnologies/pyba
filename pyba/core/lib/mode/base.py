@@ -65,9 +65,14 @@ class BaseEngine:
         self.use_random_flag = (
             use_random if use_random else False
         )  # I like to set defaults as None...
-        global_vars._use_random = (
-            self.use_random_flag
-        )  # Update the global use random for other modules
+        global_vars._use_random = self.use_random_flag
+        global_vars._low_memory = self.low_memory
+
+        if self.use_random_flag and self.low_memory:
+            raise ValueError(
+                "use_random and low_memory cannot both be enabled. "
+                "use_random requires oxymouse (numpy/scipy), which low_memory excludes to save RAM."
+            )
 
         setup_logger(use_logger=use_logger)
         self.log = get_logger()

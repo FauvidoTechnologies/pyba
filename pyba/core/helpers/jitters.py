@@ -2,7 +2,6 @@ import asyncio
 import random
 from typing import List
 
-from oxymouse import OxyMouse
 from playwright.async_api import Page
 
 
@@ -37,6 +36,8 @@ class MouseMovements:
 
         (NOTE: This is constrained to a small window)
         """
+        from oxymouse import OxyMouse
+
         mouse = OxyMouse(algorithm=algorithm)
         movements = mouse.generate_random_coordinates(
             viewport_width=self.width,
