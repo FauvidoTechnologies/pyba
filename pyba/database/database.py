@@ -3,6 +3,7 @@ from typing import Literal
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+import pyba.core.helpers as global_vars
 from pyba.database.mysql import MySQLHandler
 from pyba.database.postgres import PostgresHandler
 from pyba.database.sqlite import SQLiteHandler
@@ -104,12 +105,16 @@ class Database:
         if engine_name == "sqlite":
             connection_args["check_same_thread"] = False
 
+        pool_kwargs = (
+            {"pool_size": 5, "max_overflow": 5} if global_vars._low_memory else {"pool_size": 50}
+        )
+
         try:
             db_engine = create_engine(
                 self.database_connection_string,
                 connect_args=connection_args,
-                pool_size=50,
                 pool_pre_ping=True,
+                **pool_kwargs,
             )
 
             Session = sessionmaker(bind=db_engine)
