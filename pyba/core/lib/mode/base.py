@@ -136,7 +136,7 @@ class BaseEngine:
             page_html = await page_obj.content()
 
         try:
-            body_text = await page_obj.inner_text("body")
+            body_text = await page_obj.evaluate("() => document.body.innerText")
             base_url = page_obj.url
         except TimeoutError:
             self.log.error("The page has not loaded within the defined timeout, going back")
@@ -327,7 +327,7 @@ class BaseEngine:
             await asyncio.sleep(2)
 
         page_html = await page_obj.content()
-        body_text = await page_obj.inner_text("body")
+        body_text = await page_obj.evaluate("() => document.body.innerText")
         base_url = page_obj.url
 
         extraction_engine = ExtractionEngines(
