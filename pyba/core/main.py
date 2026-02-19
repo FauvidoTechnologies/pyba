@@ -87,9 +87,6 @@ class Engine(BaseEngine):
         # session_id is per-engine, not in BaseEngine, because BaseEngine is shared across modes
         self.session_id = uuid.uuid4().hex
 
-        selectors = tuple(config["process_config"]["selectors"])
-        self.combined_selector = ", ".join(selectors)
-
     async def run(
         self,
         prompt: str = None,

@@ -1,9 +1,9 @@
-import asyncio
+from pathlib import Path
 from typing import List
 from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
-from playwright.async_api import TimeoutError as PlaywrightTimeoutError
+from playwright.async_api import Page
 
 from pyba.logger import get_logger
 from pyba.utils.common import url_entropy
@@ -35,23 +35,20 @@ class GeneralDOMExtraction:
         self,
         html: str,
         body_text: str,
-        elements: str,
+        page: Page,
         base_url: str = None,
         clickable_fields_flag: bool = False,
     ) -> None:
-        """
-        We'll take the entire dom, the text_body and the elements for sure
-        """
-
         self.html = html
         self.body_text = body_text
-        self.elements = elements
+        self.page = page
         self.base_url = base_url
 
         self.log = get_logger()
         self.clickable_fields_flag = clickable_fields_flag
-        # For testing fields
-        self.test_value = general_config["main_engine_configs"]["input_field_test_value"]
+
+        js_path = Path(__file__).parent.parent / "js/input_fields.js"
+        self._input_fields_js = js_path.read_text()
 
     def _extract_clickables(self) -> List[dict]:
         soup = BeautifulSoup(self.html, "html.parser")
@@ -183,95 +180,23 @@ class GeneralDOMExtraction:
         non_empty_lines = [line.strip() for line in lines if line.strip()]
         return non_empty_lines
 
-    async def _extract_input_fields(
-        self,
-        known_fields: List = None,
-    ) -> List[dict]:
+    async def _extract_input_fields(self) -> List[dict]:
         """
-        Extracts and verifies fillable input fields. We're passing to it all the valid fields we already know
-        of so that it caches it and doesn't mess with the actual DOM during execution.
-
-        Args:
-            known_fields: List[Dict], optional. Previously detected valid fields (to avoid duplicate fills).
+        Extracts fillable input fields using a single browser-side JS evaluation.
+        Checks readOnly, disabled, visibility, tag type, and input type entirely
+        in the browser — no round-trips per element, no fill-test-clear.
 
         Returns:
             List[Dict]: List of valid fillable fields with tag/type/id/name/selector info.
         """
+        js_config = {
+            "valid_tags": list(config["extraction_configs"]["input_fields"]["valid_tags"]),
+            "invalid_input_types": list(
+                config["extraction_configs"]["input_fields"]["invalid_input_types"]
+            ),
+        }
 
-        valid_fields = [] if known_fields is None else known_fields.copy()
-        seen_selectors = {f["selector"] for f in valid_fields if f.get("selector")}
-
-        for el in self.elements:
-            try:
-                is_visible = await el.is_visible()
-                is_enabled = await el.is_enabled()
-                if not (is_visible and is_enabled):
-                    continue
-
-                tag = (await el.evaluate("e => e.tagName.toLowerCase()")).strip()
-                input_type = await el.get_attribute("type")
-                input_type = (input_type or "text").lower().strip()
-                existing_value = await el.input_value() if tag in ["input", "textarea"] else ""
-
-                if tag not in set(config["extraction_configs"]["input_fields"]["valid_tags"]):
-                    continue
-                if input_type in set(
-                    config["extraction_configs"]["input_fields"]["invalid_input_types"]
-                ):
-                    continue
-
-                field_info = {
-                    "tag": tag,
-                    "type": input_type,
-                    "id": await el.get_attribute("id"),
-                    "name": await el.get_attribute("name"),
-                    "placeholder": await el.get_attribute("placeholder"),
-                    "aria_label": await el.get_attribute("aria-label"),
-                    "selector": None,
-                }
-
-                if field_info["id"]:
-                    selector = f"#{field_info['id']}"
-                elif field_info["name"]:
-                    selector = f"{field_info['tag']}[name='{field_info['name']}']"
-                elif field_info["placeholder"]:
-                    selector = f"{field_info['tag']}[placeholder='{field_info['placeholder']}']"
-                elif field_info["aria_label"]:
-                    selector = f"{field_info['tag']}[aria-label='{field_info['aria_label']}']"
-                else:
-                    selector = f"{field_info['tag']}:nth-of-type(unknown)"
-
-                field_info["selector"] = selector
-
-                # If the field is already filled or we've seen it before,
-                # Then we can skip it
-                if selector in seen_selectors:
-                    continue
-
-                if existing_value and existing_value.strip():
-                    valid_fields.append(field_info)
-                    seen_selectors.add(selector)
-                    continue
-
-                # Filling it and checking
-                await el.fill(self.test_value, timeout=1500)
-                await asyncio.sleep(0.05)
-                new_value = await el.input_value()
-
-                if self.test_value in new_value:
-                    valid_fields.append(field_info)
-                    seen_selectors.add(selector)
-
-                    await el.fill("")  # clearing the field after testing it
-                else:
-                    pass
-
-            except PlaywrightTimeoutError:
-                continue
-            except Exception:
-                continue
-
-        return valid_fields
+        return await self.page.evaluate(self._input_fields_js, js_config)
 
     async def extract(self) -> CleanedDOM:
         """

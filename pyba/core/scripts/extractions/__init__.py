@@ -19,10 +19,9 @@ class ExtractionEngines:
     def available_engines(cls):
         return [name for name, value in vars(cls).items() if isinstance(value, type)]
 
-    def __init__(self, html: str, body_text: str, elements: list, base_url: str, page: Page):
+    def __init__(self, html: str, body_text: str, base_url: str, page: Page):
         self.html = html
         self.body_text = body_text
-        self.elements = elements
         self.base_url = base_url
         self.page = page
 
@@ -35,7 +34,7 @@ class ExtractionEngines:
         general = ExtractionEngines.general(
             html=self.html,
             body_text=self.body_text,
-            elements=self.elements,
+            page=self.page,
             base_url=self.base_url,
         )
         general_output = await general.extract()

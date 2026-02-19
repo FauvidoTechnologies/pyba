@@ -211,13 +211,11 @@ Extracts structured data from the current page:
        # Get page content
        page_html = await page_obj.content()
        body_text = await page_obj.inner_text("body")
-       elements = await page_obj.query_selector_all(self.combined_selector)
 
        # Run extraction engine
        extraction_engine = ExtractionEngines(
            html=page_html,
            body_text=body_text,
-           elements=elements,
            base_url=base_url,
            page=page_obj,
        )

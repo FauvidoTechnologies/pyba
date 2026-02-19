@@ -78,8 +78,6 @@ class Step(BaseEngine):
         )
 
         self.session_id = uuid.uuid4().hex
-        selectors = tuple(config["process_config"]["selectors"])
-        self.combined_selector = ", ".join(selectors)
         self.max_actions_per_step = max_actions_per_step
 
         self._cleaned_dom = None
