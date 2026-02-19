@@ -32,7 +32,7 @@ class PlaywrightAgent(BaseAgent):
         cleaned_dom: Dict[str, Union[List, str]],
         user_prompt: str,
         main_instruction: str,
-        previous_action: str = None,
+        action_history: str = None,
         fail_reason: str = None,
         action_status: bool = None,
     ):
@@ -43,13 +43,13 @@ class PlaywrightAgent(BaseAgent):
             cleaned_dom: Dictionary of extracted DOM elements.
             user_prompt: The user's task instruction.
             main_instruction: The prompt template to format.
-            previous_action: Serialised previous action.
+            action_history: The full natural language history of actions taken so far.
             fail_reason: Reason the previous action failed, if applicable.
             action_status: Whether the previous action succeeded.
         """
 
         cleaned_dom["user_prompt"] = user_prompt
-        cleaned_dom["previous_action"] = previous_action
+        cleaned_dom["action_history"] = action_history
         cleaned_dom["action_status"] = action_status
         cleaned_dom["fail_reason"] = fail_reason
 
@@ -152,7 +152,7 @@ class PlaywrightAgent(BaseAgent):
         self,
         cleaned_dom: Dict[str, Union[List, str]],
         user_prompt: str,
-        previous_action: str = None,
+        action_history: str = None,
         fail_reason: str = None,
         extraction_format: BaseModel = None,
         context_id: str = None,
@@ -164,7 +164,7 @@ class PlaywrightAgent(BaseAgent):
         Args:
             cleaned_dom: Dictionary of extracted DOM elements (hyperlinks, input_fields, clickable_fields, actual_text).
             user_prompt: The user's task instruction.
-            previous_action: Serialised previous action.
+            action_history: The full natural language history of actions taken so far.
             fail_reason: Reason the previous action failed, if applicable.
             extraction_format: Pydantic model defining the extraction output schema.
             context_id: Unique identifier for this browser window (used in BFS mode).
@@ -178,7 +178,7 @@ class PlaywrightAgent(BaseAgent):
             cleaned_dom=cleaned_dom,
             user_prompt=user_prompt,
             main_instruction=general_prompt[self.engine.provider],
-            previous_action=previous_action if previous_action else "",
+            action_history=action_history if action_history else "",
             fail_reason=fail_reason if fail_reason else "",
             action_status=action_status if action_status else "",
         )

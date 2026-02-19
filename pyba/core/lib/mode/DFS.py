@@ -11,7 +11,10 @@ from pyba.core.lib.action import perform_action
 from pyba.core.lib.mode.base import BaseEngine
 from pyba.core.scripts import LoginEngine
 from pyba.database import Database
-from pyba.utils.common import initial_page_setup, serialize_action
+from pyba.utils.common import (  # serialize_action kept for db pushes
+    initial_page_setup,
+    serialize_action,
+)
 from pyba.utils.exceptions import UnknownSiteChosen
 from pyba.utils.load_yaml import load_config
 
@@ -133,7 +136,6 @@ class DFS(BaseEngine):
                 for steps in range(0, self.max_breadth):
                     plan = self.planner_agent.generate(task=prompt, old_plan=self.old_plan)
                     self.log.info(f"This is the plan for a DFS: {plan}")
-                    previous_action = None
 
                     for _ in range(0, self.max_depth):
                         login_attempted_successfully = await self.attempt_login()
@@ -144,7 +146,7 @@ class DFS(BaseEngine):
                         action = self.fetch_action(
                             cleaned_dom=cleaned_dom.to_dict(),
                             user_prompt=plan,
-                            previous_action=previous_action,
+                            action_history=self.mem.history,
                             extraction_format=extraction_format,
                             action_status=True,
                             fail_reason=None,
@@ -157,9 +159,12 @@ class DFS(BaseEngine):
                             await self.shut_down()
                             return output
 
-                        self.log.action(serialize_action(action))
-
                         value, fail_reason = await perform_action(self.page, action)
+                        line = self.mem.record(
+                            action, success=value is not None, fail_reason=fail_reason
+                        )
+                        self.log.action(line)
+
                         if value is None:
                             if self.db_funcs:
                                 self.db_funcs.push_to_episodic_memory(
@@ -173,7 +178,7 @@ class DFS(BaseEngine):
                             output = await self.retry_perform_action(
                                 cleaned_dom=cleaned_dom.to_dict(),
                                 prompt=plan,
-                                previous_action=serialize_action(action),
+                                action_history=self.mem.history,
                                 action_status=False,
                                 fail_reason=fail_reason,
                             )
@@ -191,7 +196,6 @@ class DFS(BaseEngine):
                                     fail_reason=None,
                                 )
 
-                        previous_action = serialize_action(action)
                         cleaned_dom = await self.extract_dom()
 
                     self.log.warning(

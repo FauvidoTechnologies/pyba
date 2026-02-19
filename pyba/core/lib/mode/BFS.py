@@ -7,11 +7,15 @@ from playwright_stealth import Stealth
 from pydantic import BaseModel
 
 from pyba.core.agent import PlannerAgent
+from pyba.core.helpers.mem_dsl import MemDSL
 from pyba.core.lib.action import perform_action
 from pyba.core.lib.mode.base import BaseEngine
 from pyba.core.scripts import LoginEngine
 from pyba.database import Database
-from pyba.utils.common import initial_page_setup, serialize_action
+from pyba.utils.common import (  # serialize_action kept for db pushes
+    initial_page_setup,
+    serialize_action,
+)
 from pyba.utils.exceptions import UnknownSiteChosen
 from pyba.utils.load_yaml import load_config
 
@@ -111,7 +115,7 @@ class BFS(BaseEngine):
                 context = await self.get_trace_context(browser_instance=browser)
                 page = await context.new_page()
                 cleaned_dom = await initial_page_setup(page)
-                previous_action = None
+                mem = MemDSL()
 
                 for _ in range(0, self.max_depth):
                     login_attempted_successfully = await self.attempt_login(page)
@@ -122,7 +126,7 @@ class BFS(BaseEngine):
                     action = self.fetch_action(
                         cleaned_dom=cleaned_dom.to_dict(),
                         user_prompt=task,
-                        previous_action=previous_action,
+                        action_history=mem.history,
                         extraction_format=extraction_format,
                         context_id=context_id,
                         action_status=True,
@@ -136,9 +140,10 @@ class BFS(BaseEngine):
                         await self.shut_down()
                         return output
 
-                    self.log.action(serialize_action(action))
-
                     value, fail_reason = await perform_action(page, action)
+                    line = mem.record(action, success=value is not None, fail_reason=fail_reason)
+                    self.log.action(line)
+
                     if value is None:
                         if self.db_funcs:
                             self.db_funcs.push_to_bfs_episodic_memory(
@@ -151,10 +156,11 @@ class BFS(BaseEngine):
                         output = await self.retry_perform_action(
                             cleaned_dom=cleaned_dom.to_dict(),
                             prompt=task,
-                            previous_action=serialize_action(action),
+                            action_history=mem.history,
                             action_status=False,
                             fail_reason=fail_reason,
                             page=page,
+                            mem=mem,
                         )
                         if output:
                             await self.save_trace(context)
@@ -169,7 +175,6 @@ class BFS(BaseEngine):
                                 page_url=str(page.url),
                             )
 
-                    previous_action = serialize_action(action)
                     cleaned_dom = await self.extract_dom(page)
 
                 self.log.warning(

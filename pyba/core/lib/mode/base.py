@@ -1,5 +1,4 @@
 import asyncio
-import json
 from typing import Dict, Optional, Literal
 
 from playwright.async_api import TimeoutError
@@ -8,6 +7,7 @@ from pydantic import BaseModel
 import pyba.core.helpers as global_vars
 from pyba.core.agent import PlaywrightAgent
 from pyba.core.helpers.jitters import MouseMovements, ScrollMovements
+from pyba.core.helpers.mem_dsl import MemDSL
 from pyba.core.lib import HandleDependencies
 from pyba.core.lib.action import perform_action
 from pyba.core.lib.code_generation import CodeGeneration
@@ -16,7 +16,6 @@ from pyba.core.scripts import ExtractionEngines
 from pyba.core.tracing import Tracing
 from pyba.database import DatabaseFunctions
 from pyba.logger import setup_logger, get_logger
-from pyba.utils.common import serialize_action
 from pyba.utils.exceptions import DatabaseNotInitialised
 from pyba.utils.low_memory import LAUNCH_ARGS as LOW_MEMORY_LAUNCH_ARGS
 
@@ -92,6 +91,7 @@ class BaseEngine:
 
         # Defining the playwright agent with the defined configs
         self.playwright_agent = PlaywrightAgent(engine=self)
+        self.mem = MemDSL()
 
         if handle_dependencies:
             HandleDependencies.playwright.handle_dependencies()
@@ -345,37 +345,11 @@ class BaseEngine:
 
         return cleaned_dom
 
-    def fetch_history(self) -> str:
-        """
-        Helper function to obtain the history of actions.
-
-        TODO: This functions should fetch the last k history elements and use them as `history` and
-        NOT previous_action. The previous_action and its status must be stored regardless.
-
-        Returns:
-            history: The last logged action
-        """
-
-        try:
-            # Get history if db_funs is defined, that is, Databases are being used
-            history = None
-            if self.db_funcs:
-                history = self.db_funcs.get_episodic_memory_by_session_id(
-                    session_id=self.session_id
-                )
-
-            history = json.loads(history.actions)[-1] if history else ""
-        except Exception as e:
-            self.log.warning(f"Couldn't query the database for history: {e}")
-            history = ""
-
-        return history
-
     def fetch_action(
         self,
         cleaned_dom: Dict,
         user_prompt: str,
-        previous_action: str = None,
+        action_history: str = None,
         extraction_format: BaseModel = None,
         context_id: str = None,
         fail_reason: str = None,
@@ -387,7 +361,7 @@ class BaseEngine:
         Args:
             cleaned_dom: The DOM for the current page
             user_prompt: The actual task given by the user
-            previous_action: The last action performed by the model
+            action_history: The full natural language history of actions taken so far
             extraction_format: The extraction format requested by the user.
             context_id: A unique identifier for this browser window (useful when multiple windows)
             fail_reason: The reason for the failure of the previous action
@@ -400,11 +374,10 @@ class BaseEngine:
         """
 
         try:
-            # Each process-action call is to be passed the status of the previous call
             action = self.playwright_agent.process_action(
                 cleaned_dom=cleaned_dom,
                 user_prompt=user_prompt,
-                previous_action=previous_action,
+                action_history=action_history,
                 extraction_format=extraction_format,
                 context_id=context_id,
                 fail_reason=fail_reason,
@@ -420,25 +393,26 @@ class BaseEngine:
         self,
         cleaned_dom: Dict,
         prompt: str,
-        previous_action: str,
+        action_history: str,
         action_status: bool,
         fail_reason: str,
         extraction_format: BaseModel = None,
         page=None,
+        mem=None,
     ) -> Optional[str]:
         """
-        helper function to retry the action after a failure. This is backwards compatible with Engine
+        Helper function to retry the action after a failure. This is backwards compatible with Engine
         and DFS while it supports BFS by pinning the page down.
-
 
         Args:
             cleaned_dom: The new cleaned DOM for the current page
             prompt: The original prompt given by the user
-            previous_action: The past action that failed
+            action_history: The full natural language history of actions taken so far
             action_status: Boolean indicating the previous action's success or failure
             fail_reason: Reason for the failure for the action
             extraction_format: In case the current page needs extraction as well
             page: Optional argument to pin the page down to remove self dependency
+            mem: Optional MemDSL instance (BFS passes its per-window instance)
 
         This function will retry the action based on the current DOM and the past action. This should
         most likely fix the issue of a stale element or a hallucinated component or something.
@@ -447,13 +421,14 @@ class BaseEngine:
             output: If the action was successful and automation is completed
             None: The usual case where an action is performed
         """
+        mem = mem or self.mem
         page_obj = page if page is not None else self.page
 
         self.log.warning("The previous action failed, checking the latest page")
         action = self.playwright_agent.process_action(
             cleaned_dom=cleaned_dom,
             user_prompt=prompt,
-            previous_action=previous_action,
+            action_history=action_history,
             fail_reason=fail_reason,
             extraction_format=extraction_format,
             action_status=action_status,
@@ -464,9 +439,10 @@ class BaseEngine:
         if output:
             return output
 
-        self.log.action(serialize_action(action))
-
         value, fail_reason = await perform_action(page_obj, action)
+        line = mem.record(action, success=value is not None, fail_reason=fail_reason)
+        self.log.action(line)
+
         if value is None:
             self.log.error(f"Retry also failed: {fail_reason}")
 

@@ -10,7 +10,10 @@ from pyba.core.lib.action import perform_action
 from pyba.core.lib.mode.base import BaseEngine
 from pyba.core.scripts import LoginEngine
 from pyba.database import Database
-from pyba.utils.common import initial_page_setup, serialize_action
+from pyba.utils.common import (  # serialize_action kept for db pushes
+    initial_page_setup,
+    serialize_action,
+)
 from pyba.utils.exceptions import PromptNotPresent, UnknownSiteChosen
 from pyba.utils.load_yaml import load_config
 
@@ -111,7 +114,7 @@ class Step(BaseEngine):
         self, prompt_step: str, extraction_format: BaseModel = None
     ) -> Union[str, None]:
         """
-        The step function is a replica of the `Engine.run()`. It takes in the previous action as well
+        The step function is a replica of the `Engine.run()`. It passes the full action history
         into context and tries to figure out the best way to achieve the short term prompt given by the user.
 
         Args:
@@ -120,8 +123,6 @@ class Step(BaseEngine):
         """
         if prompt_step is None:
             raise PromptNotPresent()
-
-        previous_action = None
 
         for _ in range(self.max_actions_per_step):
             login_attempted_successfully = await self.attempt_login()
@@ -132,7 +133,7 @@ class Step(BaseEngine):
             action = self.fetch_action(
                 cleaned_dom=self._cleaned_dom.to_dict(),
                 user_prompt=prompt_step,
-                previous_action=previous_action,
+                action_history=self.mem.history,
                 extraction_format=extraction_format,
                 fail_reason=None,
                 action_status=True,
@@ -145,12 +146,12 @@ class Step(BaseEngine):
                 if output:
                     return output
 
-            # Otherwise simply exit if no action
             if not action:
                 return None
 
-            self.log.action(serialize_action(action))
             value, fail_reason = await perform_action(self.page, action)
+            line = self.mem.record(action, success=value is not None, fail_reason=fail_reason)
+            self.log.action(line)
 
             if value is None:
                 if self.db_funcs:
@@ -166,7 +167,7 @@ class Step(BaseEngine):
                 output = await self.retry_perform_action(
                     cleaned_dom=self._cleaned_dom.to_dict(),
                     prompt=prompt_step,
-                    previous_action=serialize_action(action),
+                    action_history=self.mem.history,
                     action_status=False,
                     fail_reason=fail_reason,
                 )
@@ -182,7 +183,6 @@ class Step(BaseEngine):
                         fail_reason=None,
                     )
 
-            previous_action = serialize_action(action)
             self._cleaned_dom = await self.extract_dom()
 
         return None

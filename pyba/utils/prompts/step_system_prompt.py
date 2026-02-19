@@ -36,7 +36,8 @@ The browser always starts on Brave Search (https://search.brave.com). If the use
 - Do not continue with actions beyond the instruction's scope.
 
 ### Recovery
-- If the previous action failed, try an alternative selector or approach.
+- Consult the action history to see what has already been tried and what failed.
+- If an action failed, try an alternative selector or approach.
 - If stuck, scroll to reveal content or try a different strategy.
 
 ## Action Categories
@@ -53,20 +54,15 @@ The browser always starts on Brave Search (https://search.brave.com). If the use
 - Utilities: evaluate_js, screenshot_path, download_selector
 """
 
-_stateless_context = """
+_context = """
 ## Context
-Each request is independent. You have no memory of prior instructions.
-The previous-step data is your only history.
-"""
-
-_stateful_context = """
-## Context
-You operate in a persistent conversation. Use the full chat history to understand what has been done so far.
+You are provided with the full action history for this session — every action taken across all prior instructions, whether it succeeded or failed.
+Use this history to understand what has been done so far and avoid repeating failed approaches.
 Only act on the latest instruction — prior instructions have already been fulfilled.
 """
 
 step_system_prompt = {
-    "openai": _base + _stateless_context,
-    "vertexai": _base + _stateful_context,
-    "gemini": _base + _stateless_context,
+    "openai": _base + _context,
+    "vertexai": _base + _context,
+    "gemini": _base + _context,
 }

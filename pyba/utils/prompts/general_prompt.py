@@ -1,4 +1,4 @@
-_stateless = """
+_general = """
 ## Task
 {user_prompt}
 
@@ -18,41 +18,15 @@ Clickable Elements:
 Visible Text:
 {actual_text}
 
-## Previous Step
+## Full Action History
 
-Action: {previous_action}
-Succeeded: {action_status}
-Failure reason: {fail_reason}
-"""
+Below is the complete sequence of actions taken so far in this session. Each entry shows the step number, whether it succeeded or failed (with failure reason if applicable), and a description of what was done. Use this history to understand what has already been attempted, avoid repeating failed approaches, and determine the best next action.
 
-_stateful = """
-## Task
-{user_prompt}
-
-## Current Page
-
-URL: {current_url}
-
-Hyperlinks:
-{hyperlinks}
-
-Input Fields:
-{input_fields}
-
-Clickable Elements:
-{clickable_fields}
-
-Visible Text:
-{actual_text}
-
-## Last Action Result
-
-Succeeded: {action_status}
-Failure reason: {fail_reason}
+{action_history}
 """
 
 general_prompt = {
-    "openai": _stateless,
-    "vertexai": _stateful,
-    "gemini": _stateless,
+    "openai": _general,
+    "vertexai": _general,
+    "gemini": _general,
 }

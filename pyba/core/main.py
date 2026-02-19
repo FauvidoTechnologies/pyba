@@ -10,7 +10,10 @@ from pyba.core.lib.action import perform_action
 from pyba.core.lib.mode.base import BaseEngine
 from pyba.core.scripts import LoginEngine
 from pyba.database import Database
-from pyba.utils.common import initial_page_setup, serialize_action
+from pyba.utils.common import (  # serialize_action kept for db pushes
+    initial_page_setup,
+    serialize_action,
+)
 from pyba.utils.exceptions import PromptNotPresent, UnknownSiteChosen
 from pyba.utils.load_yaml import load_config
 
@@ -150,7 +153,6 @@ class Engine(BaseEngine):
                 self.context = await self.get_trace_context()
                 self.page = await self.context.new_page()
                 cleaned_dom = await initial_page_setup(self.page)
-                previous_action = None
 
                 for steps in range(0, self.max_depth):
                     login_attempted_successfully = await self.attempt_login()
@@ -161,7 +163,7 @@ class Engine(BaseEngine):
                     action = self.fetch_action(
                         cleaned_dom=cleaned_dom.to_dict(),
                         user_prompt=prompt,
-                        previous_action=previous_action,
+                        action_history=self.mem.history,
                         extraction_format=extraction_format,
                         fail_reason=None,
                         action_status=True,
@@ -175,9 +177,11 @@ class Engine(BaseEngine):
                         await self.shut_down()
                         return output
 
-                    self.log.action(serialize_action(action))
-
                     value, fail_reason = await perform_action(self.page, action)
+                    line = self.mem.record(
+                        action, success=value is not None, fail_reason=fail_reason
+                    )
+                    self.log.action(line)
 
                     if value is None:
                         if self.db_funcs:
@@ -193,7 +197,7 @@ class Engine(BaseEngine):
                         output = await self.retry_perform_action(
                             cleaned_dom=cleaned_dom.to_dict(),
                             prompt=prompt,
-                            previous_action=serialize_action(action),
+                            action_history=self.mem.history,
                             action_status=False,
                             fail_reason=fail_reason,
                         )
@@ -212,7 +216,6 @@ class Engine(BaseEngine):
                                 fail_reason=None,
                             )
 
-                    previous_action = serialize_action(action)
                     cleaned_dom = await self.extract_dom()
         finally:
             await self.save_trace()

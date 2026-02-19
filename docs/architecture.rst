@@ -80,7 +80,8 @@ Directory Structure
    │   │       └── BFS.py       # Breadth-first search
    │   │
    │   ├── helpers/             # Utility helpers
-   │   │   └── jitters.py       # Random mouse/scroll movements
+   │   │   ├── jitters.py       # Random mouse/scroll movements
+   │   │   └── mem_dsl.py       # Action-to-natural-language DSL and rolling history
    │   │
    │   └── scripts/             # Pre-built scripts
    │       ├── login/           # Auto-login handlers
@@ -156,6 +157,7 @@ The ``Engine`` class is the main entry point for normal mode automation.
 
 - ``session_id``: Unique identifier for this run
 - ``playwright_agent``: The agent that decides actions
+- ``mem``: MemDSL instance that accumulates a rolling natural language action history
 - ``mode``: "Normal", "STEP", "DFS", or "BFS"
 - ``max_depth``: Maximum actions to take
 
@@ -169,12 +171,13 @@ The ``Engine`` class is the main entry point for normal mode automation.
    4. Extract initial DOM
    5. LOOP (up to max_depth times):
       a. Check for automated login
-      b. Ask PlaywrightAgent for next action
+      b. Pass full action history (from MemDSL) to PlaywrightAgent
       c. If action is None → automation complete → get output
       d. Execute action via PlaywrightActionPerformer
-      e. If action failed → retry with updated DOM
-      f. Log to database
-      g. Extract new DOM
+      e. Record outcome in MemDSL (success/failure with reason)
+      f. If action failed → retry with updated DOM and full history
+      g. Log to database (for code generation)
+      h. Extract new DOM
    6. Save trace and close browser
 
 BaseEngine
@@ -188,6 +191,7 @@ The ``BaseEngine`` contains shared logic used by all modes:
 
 - Sets up the ``Provider`` (LLM selection)
 - Creates the ``PlaywrightAgent``
+- Creates a ``MemDSL`` instance for rolling action history
 - Initializes database functions if provided
 - Handles dependency installation
 
@@ -236,11 +240,11 @@ Gets the next action from the PlaywrightAgent:
 
 .. code-block:: python
 
-   def fetch_action(self, cleaned_dom, user_prompt, previous_action, ...):
+   def fetch_action(self, cleaned_dom, user_prompt, action_history, ...):
        action = self.playwright_agent.process_action(
            cleaned_dom=cleaned_dom,
            user_prompt=user_prompt,
-           previous_action=previous_action,
+           action_history=action_history,
            extraction_format=extraction_format,
            fail_reason=fail_reason,
            action_status=action_status,
@@ -313,7 +317,7 @@ The brain of the operation. Decides what action to take on each page.
 
 .. code-block:: text
 
-   1. Format prompt with DOM, user instruction, previous action
+   1. Format prompt with DOM, user instruction, and full action history
    2. Call LLM with PlaywrightResponse schema
    3. Parse response into action object
    4. If extract_info flag is set → trigger ExtractionAgent
@@ -323,8 +327,7 @@ The brain of the operation. Decides what action to take on each page.
 
 - Current DOM (hyperlinks, inputs, clickables, text)
 - User's original task
-- Previous action and its status
-- Failure reason if last action failed
+- Full action history from MemDSL (every action taken, with success/failure status and failure reasons)
 
 PlannerAgent
 ^^^^^^^^^^^^
@@ -622,6 +625,7 @@ Execution Flow Diagram
          │                              │
          ▼                              │
    PlaywrightAgent.process_action()     │
+   (receives full action history)       │
          │                              │
          ▼                              │
    Action is None? ───Yes──► get_output() ──► Return result
@@ -632,14 +636,17 @@ Execution Flow Diagram
    PlaywrightActionPerformer.perform()
          │
          ▼
+   Record action in MemDSL
+   (success or failure with reason)
+         │
+         ▼
    Action failed? ───Yes──► retry_perform_action()
          │                          │
          No                         │
          │                          │
          ▼                          │
    Log to database                  │
-         │                          │
-         └──────────────────────────┘
+   Extract new DOM ─────────────────┘
 
 **Step Mode:**
 
@@ -682,7 +689,7 @@ Execution Flow Diagram
          No                           │
          │                            │
          ▼                            │
-   Update previous_action             │
+   Record action in MemDSL             │
    Extract new DOM ───────────────────┘
          │
          ▼
@@ -757,7 +764,8 @@ Adding a New Action
 1. Add field to ``PlaywrightAction`` in ``structure.py``
 2. Add handler method in ``PlaywrightActionPerformer``
 3. Add to ``perform()`` dispatcher
-4. Add to ``CodeGeneration.action_map`` for script export
+4. Add a natural language template in ``MemDSL._resolve()``
+5. Add to ``CodeGeneration.action_map`` for script export
 
 Adding a New LLM Provider
 ^^^^^^^^^^^^^^^^^^^^^^^^^

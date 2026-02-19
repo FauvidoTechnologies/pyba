@@ -36,8 +36,8 @@ The browser always starts on Brave Search (https://search.brave.com). If the tas
 - Return None when the task is complete or no viable action remains.
 
 ### Recovery
-- If the previous action failed, do not retry the identical action.
-- Re-examine the DOM for alternative selectors or a different approach.
+- Consult the action history to see what has already been tried and what failed.
+- If an action failed, do not retry the identical action. Re-examine the DOM for alternative selectors or a different approach.
 - If the page looks unexpected, consider go_back or navigating to a known URL.
 - If stuck, try scrolling to reveal hidden content before returning None.
 
@@ -56,21 +56,15 @@ The browser always starts on Brave Search (https://search.brave.com). If the tas
 - **evaluate_js**: Last resort when no standard action fits.
 """
 
-_stateless_context = """
+_context = """
 ## Context
-Each request you receive is independent. You have no memory of prior steps.
-The previous-step section in the runtime data is your only history. Use it to avoid repeating a failed approach.
-"""
-
-_stateful_context = """
-## Context
-You operate within a persistent conversation. Every prior DOM snapshot and action you produced is visible in the chat history.
-Use this full trajectory to track progress, detect loops, and avoid repeating failed approaches.
-Do not rely solely on the last action — consider the entire sequence of steps taken so far.
+You are provided with the full action history for this session — every action taken so far, whether it succeeded or failed, and the failure reason if applicable.
+Use this history to track progress toward the goal, detect loops or repeated failures, and avoid retrying approaches that already failed.
+Consider the entire sequence of actions, not just the most recent one, when deciding what to do next.
 """
 
 system_prompt = {
-    "openai": _base + _stateless_context,
-    "vertexai": _base + _stateful_context,
-    "gemini": _base + _stateless_context,
+    "openai": _base + _context,
+    "vertexai": _base + _context,
+    "gemini": _base + _context,
 }
