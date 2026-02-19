@@ -50,8 +50,7 @@ class GeneralDOMExtraction:
         js_path = Path(__file__).parent.parent / "js/input_fields.js"
         self._input_fields_js = js_path.read_text()
 
-    def _extract_clickables(self) -> List[dict]:
-        soup = BeautifulSoup(self.html, "html.parser")
+    def _extract_clickables(self, soup) -> List[dict]:
         candidates = []
 
         for tag in soup.find_all(
@@ -131,8 +130,7 @@ class GeneralDOMExtraction:
 
         return cleaned
 
-    def _extract_href(self) -> List[str]:
-        soup = BeautifulSoup(str(self.html), "html.parser")
+    def _extract_href(self, soup) -> List[str]:
         hrefs = [a["href"].strip() for a in soup.find_all("a", href=True)]
 
         clean_hrefs = []
@@ -206,18 +204,19 @@ class GeneralDOMExtraction:
             CleanedDOM: A dataclass containing hyperlinks, input fields, clickable fields, and text content.
         """
         cleaned_dom = CleanedDOM()
+        soup = BeautifulSoup(self.html, "html.parser")
 
         try:
-            cleaned_dom.hyperlinks = self._extract_href()
+            cleaned_dom.hyperlinks = self._extract_href(soup)
         except Exception as e:
             cleaned_dom.hyperlinks = []
             self.log.error(f"Failed to extract hyperlinks: {e}")
 
         try:
             if self.clickable_fields_flag:
-                cleaned_dom.clickable_fields = self._extract_clickables()
+                cleaned_dom.clickable_fields = self._extract_clickables(soup)
             else:
-                cleaned_dom.clickable_fields = self._extract_clickables()[:10]
+                cleaned_dom.clickable_fields = self._extract_clickables(soup)[:10]
         except Exception as e:
             cleaned_dom.clickable_fields = []
             self.log.error(f"Failed to extract clickables: {e}")
