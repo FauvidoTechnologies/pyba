@@ -84,6 +84,9 @@ Directory Structure
    │   │   └── mem_dsl.py       # Action-to-natural-language DSL and rolling history
    │   │
    │   └── scripts/             # Pre-built scripts
+   │       ├── js/              # Browser-side JavaScript
+   │       │   ├── extractions.js    # Site-specific link extraction
+   │       │   └── input_fields.js   # Batch input field discovery
    │       ├── login/           # Auto-login handlers
    │       │   ├── base.py      # BaseLogin class
    │       │   ├── instagram.py
@@ -522,30 +525,29 @@ Location: ``pyba/core/scripts/extractions/``
 
 **ExtractionEngines** (``general.py``):
 
-Extracts structured data from raw HTML:
+Extracts structured data from the current page. Hyperlinks, clickables, and text
+are extracted via BeautifulSoup on the HTML string. Input fields use a single
+browser-side JavaScript evaluation for performance.
+
+**Input field extraction** (``pyba/core/scripts/js/input_fields.js``):
+
+Instead of iterating elements from Python and fill-testing each one (multiple
+Playwright round-trips per element), a single ``page.evaluate()`` call runs
+JavaScript inside the browser that discovers all fillable fields at once.
+The JS checks ``readOnly``, ``disabled``, and ``getBoundingClientRect()`` to
+determine fillability — no writes to the DOM, no cleanup needed.
 
 .. code-block:: python
 
-   async def extract_all(self):
-       cleaned_dom = CleanedDOM()
+   async def _extract_input_fields(self):
+       js_config = {
+           "valid_tags": [...],          # from extraction config
+           "invalid_input_types": [...], # from extraction config
+       }
+       return await self.page.evaluate(self._input_fields_js, js_config)
 
-       # Extract hyperlinks
-       cleaned_dom.hyperlinks = self._extract_hyperlinks()
-
-       # Extract input fields
-       cleaned_dom.input_fields = await self._extract_input_fields()
-
-       # Extract clickable elements
-       cleaned_dom.clickable_fields = await self._extract_clickables()
-
-       # Get visible text
-       cleaned_dom.actual_text = self._extract_text()
-
-       # Special YouTube handling
-       if "youtube.com" in self.base_url:
-           cleaned_dom.youtube = await youtube_extraction(self.page)
-
-       return cleaned_dom
+This reduces input field extraction from ~150 Playwright round-trips on a
+typical page to a single call.
 
 Code Generation
 ---------------
