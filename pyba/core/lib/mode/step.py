@@ -16,6 +16,7 @@ from pyba.utils.common import (  # serialize_action kept for db pushes
 )
 from pyba.utils.exceptions import PromptNotPresent, UnknownSiteChosen
 from pyba.utils.load_yaml import load_config
+from pyba.utils.structure import StepRunContext
 
 config = load_config("general")
 
@@ -85,6 +86,8 @@ class Step(BaseEngine):
         self._pw = None
         self.get_output = get_output
 
+        self.current_run_ctx: StepRunContext | None = None
+
     async def start(self, automated_login_sites: List[str] = None):
         """
         Creates a persistent browser instance. This needs to be explicitly called
@@ -118,15 +121,27 @@ class Step(BaseEngine):
         Args:
             prompt_step: A single stepwise prompt given by the user (This might require more than one steps)
             extraction_format: The final extraction format IF NEEDED
+
+        For every step() call, we create a StepRunContext() with a unique ID. This ID can be used to cancel
+        this particular step. For reference, please see `structure.py`.
         """
         if prompt_step is None:
             raise PromptNotPresent()
+
+        # run_id = uuid.uuid4().hex
+        # run_active = True
+
+        ctx = StepRunContext(run_id=uuid.uuid4().hex, run_active=True)
+        self.current_run_ctx = ctx
 
         for _ in range(self.max_actions_per_step):
             login_attempted_successfully = await self.attempt_login()
             if login_attempted_successfully:
                 self._cleaned_dom = await self.successful_login_clean_and_get_dom()
                 continue
+
+            if not ctx.run_active:
+                return None
 
             action = self.fetch_action(
                 cleaned_dom=self._cleaned_dom.to_dict(),
@@ -145,6 +160,9 @@ class Step(BaseEngine):
                     return output
 
             if not action:
+                return None
+
+            if not ctx.run_active:
                 return None
 
             value, fail_reason = await perform_action(self.page, action)
@@ -196,6 +214,13 @@ class Step(BaseEngine):
         finally:
             if self._playwright_context_manager:
                 await self._playwright_context_manager.__aexit__(None, None, None)
+
+    def cancel_current_step(self):
+        """
+        This is the method to be called to cancel a task
+        """
+        if self.current_run_ctx:
+            self.current_run_ctx.active = False
 
     # Some helper functions for sync endpoints
     # Note that using these will be a little weirder in the main pipeline.

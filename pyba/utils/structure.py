@@ -245,3 +245,4 @@ class StepRunContext(BaseModel):
         ..., description="A unique identifier for the current run in the 'Step' engine"
     )
     run_active: bool = Field(..., description="A boolean to indicate the status of the run")
+    model_config = {"frozen": False}
