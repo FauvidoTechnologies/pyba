@@ -231,3 +231,17 @@ class GeneralExtractionResponse(BaseModel):
         ...,
         description="Key-value pairs of extracted data when structured output is more appropriate than plain text.",
     )
+
+
+class StepRunContext(BaseModel):
+    """
+    Each user input to the `Step` engine is a run, which is encapsulated in this
+    state variable. Each run will have a unique ID and a boolean to indicate if that
+    run is currently active or not. This allows us to freeze runs and abort LLM
+    outputs and cancel a run when the boolean if flipped
+    """
+
+    run_id: str = Field(
+        ..., description="A unique identifier for the current run in the 'Step' engine"
+    )
+    run_active: bool = Field(..., description="A boolean to indicate the status of the run")
