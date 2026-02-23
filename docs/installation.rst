@@ -16,6 +16,13 @@ The recommended way to install PyBA:
 
    pip install py-browser-automation
 
+or via brew:
+
+.. code-block:: bash
+
+   brew tap fauvidotechnologies/pyba
+   break install pyba
+
 From Source
 -----------
 
