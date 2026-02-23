@@ -60,6 +60,12 @@ Now run `python hacker_news_scraper.py` forever. No AI. No API costs. Just Playw
 pip install py-browser-automation
 ```
 
+or via brew
+
+```sh
+brew tap fauvidotechnologies/pyba
+brew install pyba
+```
 ---
 
 ## What Can You Do?
