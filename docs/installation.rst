@@ -21,7 +21,7 @@ or via brew:
 .. code-block:: bash
 
    brew tap fauvidotechnologies/pyba
-   break install pyba
+   brew install pyba
 
 From Source
 -----------
