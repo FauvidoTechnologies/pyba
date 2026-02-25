@@ -18,6 +18,7 @@ from pyba.database import DatabaseFunctions
 from pyba.logger import setup_logger, get_logger
 from pyba.utils.exceptions import DatabaseNotInitialised
 from pyba.utils.low_memory import LAUNCH_ARGS as LOW_MEMORY_LAUNCH_ARGS
+from pyba.utils.structure import CleanedDOM
 
 
 class BaseEngine:
@@ -153,7 +154,7 @@ class BaseEngine:
         cleaned_dom.current_url = base_url
         return cleaned_dom
 
-    async def generate_output(self, action, cleaned_dom, prompt):
+    async def generate_output(self, action: str, cleaned_dom: CleanedDOM, prompt: str):
         """
         Helper function to generate the output if the action
         has been completed.
@@ -167,13 +168,13 @@ class BaseEngine:
             self.log.success("Automation completed, agent has returned None")
             try:
                 output = self.playwright_agent.get_output(
-                    cleaned_dom=cleaned_dom, user_prompt=prompt
+                    cleaned_dom=cleaned_dom.to_dict(), user_prompt=prompt
                 )
                 self.log.info(f"This is the output given by the model: {output}")
                 return output
             except Exception:
                 # This should rarely happen
-                await asyncio.sleep(10)
+                await asyncio.sleep(1)
                 output = self.playwright_agent.get_output(
                     cleaned_dom=cleaned_dom, user_prompt=prompt
                 )
