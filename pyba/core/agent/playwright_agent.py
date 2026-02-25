@@ -173,7 +173,6 @@ class PlaywrightAgent(BaseAgent):
         Returns:
             A PlaywrightAction to execute next, or None if the task is complete.
         """
-        print(f"inside process action: {cleaned_dom}")
         prompt = self._initialise_prompt(
             cleaned_dom=cleaned_dom,
             user_prompt=user_prompt,
