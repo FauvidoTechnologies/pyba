@@ -167,7 +167,7 @@ class BaseEngine:
             self.log.success("Automation completed, agent has returned None")
             try:
                 output = self.playwright_agent.get_output(
-                    cleaned_dom=cleaned_dom.to_dict(), user_prompt=prompt
+                    cleaned_dom=cleaned_dom, user_prompt=prompt
                 )
                 self.log.info(f"This is the output given by the model: {output}")
                 return output
@@ -175,7 +175,7 @@ class BaseEngine:
                 # This should rarely happen
                 await asyncio.sleep(10)
                 output = self.playwright_agent.get_output(
-                    cleaned_dom=cleaned_dom.to_dict(), user_prompt=prompt
+                    cleaned_dom=cleaned_dom, user_prompt=prompt
                 )
                 self.log.info(f"This is the output given by the model: {output}")
                 return output
