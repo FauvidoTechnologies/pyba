@@ -26,15 +26,20 @@
 
 ---
 
-## The Problem with AI Browser Agents
+# Pyba
 
-Every AI browser agent has the same issue: **you pay for every single run.**
+A browser automation software, specialized for OSINT purposes.
 
-- Run it 100 times? Pay for 100 LLM calls.
-- Same task every day? Pay every day.
-- The AI figures out the same clicks over and over.
+### Here's a short demo:
 
-**PyBA is different.** Let the AI figure it out once, then export a deterministic script you own forever.
+https://github.com/user-attachments/assets/ab258c0d-760d-4994-ada7-6002d46fe8ff
+
+### Part 2:
+
+https://github.com/user-attachments/assets/a34d53af-9896-4435-8778-274ec9f204e3
+
+
+### Getting the script
 
 ```python
 from pyba import Engine
@@ -50,7 +55,7 @@ engine.sync_run(
 engine.generate_code(output_path="hacker_news_scraper.py")
 ```
 
-Now run `python hacker_news_scraper.py` forever. No AI. No API costs. Just Playwright.
+Now run `python hacker_news_scraper.py` forever. No AI. No API costs.
 
 ---
 
