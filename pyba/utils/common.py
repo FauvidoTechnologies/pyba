@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from playwright.async_api import Page
 
+from pyba.utils.exceptions import CannotResolveError
 from pyba.utils.structure import CleanedDOM, PasswordManager
 
 
@@ -90,7 +91,10 @@ def extract_secrets(secret_manager: PasswordManager = None) -> dict[str, str]:
             "Password manager must implement a resolve() -> dict[str, str] method"
         )
 
-    secrets = secret_manager.resolve()
+    try:
+        secrets = secret_manager.resolve()
+    except TypeError:
+        raise CannotResolveError()
 
     if not isinstance(secrets, dict):
         raise TypeError("resolve() must return dict[str, str]")

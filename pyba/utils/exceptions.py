@@ -91,3 +91,15 @@ class InvalidModelSelected(Exception):
         super().__init__(
             f"The model {model_name} is not supported by the provider {provider}. For the provider specified, please choose from the following: {provider_valid_models}"
         )
+
+
+class CannotResolveError(Exception):
+    """
+    Exception to be rasied when the user provides a PasswordManager class which requires
+    positional arguments to be specified.
+    """
+
+    def __init__(self):
+        super().__init__(
+            "Unable to resolve the secrets from your password manager. Please make sure that you pass in an 'instance' of your password manager"
+        )
