@@ -16,6 +16,7 @@ from pyba.utils.common import (  # serialize_action kept for db pushes
 )
 from pyba.utils.exceptions import PromptNotPresent, UnknownSiteChosen
 from pyba.utils.load_yaml import load_config
+from pyba.utils.structure import PasswordManager
 
 config = load_config("general")
 
@@ -38,6 +39,7 @@ class Engine(BaseEngine):
         database: An instance of the Database class which will define all database specific configs
         model_name: The model name which you want to run. The default is set to None (because it depends on the provider).
         low_memory: Optional parameter, defaults to False for disable some heavy dependencies and running with additional flags.
+        secrets: A password manager class which implements a resolve() method to give out a dictionary of secrets
 
     Find these default values at `pyba/config.yaml`.
 
@@ -63,6 +65,7 @@ class Engine(BaseEngine):
         database: Database = None,
         model_name: str = None,
         low_memory: bool = config["main_engine_configs"]["minimize_memory"],
+        secrets: PasswordManager = None,
     ):
         self.mode = "Normal"
         # Passing the common setup to the BaseEngine
@@ -81,6 +84,7 @@ class Engine(BaseEngine):
             gemini_api_key=gemini_api_key,
             model_name=model_name,
             low_memory=low_memory,
+            secrets=secrets,
         )
 
         self.max_depth = max_depth

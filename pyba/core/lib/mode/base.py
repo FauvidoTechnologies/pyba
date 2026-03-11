@@ -1,4 +1,5 @@
 import asyncio
+import os
 from typing import Dict, Optional, Literal
 
 from playwright.async_api import TimeoutError
@@ -16,9 +17,10 @@ from pyba.core.scripts import ExtractionEngines
 from pyba.core.tracing import Tracing
 from pyba.database import DatabaseFunctions
 from pyba.logger import setup_logger, get_logger
+from pyba.utils.common import extract_secrets
 from pyba.utils.exceptions import DatabaseNotInitialised
 from pyba.utils.low_memory import LAUNCH_ARGS as LOW_MEMORY_LAUNCH_ARGS
-from pyba.utils.structure import CleanedDOM
+from pyba.utils.structure import CleanedDOM, PasswordManager
 
 
 class BaseEngine:
@@ -28,10 +30,11 @@ class BaseEngine:
 
         The following will be initialised by the BaseEngine:
 
-        - db_funcs: The database functions to be used for inserting and querying logs
-        - mode: The mode of operation (DFS, BFS or Normal)
-        - provider_instance: This will detect the provider you're using
-        - playwright_agent: The actual playwright brains of the operation
+        - db_funcs: Initializes the database functions to be used for inserting and querying logs
+        - mode: The mode of operation (DFS, BFS or Normal), read the relevant documentation in pyba.readthedocs.io
+        - provider_instance: This will detect the provider you're using, either OpenAI, VertexAI and Gemini
+        - playwright_agent: The actual playwright agent setup via the provider
+        - secrets_manager: The secrets manager provided by the user, it must have a `resolve()` method
     """
 
     def __init__(
@@ -50,6 +53,7 @@ class BaseEngine:
         gemini_api_key: str = None,
         model_name: str = None,
         low_memory: bool = False,
+        secrets: PasswordManager = None,
     ):
         self.headless_mode = headless
         self.low_memory = low_memory
@@ -59,6 +63,9 @@ class BaseEngine:
         self.mode = mode
         self.database = database
         self.db_funcs = DatabaseFunctions(self.database) if database else None
+
+        secrets: Dict[str, str] = extract_secrets(secrets)
+        self.set_secrets(secrets)
 
         self.automated_login_engine_classes = []
 
@@ -103,6 +110,18 @@ class BaseEngine:
         if self.low_memory:
             kwargs["args"] = LOW_MEMORY_LAUNCH_ARGS
         return kwargs
+
+    @staticmethod
+    def set_secrets(secrets: Dict[str, str]):
+        """
+        Method to set the environment for the browser using the secrets
+        manager provided by the user.
+
+        Note: This relies on the secret manager class implementing a
+        "resolve() -> dict[str, str]" method.
+        """
+        for key, value in secrets.items():
+            os.environ[key] = value
 
     async def run(self):
         """
