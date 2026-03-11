@@ -46,6 +46,9 @@ The ``Engine`` class is the main entry point for PyBA. Here are all available op
 
        # Resource Optimization
        low_memory=False,                  # Enable low memory mode (default: False)
+      
+       # Secrets
+       secrets=None,                      # Add a password manager instance for automated login
    )
 
 Step-by-Step Configuration
@@ -88,6 +91,9 @@ The ``Step`` class provides interactive, step-by-step control over a persistent 
 
        # Resource Optimization
        low_memory=False,                  # Enable low memory mode (default: False)
+
+       # Secrets
+       secrets=None,                      # Add a password manager instance for automated login
    )
 
 **The Step lifecycle:**
@@ -178,6 +184,114 @@ Using Auto-Login
 .. note::
 
    Credentials are **never** sent to the LLM. The login scripts use hardcoded selectors and execute locally.
+
+Secrets and Password Manager
+----------------------------
+
+For more complex setups, you can plug a password manager or secret store into PyBA so that all required credentials are loaded into the environment **before** any login happens.
+
+At a high level:
+
+- **You implement** a small class that knows how to fetch your secrets.
+- **PyBA calls** a ``resolve() -> dict[str, str]`` method on that class.
+- **The result** is applied to ``os.environ`` and then consumed by the login scripts (``instagram``, ``facebook``, ``gmail``, etc.).
+
+PasswordManager Protocol
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+PyBA defines a minimal protocol that your password manager must follow:
+
+.. code-block:: python
+
+   from pyba.utils.structure import PasswordManager
+
+   class MyPasswordManager(PasswordManager):
+       def resolve(self) -> dict[str, str]:
+           # Pull values from your real secret store here
+           # (1Password, Vault, AWS Secrets Manager, local file, etc.)
+           return {
+               "instagram_username": "my-username",
+               "instagram_password": "super-secret-password",
+           }
+
+The contract is:
+
+- ``resolve()`` must be callable with **no arguments**
+- ``resolve()`` must return a ``dict[str, str]``
+  - Keys are environment variable names (for example ``instagram_username``)
+  - Values are the corresponding secrets
+
+If ``resolve()`` returns anything other than a ``dict[str, str]``, PyBA will raise a :class:`TypeError`.
+
+Passing the password manager to engines
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+All engines accept a ``secrets`` argument which should be an **instance** of your password manager:
+
+.. code-block:: python
+
+   from pyba import Engine
+
+   password_manager = MyPasswordManager()
+
+   engine = Engine(
+       openai_api_key="sk-...",
+       secrets=password_manager,
+   )
+
+   result = engine.sync_run(
+       prompt="Go to my Instagram profile and get the first 5 post captions",
+       automated_login_sites=["instagram"],
+   )
+
+Behind the scenes:
+
+- ``Engine``, ``DFS``, ``BFS`` and ``Step`` all forward ``secrets`` into a shared base class.
+- The base engine calls :func:`pyba.utils.common.extract_secrets` which:
+
+  - Validates that the object has a ``resolve`` method
+  - Calls ``resolve()`` and checks that the return type is a ``dict[str, str]``
+  - Sets each key/value pair into ``os.environ``
+
+Custom password manager examples
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can map any backing store into environment variables. For example, reading from a JSON file:
+
+.. code-block:: python
+
+   import json
+   from pathlib import Path
+   from pyba.utils.structure import PasswordManager
+
+   class JsonPasswordManager(PasswordManager):
+       def __init__(self, path: str):
+           self._path = Path(path)
+
+       def resolve(self) -> dict[str, str]:
+           data = json.loads(self._path.read_text())
+           # Expecting a flat key/value mapping in the JSON file
+           return {str(k): str(v) for k, v in data.items()}
+
+   # Usage
+   secrets = JsonPasswordManager("secrets.json")
+   engine = Engine(openai_api_key="sk-...", secrets=secrets)
+
+Error cases and CannotResolveError
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you accidentally pass the **class** instead of an **instance** (for example ``secrets=MyPasswordManager`` instead of ``secrets=MyPasswordManager()``), or if your password manager requires positional arguments that you did not provide, PyBA will raise :class:`pyba.utils.exceptions.CannotResolveError`.
+
+Common mistakes:
+
+- ``secrets=MyPasswordManager``  (missing ``()``)  → ``CannotResolveError``
+- ``resolve()`` defined with parameters (for example ``def resolve(self, profile: str)``) → ``CannotResolveError``
+- ``resolve()`` returns a list or other type → ``TypeError: resolve() must return dict[str, str]``
+
+When you hit this error, ensure that:
+
+- You are passing an **instance** of your password manager into the engine
+- ``resolve()`` takes no arguments and returns a plain dict of string keys and values
 
 2FA Handling
 ^^^^^^^^^^^^

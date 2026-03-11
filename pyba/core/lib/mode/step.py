@@ -16,7 +16,7 @@ from pyba.utils.common import (  # serialize_action kept for db pushes
 )
 from pyba.utils.exceptions import PromptNotPresent, UnknownSiteChosen
 from pyba.utils.load_yaml import load_config
-from pyba.utils.structure import StepRunContext
+from pyba.utils.structure import StepRunContext, PasswordManager
 
 config = load_config("general")
 
@@ -40,6 +40,7 @@ class Step(BaseEngine):
         database: An instance of the Database class which will define all database specific configs
         get_output: When True, asks the model for a summarised output when a step completes. When False (default), step() silently returns None on completion
         model_name: The model name which you want to run. The default is set to None (because it depends on the provider).
+        secrets: A password manager class which implements a resolve() method to give out a dictionary of secrets
     """
 
     def __init__(
@@ -59,8 +60,10 @@ class Step(BaseEngine):
         get_output: bool = False,
         model_name: str = None,
         low_memory: bool = config["main_engine_configs"]["minimize_memory"],
+        secrets: PasswordManager = None,
     ):
         self.mode = "STEP"
+
         super().__init__(
             headless=headless,
             enable_tracing=enable_tracing,
@@ -76,6 +79,7 @@ class Step(BaseEngine):
             gemini_api_key=gemini_api_key,
             model_name=model_name,
             low_memory=low_memory,
+            secrets=secrets,
         )
 
         self.session_id = uuid.uuid4().hex

@@ -6,7 +6,8 @@ from urllib.parse import urlparse
 
 from playwright.async_api import Page
 
-from pyba.utils.structure import CleanedDOM
+from pyba.utils.exceptions import CannotResolveError
+from pyba.utils.structure import CleanedDOM, PasswordManager
 
 
 def url_entropy(url) -> int:
@@ -79,3 +80,23 @@ def verify_login_page(page_url: str, url_list: List[str]):
         normalized_url += "/"
 
     return normalized_url in url_list
+
+
+def extract_secrets(secret_manager: PasswordManager = None) -> dict[str, str]:
+    if secret_manager is None:
+        return {}
+
+    if not hasattr(secret_manager, "resolve"):
+        raise NotImplementedError(
+            "Password manager must implement a resolve() -> dict[str, str] method"
+        )
+
+    try:
+        secrets = secret_manager.resolve()
+    except TypeError:
+        raise CannotResolveError()
+
+    if not isinstance(secrets, dict):
+        raise TypeError("resolve() must return dict[str, str]")
+
+    return secrets

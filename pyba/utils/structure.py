@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
 
@@ -246,3 +246,8 @@ class StepRunContext(BaseModel):
     )
     run_active: bool = Field(..., description="A boolean to indicate the status of the run")
     model_config = {"frozen": False}
+
+
+@runtime_checkable
+class PasswordManager(Protocol):
+    def resolve(self) -> dict[str, str]: ...
