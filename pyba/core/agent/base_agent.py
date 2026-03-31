@@ -4,6 +4,7 @@ from typing import Literal, Dict, List, Any
 
 from pyba.core.agent.llm_factory import LLMFactory
 from pyba.logger import get_logger
+from pyba.utils.exceptions import LLMRateLimitError
 
 
 class BaseAgent:
@@ -97,11 +98,13 @@ class BaseAgent:
                 )
                 self.initialise_depth_ladder(unique_context_id=context_id)
                 break
-            except Exception:
-                wait_time = self.calculate_next_time(
-                    self.shared_depth_dictionary.get(context_id, 1)
+            except Exception as e:
+                attempt = self.shared_depth_dictionary.get(context_id, 1)
+                wait_time = self.calculate_next_time(attempt)
+                self.log.warning(
+                    f"OpenAI API error (attempt {attempt}): {type(e).__name__}: {e}. "
+                    f"Retrying in {wait_time:.1f}s..."
                 )
-                self.log.warning(f"Hit the rate limit for OpenAI, retrying in {wait_time} seconds")
                 time.sleep(wait_time)
                 self.update_depth_ladder(unique_context_id=context_id)
 
@@ -131,12 +134,12 @@ class BaseAgent:
                 response = agent.send_message(prompt)
                 self.initialise_depth_ladder(unique_context_id=context_id)
                 break
-            except Exception:
-                wait_time = self.calculate_next_time(
-                    self.shared_depth_dictionary.get(context_id, 1)
-                )
+            except Exception as e:
+                attempt = self.shared_depth_dictionary.get(context_id, 1)
+                wait_time = self.calculate_next_time(attempt)
                 self.log.warning(
-                    f"Hit the rate limit for VertexAI, retrying in {wait_time} seconds"
+                    f"VertexAI API error (attempt {attempt}): {type(e).__name__}: {e}. "
+                    f"Retrying in {wait_time:.1f}s..."
                 )
                 time.sleep(wait_time)
                 self.update_depth_ladder(unique_context_id=context_id)
@@ -175,11 +178,13 @@ class BaseAgent:
                 )
                 self.initialise_depth_ladder(unique_context_id=context_id)
                 break
-            except Exception:
-                wait_time = self.calculate_next_time(
-                    self.shared_depth_dictionary.get(context_id, 1)
+            except Exception as e:
+                attempt = self.shared_depth_dictionary.get(context_id, 1)
+                wait_time = self.calculate_next_time(attempt)
+                self.log.warning(
+                    f"Gemini API error (attempt {attempt}): {type(e).__name__}: {e}. "
+                    f"Retrying in {wait_time:.1f}s..."
                 )
-                self.log.warning(f"Hit the rate limit for Gemini, retrying in {wait_time} seconds")
                 time.sleep(wait_time)
                 self.update_depth_ladder(unique_context_id=context_id)
 

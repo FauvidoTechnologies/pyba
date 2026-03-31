@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 from pyba.core.agent.base_agent import BaseAgent
 from pyba.core.agent.extraction_agent import ExtractionAgent
+from pyba.utils.exceptions import LLMResponseParseError
 from pyba.utils.prompts import general_prompt, output_prompt
 from pyba.utils.structure import PlaywrightResponse
 
@@ -87,10 +88,23 @@ class PlaywrightAgent(BaseAgent):
             response = self.handle_openai_execution(
                 agent=agent, prompt=prompt, context_id=context_id
             )
-            parsed_json = json.loads(response.choices[0].message.content)
+            try:
+                parsed_json = json.loads(response.choices[0].message.content)
+            except (json.JSONDecodeError, IndexError, AttributeError) as e:
+                raise LLMResponseParseError(
+                    "OpenAI returned a response that could not be parsed as JSON. "
+                    "The model may have produced malformed output.",
+                    cause=e,
+                )
 
             if agent_type == "action":
-                actions = SimpleNamespace(**parsed_json.get("actions")[0])
+                actions_list = parsed_json.get("actions")
+                if not actions_list:
+                    raise LLMResponseParseError(
+                        "OpenAI response contained no 'actions' field. "
+                        "The model did not produce a valid next action.",
+                    )
+                actions = SimpleNamespace(**actions_list[0])
                 extract_info_flag = parsed_json.get("extract_info")
                 if extract_info_flag:
                     extractor.run_threaded_info_extraction(
@@ -100,7 +114,7 @@ class PlaywrightAgent(BaseAgent):
             elif agent_type == "output":
                 return str(parsed_json.get("output"))
 
-        elif self.engine.provider == "vertexai":  # VertexAI logic
+        elif self.engine.provider == "vertexai":
             response = self.handle_vertexai_execution(
                 agent=agent, prompt=prompt, context_id=context_id
             )
@@ -110,8 +124,10 @@ class PlaywrightAgent(BaseAgent):
                 )
 
                 if not parsed_object:
-                    self.log.error("No parsed object found in VertexAI response.")
-                    return None
+                    raise LLMResponseParseError(
+                        "VertexAI returned a response with no parsed object. "
+                        "The model may have returned an empty or malformed response.",
+                    )
 
                 if agent_type == "action":
                     if hasattr(parsed_object, "actions") and parsed_object.actions:
@@ -122,20 +138,37 @@ class PlaywrightAgent(BaseAgent):
                                 task=user_prompt, actual_text=cleaned_dom["actual_text"]
                             )
                         return actions
-                    raise IndexError("No 'actions' found in VertexAI response.")
+                    raise LLMResponseParseError(
+                        "VertexAI response contained no 'actions'. "
+                        "The model did not produce a valid next action.",
+                    )
                 elif agent_type == "output":
                     if hasattr(parsed_object, "output") and parsed_object.output:
                         return str(parsed_object.output)
-                    raise IndexError("No 'output' found in VertexAI response.")
+                    raise LLMResponseParseError(
+                        "VertexAI response contained no 'output'. "
+                        "The model did not produce a final summary.",
+                    )
 
+            except LLMResponseParseError:
+                raise
             except Exception as e:
-                if not response:
-                    self.log.error(f"Unable to parse the output from VertexAI response: {e}")
+                raise LLMResponseParseError(
+                    f"Failed to parse VertexAI response: {type(e).__name__}: {e}",
+                    cause=e,
+                )
         else:
             response = self.handle_gemini_execution(
                 agent=agent, prompt=prompt, context_id=context_id
             )
-            parsed_object = agent["response_format"].model_validate_json(response.text)
+            try:
+                parsed_object = agent["response_format"].model_validate_json(response.text)
+            except Exception as e:
+                raise LLMResponseParseError(
+                    "Gemini returned a response that could not be parsed. "
+                    "The model may have produced malformed JSON output.",
+                    cause=e,
+                )
             if agent_type == "action":
                 if parsed_object.actions:
                     actions = parsed_object.actions[0]
@@ -145,6 +178,10 @@ class PlaywrightAgent(BaseAgent):
                             task=user_prompt, actual_text=cleaned_dom["actual_text"]
                         )
                     return actions
+                raise LLMResponseParseError(
+                    "Gemini response contained no 'actions'. "
+                    "The model did not produce a valid next action.",
+                )
             elif agent_type == "output":
                 return str(parsed_object.output)
 

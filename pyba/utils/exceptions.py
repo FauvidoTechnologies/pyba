@@ -103,3 +103,72 @@ class CannotResolveError(Exception):
         super().__init__(
             "Unable to resolve the secrets from your password manager. Please make sure that you pass in an 'instance' of your password manager"
         )
+
+
+# ---------------------------------------------------------------------------
+# Structured runtime errors for better user-facing error reporting
+# ---------------------------------------------------------------------------
+
+
+class PybaError(Exception):
+    """
+    Base class for all structured runtime errors raised by Pyba.
+
+    Every subclass carries a human-readable ``message`` and the original
+    ``cause`` exception (if any) so callers can inspect both without
+    parsing tracebacks.
+    """
+
+    category: str = "unknown"
+
+    def __init__(self, message: str, cause: Exception = None):
+        self.message = message
+        self.cause = cause
+        super().__init__(message)
+
+    def __str__(self):
+        if self.cause:
+            return f"[{self.category}] {self.message} (caused by {type(self.cause).__name__}: {self.cause})"
+        return f"[{self.category}] {self.message}"
+
+
+class ActionError(PybaError):
+    """An action dispatched to Playwright failed."""
+
+    category = "action"
+
+
+class ElementNotFoundError(ActionError):
+    """A selector did not match any element on the page."""
+
+    category = "element_not_found"
+
+
+class ActionTimeoutError(ActionError):
+    """A Playwright action exceeded its timeout."""
+
+    category = "timeout"
+
+
+class NavigationError(ActionError):
+    """A page navigation (goto, back, forward, reload) failed."""
+
+    category = "navigation"
+
+
+class LLMError(PybaError):
+    """The LLM provider returned an error or an unparseable response."""
+
+    category = "llm"
+
+
+class LLMRateLimitError(LLMError):
+    """The LLM provider rate-limited the request."""
+
+    category = "llm_rate_limit"
+
+
+class LLMResponseParseError(LLMError):
+    """The LLM returned a response that could not be parsed into an action."""
+
+    category = "llm_parse"

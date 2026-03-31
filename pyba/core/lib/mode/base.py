@@ -18,7 +18,7 @@ from pyba.core.tracing import Tracing
 from pyba.database import DatabaseFunctions
 from pyba.logger import setup_logger, get_logger
 from pyba.utils.common import extract_secrets
-from pyba.utils.exceptions import DatabaseNotInitialised
+from pyba.utils.exceptions import DatabaseNotInitialised, LLMResponseParseError, PybaError
 from pyba.utils.low_memory import LAUNCH_ARGS as LOW_MEMORY_LAUNCH_ARGS
 from pyba.utils.structure import CleanedDOM, PasswordManager
 
@@ -159,7 +159,10 @@ class BaseEngine:
             body_text = await page_obj.evaluate("() => document.body.innerText")
             base_url = page_obj.url
         except TimeoutError:
-            self.log.error("The page has not loaded within the defined timeout, going back")
+            self.log.error(
+                f"Page at {page_obj.url} did not finish loading within the timeout. "
+                f"This can happen with slow-loading pages or pages that never reach idle state."
+            )
             return None
 
         extraction_engine = ExtractionEngines(
@@ -399,8 +402,13 @@ class BaseEngine:
                 fail_reason=fail_reason,
                 action_status=action_status,
             )
+        except LLMResponseParseError as e:
+            self.log.error(str(e))
+            action = None
         except Exception as e:
-            self.log.error(f"something went wrong in obtaining the response: {e}")
+            self.log.error(
+                f"Failed to get next action from the AI model: {type(e).__name__}: {e}"
+            )
             action = None
 
         return action
@@ -440,7 +448,7 @@ class BaseEngine:
         mem = mem or self.mem
         page_obj = page if page is not None else self.page
 
-        self.log.warning("The previous action failed, checking the latest page")
+        self.log.warning(f"Previous action failed: {fail_reason}. Retrying with updated page state...")
         action = self.playwright_agent.process_action(
             cleaned_dom=cleaned_dom,
             user_prompt=prompt,
@@ -460,7 +468,10 @@ class BaseEngine:
         self.log.action(line)
 
         if value is None:
-            self.log.error(f"Retry also failed: {fail_reason}")
+            self.log.error(
+                f"Retry also failed: {fail_reason}. "
+                f"The AI will continue with the next step using the current page state."
+            )
 
     async def wait_till_loaded(self, page=None):
         """

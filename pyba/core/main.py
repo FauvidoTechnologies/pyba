@@ -14,7 +14,7 @@ from pyba.utils.common import (  # serialize_action kept for db pushes
     initial_page_setup,
     serialize_action,
 )
-from pyba.utils.exceptions import PromptNotPresent, UnknownSiteChosen
+from pyba.utils.exceptions import PromptNotPresent, PybaError, UnknownSiteChosen
 from pyba.utils.load_yaml import load_config
 from pyba.utils.structure import PasswordManager
 
@@ -185,13 +185,14 @@ class Engine(BaseEngine):
                     self.log.action(line)
 
                     if value is None:
+                        error_message = str(fail_reason)
                         if self.db_funcs:
                             self.db_funcs.push_to_episodic_memory(
                                 session_id=self.session_id,
                                 action=serialize_action(action),
                                 page_url=str(self.page.url),
                                 action_status=False,
-                                fail_reason=fail_reason,
+                                fail_reason=error_message,
                             )
                         cleaned_dom = await self.extract_dom()
 
@@ -200,7 +201,7 @@ class Engine(BaseEngine):
                             prompt=prompt,
                             action_history=self.mem.history,
                             action_status=False,
-                            fail_reason=fail_reason,
+                            fail_reason=error_message,
                         )
 
                         if output:

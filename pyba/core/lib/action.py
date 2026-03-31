@@ -2,14 +2,80 @@ import asyncio
 import re
 from urllib.parse import urljoin
 
-from playwright._impl._errors import Error
+from playwright._impl._errors import Error, TimeoutError as PlaywrightTimeoutError
 from playwright.async_api import Page
 
 import pyba.core.helpers as global_vars
 from pyba.core.helpers.jitters import MouseMovements, ScrollMovements
 from pyba.logger import get_logger
 from pyba.utils.common import is_absolute_url
+from pyba.utils.exceptions import (
+    ActionError,
+    ActionTimeoutError,
+    ElementNotFoundError,
+    NavigationError,
+)
 from pyba.utils.structure import PlaywrightAction
+
+
+def _classify_action_error(e: Exception, action: PlaywrightAction) -> ActionError:
+    """
+    Inspects a raw exception from Playwright and wraps it in the most
+    specific structured error type with a human-readable message.
+    """
+    err_str = str(e)
+
+    # --- Timeout ---
+    if isinstance(e, PlaywrightTimeoutError) or "Timeout" in err_str:
+        selector = _describe_action_target(action)
+        return ActionTimeoutError(
+            f"Timed out while performing action on {selector}. "
+            f"The element may be missing, hidden, or the page may still be loading.",
+            cause=e,
+        )
+
+    # --- Element not found / strict mode ---
+    if "strict mode violation" in err_str:
+        selector = _describe_action_target(action)
+        return ElementNotFoundError(
+            f"Multiple elements matched the selector {selector}. "
+            f"The AI chose a selector that isn't specific enough.",
+            cause=e,
+        )
+
+    if any(phrase in err_str.lower() for phrase in ["no element found", "waiting for locator", "element is not attached"]):
+        selector = _describe_action_target(action)
+        return ElementNotFoundError(
+            f"Could not find the element {selector} on the page. "
+            f"It may have been removed, renamed, or not yet loaded.",
+            cause=e,
+        )
+
+    # --- Navigation ---
+    if any(phrase in err_str.lower() for phrase in ["net::err_", "navigation", "page.goto"]):
+        url = getattr(action, "goto", None) or "unknown URL"
+        return NavigationError(
+            f"Failed to navigate to {url}. The page may be unreachable or the URL may be invalid.",
+            cause=e,
+        )
+
+    # --- Generic fallback ---
+    selector = _describe_action_target(action)
+    return ActionError(
+        f"Action failed on {selector}: {err_str}",
+        cause=e,
+    )
+
+
+def _describe_action_target(action: PlaywrightAction) -> str:
+    """Returns a short human-readable description of what the action targets."""
+    for field in ("click", "fill_selector", "type_selector", "hover", "select_selector",
+                  "goto", "wait_selector", "dblclick", "press_selector", "check", "uncheck",
+                  "download_selector", "upload_selector", "right_click", "dropdown_field_id"):
+        val = getattr(action, field, None)
+        if val:
+            return f"'{val}'"
+    return "the page"
 
 
 class PlaywrightActionPerformer:
@@ -454,12 +520,18 @@ class PlaywrightActionPerformer:
 
 async def perform_action(page: Page, action: PlaywrightAction):
     """
-    The entry point function
+    The entry point function.
+
+    Returns:
+        (True, None) on success.
+        (None, ActionError) on failure — the error carries a human-readable
+        message describing what went wrong and why.
     """
     performer = PlaywrightActionPerformer(page, action)
 
     try:
         await performer.perform()
-        return True, None  # The fail_reason is None
+        return True, None
     except Exception as e:
-        return None, e
+        structured_error = _classify_action_error(e, action)
+        return None, structured_error
