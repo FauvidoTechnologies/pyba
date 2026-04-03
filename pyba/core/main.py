@@ -14,7 +14,7 @@ from pyba.utils.common import (  # serialize_action kept for db pushes
     initial_page_setup,
     serialize_action,
 )
-from pyba.utils.exceptions import PromptNotPresent, PybaError, UnknownSiteChosen
+from pyba.utils.exceptions import PromptNotPresent, UnknownSiteChosen
 from pyba.utils.load_yaml import load_config
 from pyba.utils.structure import PasswordManager
 
@@ -66,6 +66,8 @@ class Engine(BaseEngine):
         model_name: str = None,
         low_memory: bool = config["main_engine_configs"]["minimize_memory"],
         secrets: PasswordManager = None,
+        enable_screenshots: bool = False,
+        screenshot_directory: str = None,
     ):
         self.mode = "Normal"
         # Passing the common setup to the BaseEngine
@@ -85,6 +87,8 @@ class Engine(BaseEngine):
             model_name=model_name,
             low_memory=low_memory,
             secrets=secrets,
+            enable_screenshots=enable_screenshots,
+            screenshot_directory=screenshot_directory,
         )
 
         self.max_depth = max_depth
@@ -183,6 +187,7 @@ class Engine(BaseEngine):
                         action, success=value is not None, fail_reason=fail_reason
                     )
                     self.log.action(line)
+                    await self._capture_screenshot()
 
                     if value is None:
                         error_message = str(fail_reason)

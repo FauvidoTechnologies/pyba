@@ -4,7 +4,6 @@ from typing import Literal, Dict, List, Any
 
 from pyba.core.agent.llm_factory import LLMFactory
 from pyba.logger import get_logger
-from pyba.utils.exceptions import LLMRateLimitError
 
 
 class BaseAgent:

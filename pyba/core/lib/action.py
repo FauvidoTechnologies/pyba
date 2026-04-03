@@ -2,7 +2,8 @@ import asyncio
 import re
 from urllib.parse import urljoin
 
-from playwright._impl._errors import Error, TimeoutError as PlaywrightTimeoutError
+from playwright._impl._errors import Error
+from playwright._impl._errors import TimeoutError as PlaywrightTimeoutError
 from playwright.async_api import Page
 
 import pyba.core.helpers as global_vars
@@ -43,7 +44,10 @@ def _classify_action_error(e: Exception, action: PlaywrightAction) -> ActionErro
             cause=e,
         )
 
-    if any(phrase in err_str.lower() for phrase in ["no element found", "waiting for locator", "element is not attached"]):
+    if any(
+        phrase in err_str.lower()
+        for phrase in ["no element found", "waiting for locator", "element is not attached"]
+    ):
         selector = _describe_action_target(action)
         return ElementNotFoundError(
             f"Could not find the element {selector} on the page. "
@@ -69,9 +73,23 @@ def _classify_action_error(e: Exception, action: PlaywrightAction) -> ActionErro
 
 def _describe_action_target(action: PlaywrightAction) -> str:
     """Returns a short human-readable description of what the action targets."""
-    for field in ("click", "fill_selector", "type_selector", "hover", "select_selector",
-                  "goto", "wait_selector", "dblclick", "press_selector", "check", "uncheck",
-                  "download_selector", "upload_selector", "right_click", "dropdown_field_id"):
+    for field in (
+        "click",
+        "fill_selector",
+        "type_selector",
+        "hover",
+        "select_selector",
+        "goto",
+        "wait_selector",
+        "dblclick",
+        "press_selector",
+        "check",
+        "uncheck",
+        "download_selector",
+        "upload_selector",
+        "right_click",
+        "dropdown_field_id",
+    ):
         val = getattr(action, field, None)
         if val:
             return f"'{val}'"

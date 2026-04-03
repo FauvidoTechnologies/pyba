@@ -69,6 +69,8 @@ class DFS(BaseEngine):
         model_name: str = None,
         low_memory: bool = config["main_engine_configs"]["minimize_memory"],
         secrets: PasswordManager = None,
+        enable_screenshots: bool = False,
+        screenshot_directory: str = None,
     ):
         self.mode = "DFS"
         # Passing the common setup to the BaseEngine
@@ -87,6 +89,8 @@ class DFS(BaseEngine):
             model_name=model_name,
             low_memory=low_memory,
             secrets=secrets,
+            enable_screenshots=enable_screenshots,
+            screenshot_directory=screenshot_directory,
         )
 
         # session_id is per-engine, not in BaseEngine, because BaseEngine is shared across modes
@@ -166,6 +170,7 @@ class DFS(BaseEngine):
                             action, success=value is not None, fail_reason=fail_reason
                         )
                         self.log.action(line)
+                        await self._capture_screenshot()
 
                         if value is None:
                             if self.db_funcs:

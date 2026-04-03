@@ -61,6 +61,8 @@ class Step(BaseEngine):
         model_name: str = None,
         low_memory: bool = config["main_engine_configs"]["minimize_memory"],
         secrets: PasswordManager = None,
+        enable_screenshots: bool = False,
+        screenshot_directory: str = None,
     ):
         self.mode = "STEP"
 
@@ -80,6 +82,8 @@ class Step(BaseEngine):
             model_name=model_name,
             low_memory=low_memory,
             secrets=secrets,
+            enable_screenshots=enable_screenshots,
+            screenshot_directory=screenshot_directory,
         )
 
         self.session_id = uuid.uuid4().hex
@@ -172,6 +176,7 @@ class Step(BaseEngine):
             value, fail_reason = await perform_action(self.page, action)
             line = self.mem.record(action, success=value is not None, fail_reason=fail_reason)
             self.log.action(line)
+            await self._capture_screenshot()
 
             if value is None:
                 if self.db_funcs:

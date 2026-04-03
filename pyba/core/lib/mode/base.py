@@ -1,6 +1,7 @@
 import asyncio
 import os
-from typing import Dict, Optional, Literal
+from pathlib import Path
+from typing import Dict, List, Optional, Literal
 
 from playwright.async_api import TimeoutError
 from pydantic import BaseModel
@@ -18,7 +19,7 @@ from pyba.core.tracing import Tracing
 from pyba.database import DatabaseFunctions
 from pyba.logger import setup_logger, get_logger
 from pyba.utils.common import extract_secrets
-from pyba.utils.exceptions import DatabaseNotInitialised, LLMResponseParseError, PybaError
+from pyba.utils.exceptions import DatabaseNotInitialised, LLMResponseParseError
 from pyba.utils.low_memory import LAUNCH_ARGS as LOW_MEMORY_LAUNCH_ARGS
 from pyba.utils.structure import CleanedDOM, PasswordManager
 
@@ -54,6 +55,8 @@ class BaseEngine:
         model_name: str = None,
         low_memory: bool = False,
         secrets: PasswordManager = None,
+        enable_screenshots: bool = False,
+        screenshot_directory: str = None,
     ):
         self.headless_mode = headless
         self.low_memory = low_memory
@@ -100,6 +103,14 @@ class BaseEngine:
         # Defining the playwright agent with the defined configs
         self.playwright_agent = PlaywrightAgent(engine=self)
         self.mem = MemDSL()
+
+        self.enable_screenshots = enable_screenshots
+        self.screenshot_directory = screenshot_directory
+        self._screenshots_buffer: List[bytes] = []
+        self._screenshot_count = 0
+
+        if self.enable_screenshots and self.screenshot_directory:
+            Path(self.screenshot_directory).mkdir(parents=True, exist_ok=True)
 
         if handle_dependencies:
             HandleDependencies.playwright.handle_dependencies()
@@ -258,6 +269,39 @@ class BaseEngine:
         self.log.info(f"Created the script at: {output_path}")
         return True
 
+    async def _capture_screenshot(self, page=None):
+        """
+        Captures a screenshot of the current page state. If a screenshot directory
+        is specified, the image is saved to disk. Otherwise, the raw PNG bytes are
+        appended to the in-memory buffer.
+
+        Args:
+            page: Optional page instance (for BFS where multiple pages exist)
+        """
+        if not self.enable_screenshots:
+            return
+
+        page_obj = page if page is not None else self.page
+        self._screenshot_count += 1
+
+        if self.screenshot_directory:
+            file_path = Path(self.screenshot_directory) / f"step_{self._screenshot_count}.png"
+            await page_obj.screenshot(path=str(file_path), full_page=True)
+            self.log.info(f"Screenshot saved to: {file_path}")
+        else:
+            image_bytes = await page_obj.screenshot(full_page=True)
+            self._screenshots_buffer.append(image_bytes)
+
+    def get_screenshots(self) -> List[bytes]:
+        """
+        Returns the list of screenshot bytes captured so far. Each entry is a PNG
+        image in bytes, ordered by capture time.
+
+        If a screenshot_directory was specified, this returns an empty list since
+        images are saved to disk instead.
+        """
+        return list(self._screenshots_buffer)
+
     async def get_trace_context(self, browser_instance=None):
         """
         Initialises the browser context with tracing configuration. Accepts an optional
@@ -406,9 +450,7 @@ class BaseEngine:
             self.log.error(str(e))
             action = None
         except Exception as e:
-            self.log.error(
-                f"Failed to get next action from the AI model: {type(e).__name__}: {e}"
-            )
+            self.log.error(f"Failed to get next action from the AI model: {type(e).__name__}: {e}")
             action = None
 
         return action
@@ -448,7 +490,9 @@ class BaseEngine:
         mem = mem or self.mem
         page_obj = page if page is not None else self.page
 
-        self.log.warning(f"Previous action failed: {fail_reason}. Retrying with updated page state...")
+        self.log.warning(
+            f"Previous action failed: {fail_reason}. Retrying with updated page state..."
+        )
         action = self.playwright_agent.process_action(
             cleaned_dom=cleaned_dom,
             user_prompt=prompt,
@@ -466,6 +510,7 @@ class BaseEngine:
         value, fail_reason = await perform_action(page_obj, action)
         line = mem.record(action, success=value is not None, fail_reason=fail_reason)
         self.log.action(line)
+        await self._capture_screenshot(page_obj)
 
         if value is None:
             self.log.error(
