@@ -95,6 +95,7 @@ class Step(BaseEngine):
         self.get_output = get_output
 
         self.current_run_ctx: StepRunContext | None = None
+        self._current_step_screenshots: List[bytes] = []
 
     async def start(self, automated_login_sites: List[str] = None):
         """
@@ -141,6 +142,7 @@ class Step(BaseEngine):
 
         ctx = StepRunContext(run_id=uuid.uuid4().hex, run_active=True)
         self.current_run_ctx = ctx
+        self._current_step_screenshots = []
 
         for _ in range(self.max_actions_per_step):
             login_attempted_successfully = await self.attempt_login()
@@ -223,6 +225,32 @@ class Step(BaseEngine):
         finally:
             if self._playwright_context_manager:
                 await self._playwright_context_manager.__aexit__(None, None, None)
+
+    async def _capture_screenshot(self, page=None):
+        if not self.enable_screenshots:
+            return
+
+        page_obj = page if page is not None else self.page
+        self._screenshot_count += 1
+        image_bytes = await page_obj.screenshot(full_page=True)
+
+        self._current_step_screenshots.append(image_bytes)
+
+        if self.screenshot_directory:
+            from pathlib import Path
+
+            file_path = Path(self.screenshot_directory) / f"step_{self._screenshot_count}.png"
+            file_path.write_bytes(image_bytes)
+            self.log.info(f"Screenshot saved to: {file_path}")
+        else:
+            self._screenshots_buffer.append(image_bytes)
+
+    def get_step_screenshots(self) -> List[bytes]:
+        """
+        Returns the screenshots captured during the most recent step() call.
+        Each entry is a PNG image in bytes.
+        """
+        return list(self._current_step_screenshots)
 
     def cancel_current_step(self):
         """
