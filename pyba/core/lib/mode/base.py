@@ -1,5 +1,6 @@
 import asyncio
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Dict, List, Optional, Literal
 
@@ -19,7 +20,11 @@ from pyba.core.tracing import Tracing
 from pyba.database import DatabaseFunctions
 from pyba.logger import setup_logger, get_logger
 from pyba.utils.common import extract_secrets
-from pyba.utils.exceptions import DatabaseNotInitialised, LLMResponseParseError
+from pyba.utils.exceptions import (
+    CamoufoxNotInstalled,
+    DatabaseNotInitialised,
+    LLMResponseParseError,
+)
 from pyba.utils.low_memory import LAUNCH_ARGS as LOW_MEMORY_LAUNCH_ARGS
 from pyba.utils.structure import CleanedDOM, PasswordManager
 
@@ -57,7 +62,13 @@ class BaseEngine:
         secrets: PasswordManager = None,
         enable_screenshots: bool = False,
         screenshot_directory: str = None,
+        use_camoufox: bool = None,
     ):
+        if use_camoufox is not None:
+            self.use_camoufox = use_camoufox
+        else:
+            self.use_camoufox = os.environ.get("PYBA_USE_CAMOUFOX", "").lower() == "true"
+
         self.headless_mode = headless
         self.low_memory = low_memory
         self.tracing = enable_tracing
@@ -121,6 +132,28 @@ class BaseEngine:
         if self.low_memory:
             kwargs["args"] = LOW_MEMORY_LAUNCH_ARGS
         return kwargs
+
+    @asynccontextmanager
+    async def _launch_browser(self):
+        """
+        Async context manager that yields a browser instance. Uses camoufox
+        when enabled, otherwise falls back to stealth playwright + chromium.
+        """
+        if self.use_camoufox:
+            try:
+                from camoufox.async_api import AsyncCamoufox
+            except ImportError:
+                raise CamoufoxNotInstalled()
+
+            async with AsyncCamoufox(headless=self.headless_mode) as browser:
+                yield browser
+        else:
+            from playwright.async_api import async_playwright
+            from playwright_stealth import Stealth
+
+            async with Stealth().use_async(async_playwright()) as p:
+                browser = await p.chromium.launch(**self._launch_kwargs)
+                yield browser
 
     @staticmethod
     def set_secrets(secrets: Dict[str, str]):

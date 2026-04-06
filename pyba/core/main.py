@@ -2,8 +2,6 @@ import asyncio
 import uuid
 from typing import List, Union
 
-from playwright.async_api import async_playwright
-from playwright_stealth import Stealth
 from pydantic import BaseModel
 
 from pyba.core.lib.action import perform_action
@@ -68,6 +66,7 @@ class Engine(BaseEngine):
         secrets: PasswordManager = None,
         enable_screenshots: bool = False,
         screenshot_directory: str = None,
+        use_camoufox: bool = None,
     ):
         self.mode = "Normal"
         # Passing the common setup to the BaseEngine
@@ -89,6 +88,7 @@ class Engine(BaseEngine):
             secrets=secrets,
             enable_screenshots=enable_screenshots,
             screenshot_directory=screenshot_directory,
+            use_camoufox=use_camoufox,
         )
 
         self.max_depth = max_depth
@@ -152,8 +152,8 @@ class Engine(BaseEngine):
                 else:
                     raise UnknownSiteChosen(LoginEngine.available_engines())
         try:
-            async with Stealth().use_async(async_playwright()) as p:
-                self.browser = await p.chromium.launch(**self._launch_kwargs)
+            async with self._launch_browser() as browser:
+                self.browser = browser
 
                 self.context = await self.get_trace_context()
                 self.page = await self.context.new_page()

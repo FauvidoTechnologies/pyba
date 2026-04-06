@@ -2,8 +2,6 @@ import asyncio
 import uuid
 from typing import List, Union
 
-from playwright.async_api import async_playwright
-from playwright_stealth import Stealth
 from pydantic import BaseModel
 
 from pyba.core.lib.action import perform_action
@@ -63,6 +61,7 @@ class Step(BaseEngine):
         secrets: PasswordManager = None,
         enable_screenshots: bool = False,
         screenshot_directory: str = None,
+        use_camoufox: bool = None,
     ):
         self.mode = "STEP"
 
@@ -84,14 +83,14 @@ class Step(BaseEngine):
             secrets=secrets,
             enable_screenshots=enable_screenshots,
             screenshot_directory=screenshot_directory,
+            use_camoufox=use_camoufox,
         )
 
         self.session_id = uuid.uuid4().hex
         self.max_actions_per_step = max_actions_per_step
 
         self._cleaned_dom = None
-        self._playwright_context_manager = None
-        self._pw = None
+        self._browser_context_manager = None
         self.get_output = get_output
 
         self.current_run_ctx: StepRunContext | None = None
@@ -113,9 +112,8 @@ class Step(BaseEngine):
                 else:
                     raise UnknownSiteChosen(LoginEngine.available_engines())
 
-        self._playwright_context_manager = Stealth().use_async(async_playwright())
-        self._pw = await self._playwright_context_manager.__aenter__()
-        self.browser = await self._pw.chromium.launch(**self._launch_kwargs)
+        self._browser_context_manager = self._launch_browser()
+        self.browser = await self._browser_context_manager.__aenter__()
         self.context = await self.get_trace_context()
         self.page = await self.context.new_page()
         self._cleaned_dom = await initial_page_setup(self.page)
@@ -223,8 +221,8 @@ class Step(BaseEngine):
             await self.save_trace()
             await self.shut_down()
         finally:
-            if self._playwright_context_manager:
-                await self._playwright_context_manager.__aexit__(None, None, None)
+            if self._browser_context_manager:
+                await self._browser_context_manager.__aexit__(None, None, None)
 
     async def _capture_screenshot(self, page=None):
         if not self.enable_screenshots:

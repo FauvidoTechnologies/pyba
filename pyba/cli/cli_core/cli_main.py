@@ -72,6 +72,9 @@ class CLIMain(ArgParser):
         if self.arguments.low_memory_usage:
             engine_configs["low_memory"] = self.arguments.low_memory_usage
 
+        if self.arguments.use_camoufox:
+            engine_configs["use_camoufox"] = self.arguments.use_camoufox
+
         if self.arguments.operation_mode == "BFS":
             self.engine = BFS(**engine_configs)
         elif self.arguments.operation_mode == "DFS":

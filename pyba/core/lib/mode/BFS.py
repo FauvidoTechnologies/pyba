@@ -2,8 +2,6 @@ import asyncio
 import uuid
 from typing import List, Union
 
-from playwright.async_api import async_playwright
-from playwright_stealth import Stealth
 from pydantic import BaseModel
 
 from pyba.core.agent import PlannerAgent
@@ -71,6 +69,7 @@ class BFS(BaseEngine):
         secrets: PasswordManager = None,
         enable_screenshots: bool = False,
         screenshot_directory: str = None,
+        use_camoufox: bool = None,
     ):
         self.mode = "BFS"
         # Passing the common setup to the BaseEngine
@@ -90,6 +89,7 @@ class BFS(BaseEngine):
             secrets=secrets,
             enable_screenshots=enable_screenshots,
             screenshot_directory=screenshot_directory,
+            use_camoufox=use_camoufox,
         )
 
         # session_id is per-engine, not in BaseEngine, because BaseEngine is shared across modes
@@ -115,9 +115,7 @@ class BFS(BaseEngine):
         to manage individual exponential retries and logging.
         """
         try:
-            async with Stealth().use_async(async_playwright()) as p:
-                browser = await p.chromium.launch(**self._launch_kwargs)
-
+            async with self._launch_browser() as browser:
                 context = await self.get_trace_context(browser_instance=browser)
                 page = await context.new_page()
                 cleaned_dom = await initial_page_setup(page)

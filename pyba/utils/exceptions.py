@@ -93,6 +93,18 @@ class InvalidModelSelected(Exception):
         )
 
 
+class CamoufoxNotInstalled(Exception):
+    """
+    Exception raised when camoufox is enabled but the package is not installed.
+    """
+
+    def __init__(self):
+        super().__init__(
+            "Camoufox is enabled but not installed. "
+            "Install it with: poetry install -E camoufox (or pip install -U camoufox)"
+        )
+
+
 class CannotResolveError(Exception):
     """
     Exception to be rasied when the user provides a PasswordManager class which requires

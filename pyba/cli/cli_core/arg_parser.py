@@ -161,6 +161,14 @@ class ArgParser(ArgumentParser):
         )
 
         base_parser.add_argument(
+            "--camoufox",
+            action="store_true",
+            default=False,
+            dest="use_camoufox",
+            help="Use Camoufox (stealthy Firefox) instead of stealth Chromium. Requires: poetry install -E camoufox",
+        )
+
+        base_parser.add_argument(
             "--low-memory-usage",
             action="store_true",
             dest="low_memory_usage",
